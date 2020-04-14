@@ -1,0 +1,23 @@
+{
+  "name": "@kanthoney/sql-motif",
+  "version": "0.0.1",
+  "description": "sql query fragment builder",
+  "main": "index.js",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "keywords": [
+    "sql",
+    "query",
+    "builder"
+  ],
+  "author": "Kevin Anthoney",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.17.15",
+    "moment": "^2.24.0"
+  },
+  "optionalDependencies": {
+    "mysql": "^2.18.1"
+  }
+}
