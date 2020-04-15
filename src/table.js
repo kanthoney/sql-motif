@@ -195,7 +195,7 @@ class Table
         clause = 'inner join';
         break;
       }
-      return acc.concat(`${clause} ${join.table.from()}`);
+      return acc.concat(`${clause} ${join.table.from(options)}`);
     }, [])).join(' ');
   }
 
@@ -310,6 +310,41 @@ class Table
   SetNonKey(record, options)
   {
     return `set ${this.setNonKey(record, options)}`;
+  }
+
+  insertColumns()
+  {
+    return this.columns.fields().map(col => col.sql.name).join(', ');
+  }
+
+  insertValues(record)
+  {
+    if(_.isArray(record)) {
+      return record.map(record => this.insertValues(record)).join(', ');
+    }
+    const values = this.columns.fields().map(col => {
+      const value = _.get(record, col.path || col.alias || col.name);
+      if(value === undefined) {
+        return 'default';
+      }
+      return this.dialect.escape(value);
+    });
+    return `(${values.join(', ')})`;
+  }
+
+  insert(record)
+  {
+    return `${this.fullName()} (${this.insertColumns()}) values ${this.insertValues(record)}`;
+  }
+
+  Insert(record)
+  {
+    return `insert into ${this.insert(record)}`;
+  }
+
+  InsertIgnore(record)
+  {
+    return this.dialect.insertIgnore(this, record);
   }
 
   whereArray(record, options)

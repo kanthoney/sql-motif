@@ -135,6 +135,11 @@ class Dialect
     return `${s}`.replace(this.like_escape_re, c => `\\${c}`);
   }
 
+  insertIgnore(table, record)
+  {
+    return `insert ignore into ${table.insert(record)}`;
+  }
+
 }
 
 module.exports = Dialect;
