@@ -264,7 +264,7 @@ module.exports = defaults => {
       return `select ${this.select(selector, options)}`;
     }
 
-    set(record, options)
+    setArray(record, options)
     {
       options = options || {};
       if(options.joins && options.joins !== '*') {
@@ -282,14 +282,14 @@ module.exports = defaults => {
         if(options.joins && options.join !== '*' && !options.joins.includes(join.name)) {
           return acc;
         }
-        return acc.concat(join.table.columns.values(record, options).map(field => {
-          if(field.value instanceof Operator) {
-            return `${field.col.sql.fullName} ${field.value.clause(this.dialect)}`;
-          } else {
-            return `${field.col.sql.fullName} = ${this.escape(field.value)}`;
-          }
-        }));
-      }, [])).join(', ');
+        const subRecord = _.get(record, join.name);
+        return acc.concat(join.table.setArray(subRecord, options));
+      }, []));
+    }
+
+    set(record, options)
+    {
+      return this.setArray(record, options).join(', ');
     }
 
     setNonKey(record, options)
@@ -307,9 +307,9 @@ module.exports = defaults => {
       return `set ${this.setNonKey(record, options)}`;
     }
 
-    where(record, options)
+    whereArray(record, options)
     {
-      options = _.defaults(options || {}, { default: '1 = 1' });
+      options = _.defaults(options || {}, { default: '' });
       if(options.joins && options.joins !== '*') {
         if(!_.isArray(options.joins)) {
           options.joins = [options.joins];
@@ -319,9 +319,19 @@ module.exports = defaults => {
         if(record.length === 0) {
           return options.default;
         }
-        return record.map(record => `(${this.where(record, options)})`).join(' or ');
+        const clauses = record.map(record => this.where(record, { ...options, brackets: true }));
+        if(clauses.length === 0) {
+          return [];
+        }
+        if(clauses.length === 1) {
+          return clauses;
+        }
+        if(options.brackets) {
+          return [`(${clauses.join(' or ')})`];
+        }
+        return [clauses.join(' or ')];
       }
-      const clause = this.columns.values(record, options).map(field => {
+      return this.columns.values(record, options).map(field => {
         if(field.value instanceof Operator) {
           return `${field.col.sql.fullName} ${field.value.clause(this.dialect)}`;
         }
@@ -330,15 +340,26 @@ module.exports = defaults => {
         if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
           return acc;
         }
-        const subRecord = _.get(record, join.table.config.path);
-        return acc.concat(join.table.columns.values(subRecord || {}, options).map(field => {
-          if(field.value instanceof Operator) {
-            return `${field.col.sql.fullName} ${field.value.clause(this.dialect)}`;
-          }
-          return `${field.col.sql.fullName} ${operators.eq(field.value).clause(this.dialect)}`;
-        }));
-      }, [])).join(' and ');
-      return clause || options.default;
+        const subRecord = _.get(record, join.name);
+        const where = join.table.where(subRecord || {}, { ...options, brackets: _.isArray(subRecord) });
+        if(!where) {
+          return acc;
+        }
+        return acc.concat(where);
+      }, []));
+    }
+
+    where(record, options)
+    {
+      options = { default: '', ...options };
+      const clauses = this.whereArray(record, options);
+      if(clauses.length === 0) {
+        return options.default;
+      }
+      if(options.brackets && clauses.length > 1) {
+        return `(${clauses.join(' and ')})`;
+      }
+      return clauses.join(' and ');
     }
 
     whereKey(record, options)
@@ -348,7 +369,7 @@ module.exports = defaults => {
 
     Where(record, options)
     {
-      return `where ${this.where(record, options)}`;
+      return `where ${this.where(record, { default: '1 = 1', ...options })}`;
     }
 
     WhereKey(record, options)

@@ -124,6 +124,33 @@ describe('where tests', () => {
 
     });
 
+    describe('inventory2 tests', () => {
+      const j = joins.inventory2;
+
+      it("should create where clause for inventory", () => {
+        expect(j.where({
+          company: 'ACME001',
+          sku: 'AFJ010',
+          description: 'Spirit level',
+          warehouse: {
+            name: 'Mercury',
+            bins: [{
+              bin: 'A14J',
+              inventory: {
+                qty: 5
+              }
+            },
+            {
+              bin: 'A52A'
+            }]
+          }
+        })).toBe(
+          '"stock"."company" = \'ACME001\' and "stock"."sku" = \'AFJ010\' and "stock"."description" = \'Spirit level\' and "s1"."warehouse"."name" = \'Mercury\' and ' +
+          '(("warehouse_bins"."bin" = \'A14J\' and "inventory"."qty" = \'5\') or "warehouse_bins"."bin" = \'A52A\')'
+        );
+      });
+    });
+
   });
 
 });
