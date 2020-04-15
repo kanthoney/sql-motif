@@ -18,11 +18,7 @@ try {
 
     escape(s)
     {
-      try {
-        return super._escape(s);
-      } catch(error) {
-        return mysql.escape(s);
-      }
+      return super._escape(s, mysql.escape);
     }
 
     quoteNoEscape(s) {

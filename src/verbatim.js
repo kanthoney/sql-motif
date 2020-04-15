@@ -6,6 +6,11 @@ class Verbatim
   {
     this.text = text;
   }
+
+  toString()
+  {
+    return this.text;
+  }
 }
 
 module.exports = Verbatim;

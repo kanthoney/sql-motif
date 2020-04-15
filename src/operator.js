@@ -6,17 +6,22 @@ class Operator
 {
   constructor(name, value)
   {
-    if(_.isFunction(name)) {
-      this.name = name(value);
-    } else {
-      this.name = name;
-    }
+    this.name = name;
     this.value = value;
   }
 
-  clause(dialect)
+  clause(dialect, col)
   {
-    return `${this.name} ${dialect.escape(this.value)}`;
+    let value;
+    if(this.value instanceof Function) {
+      value = this.value(col, dialect.template);
+    } else {
+      value = this.value;
+    }
+    if(this.name instanceof Function) {
+      return `${this.name(value)} ${dialect.escape(this.value)}`;
+    }
+    return `${this.name} ${dialect.escape(value)}`;
   }
 };
 

@@ -3,9 +3,6 @@
 const _ = require('lodash');
 const moment = require('moment');
 const Verbatim = require('./verbatim');
-const DateTime = require('./datetime');
-const Fn = require('./function');
-const Identifier = require('./identifier');
 
 class Dialect
 {
@@ -38,11 +35,25 @@ class Dialect
     if(!this.options.likeEscapeChars) {
       this.options.likeEscapeChars = '%_';
     }
+    this.escape_re = new RegExp(this.options.escapeChars.split('').map(char => char==='\\'?`\\\\(?![${this.options.likeEscapeChars}])`:_.escapeRegExp(char)).join('|'), 'g');
+    this.like_escape_re = new RegExp(`[${_.escapeRegExp(this.options.likeEscapeChars)}]`, 'g');
+    this.template = (strings, ...args) => {
+      let s = '';
+      let i = 0;
+      while(i < strings.length) {
+        s += strings[i];
+        if(i < args.length) {
+          s += this.escape(args[i]);
+        }
+        i++;
+      }
+      return new Verbatim(s);
+    }
   }
 
   escapeNoQuotes(s)
   {
-    return `${s}`.replace(new RegExp(`[${_.escapeRegExp(this.options.escapeChars)}]`, 'g'), c => `\\${c}`);
+    return `${s}`.replace(this.escape_re, c => `\\${c}`);
   }
 
   quoteNoEscape(s)
@@ -60,10 +71,19 @@ class Dialect
     return moment(dt).format('YYYY-MM-DD HH:mm:ss');
   }
 
-  _escape(s)
+  _escape(s, f)
   {
+    const DateTime = require('./datetime');
+    const Fn = require('./function');
+    const Identifier = require('./identifier');
+    const Column = require('./column');
+    const Table = require('./table');
+    const Operator = require('./operator');
     if(_.isNil(s)) {
       return 'null';
+    }
+    if(typeof s === 'number') {
+      return `${s}`;
     }
     if(s instanceof Verbatim) {
       return s.text;
@@ -83,16 +103,26 @@ class Dialect
     if(s instanceof Identifier) {
       return this.escapeId(s);
     }
-    throw new Error('');
+    if(s instanceof Column) {
+      return s.sql.fullName;
+    }
+    if(s instanceof Table) {
+      return s.fullName();
+    }
+    if(s instanceof Operator) {
+      return s.clause(this);
+    }
+    return f(s);
+  }
+
+  defaultEscape(s)
+  {
+    return `${this.options.quotes[0]}${this.escapeNoQuotes(s)}${this.options.quotes[1]}`;
   }
 
   escape(s)
   {
-    try {
-      return this._escape(s);
-    } catch(error) {
-      return `${this.options.quotes[0]}${this.escapeNoQuotes(s)}${this.options.quotes[1]}`;
-    }
+    return this._escape(s, this.defaultEscape.bind(this));
   }
 
   escapeId(s)
@@ -100,29 +130,9 @@ class Dialect
     return `${this.options.idQuotes[0]}${this.escapeNoQuotes(s)}${this.options.idQuotes[1]}`;
   }
 
-  escapeLikeNoQuotes(s)
-  {
-    return `${s}`.replace(new RegExp('[' + _.escapeRegExp(`${this.options.likeEscapeChars}${this.options.escapeChars}`) + ']', 'g'), c => `\\${c}`);
-  }
-
   escapeLike(s)
   {
-    return this.quoteNoEscape(this.escapeLikeNoQuotes(s));
-  }
-
-  escapeStartsWith(s)
-  {
-    return this.quoteNoEscape(`${this.escapeLikeNoQuotes(s)}%`);
-  }
-
-  escapeEndsWith(s)
-  {
-    return this.quoteNoEscape(`%${this.escapeLikeNoQuotes(s)}`);
-  }
-
-  escapeContains(s)
-  {
-    return this.quoteNoEscape(`%${this.escapeLikeNoQuotes(s)}%`);
+    return `${s}`.replace(this.like_escape_re, c => `\\${c}`);
   }
 
 }

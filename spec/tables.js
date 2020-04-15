@@ -1,7 +1,7 @@
 'use strict';
 
 const types = require('./types');
-const Table = require('../src/table')({ types });
+const { Table } = require('../index')({ types });
 
 module.exports = {
   orders: new Table({

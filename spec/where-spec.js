@@ -72,7 +72,7 @@ describe('where tests', () => {
 
       it("should select order lines where order_id = '123' and SKU = 'ADF1001'", () => {
         expect(t.where({ order_id: 123, sku: 'ADF1001' })).toBe(
-          '"ol1"."order_id" = \'123\' and "ol1"."sku" = \'ADF1001\''
+          '"ol1"."order_id" = 123 and "ol1"."sku" = \'ADF1001\''
         );
       });
 
@@ -92,15 +92,15 @@ describe('where tests', () => {
         );
       });
 
-      it("should select orders where order date is after 2020-04-01 with sku starting with 'HUT_909'", () => {
-        expect(j.where({ order_date: op.gt('2020-04-01'), lines: { sku: op.startsWith('HUT_909') } })).toBe(
-          '"s1"."orders"."order_date" > \'2020-04-01\' and "order_lines"."sku" like \'HUT\\_909%\''
+      it("should select orders where order date is after 2020-04-01 with sku starting with 'HUT_$909'", () => {
+        expect(j.where({ order_date: op.gt('2020-04-01'), lines: { sku: op.startsWith('HUT_$909') } })).toBe(
+          '"s1"."orders"."order_date" > \'2020-04-01\' and "order_lines"."sku" regexp \'^HUT_\\\\$909\''
         );
       });
 
-      it("should select orders where sku does not contain 'DF%G'", () => {
-        expect(j.where({ lines: { sku: op.notContains('DF%G') } })).toBe(
-          '"order_lines"."sku" not like \'%DF\\%G%\''
+      it("should select orders where sku does not contain 'DF^G'", () => {
+        expect(j.where({ lines: { sku: op.notContains('DF^G') } })).toBe(
+          '"order_lines"."sku" not regexp \'^DF\\\\^G$\''
         );
       });
 
@@ -112,13 +112,13 @@ describe('where tests', () => {
 
       it("should find inventory where sku = 'DDJ9823' and qty > 0", () => {
         expect(j.where({ sku: 'DDJ9823', inventory: { qty: op.gt(0) } })).toBe(
-          '"stock"."sku" = \'DDJ9823\' and "i1"."qty" > \'0\''
+          '"stock"."sku" = \'DDJ9823\' and "i1"."qty" > 0'
         );
       });
 
       it("should find inventory where bin code begins with A or B and qty = 0", () => {
         expect(j.where({ bin: { bin: op.regExp('^[AB]') }, inventory: { qty: 0 } })).toBe(
-          '"warehouse_bins"."bin" regexp \'^[AB]\' and "i1"."qty" = \'0\''
+          '"warehouse_bins"."bin" regexp \'^[AB]\' and "i1"."qty" = 0'
         );
       });
 
@@ -146,7 +146,7 @@ describe('where tests', () => {
           }
         })).toBe(
           '"stock"."company" = \'ACME001\' and "stock"."sku" = \'AFJ010\' and "stock"."description" = \'Spirit level\' and "s1"."warehouse"."name" = \'Mercury\' and ' +
-          '(("warehouse_bins"."bin" = \'A14J\' and "inventory"."qty" = \'5\') or "warehouse_bins"."bin" = \'A52A\')'
+          '(("warehouse_bins"."bin" = \'A14J\' and "inventory"."qty" = 5) or "warehouse_bins"."bin" = \'A52A\')'
         );
       });
     });

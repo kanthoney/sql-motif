@@ -51,84 +51,6 @@ class NotInOperator extends Operator
   }
 }
 
-class StartsWithOperator extends Operator
-{
-  constructor(value)
-  {
-    super('like', value);
-  }
-
-  clause(dialect)
-  {
-    return `${this.name} ${dialect.escapeStartsWith(this.value)}`;
-  }
-}
-
-class ContainsOperator extends Operator
-{
-  constructor(value)
-  {
-    super('like', value);
-  }
-
-  clause(dialect)
-  {
-    return `${this.name} ${dialect.escapeContains(this.value)}`;
-  }
-}
-
-class EndsWithOperator extends Operator
-{
-  constructor(value)
-  {
-    super('like', value);
-  }
-
-  clause(dialect)
-  {
-    return `${this.name} ${dialect.escapeEndsWith(this.value)}`;
-  }
-}
-
-class NotStartsWithOperator extends Operator
-{
-  constructor(value)
-  {
-    super('not like', value);
-  }
-
-  clause(dialect)
-  {
-    return `${this.name} ${dialect.escapeStartsWith(this.value)}`;
-  }
-}
-
-class NotContainsOperator extends Operator
-{
-  constructor(value)
-  {
-    super('not like', value);
-  }
-
-  clause(dialect)
-  {
-    return `${this.name} ${dialect.escapeContains(this.value)}`;
-  }
-}
-
-class NotEndsWithOperator extends Operator
-{
-  constructor(value)
-  {
-    super('not like', value);
-  }
-
-  clause(dialect)
-  {
-    return `${this.name} ${dialect.escapeEndsWith(this.value)}`;
-  }
-}
-
 module.exports.eq = value => new EqualsOperator(value);
 module.exports.ne = value => new NotEqualsOperator(value);
 module.exports.lt = value => new Operator('<', value);
@@ -139,9 +61,11 @@ module.exports.in = value => new InOperator(value);
 module.exports.notIn = value => new NotInOperator(value);
 module.exports.regExp = value => new Operator('regexp', value);
 module.exports.notRegExp = value => new Operator('not regexp', value);
-module.exports.startsWith = value => new StartsWithOperator(value);
-module.exports.endsWith = value => new EndsWithOperator(value);
-module.exports.contains = value => new ContainsOperator(value);
-module.exports.notStartsWith = value => new NotStartsWithOperator(value);
-module.exports.notEndsWith = value => new NotEndsWithOperator(value);
-module.exports.notContains = value => new NotContainsOperator(value);
+module.exports.like = value => new Operator('like', value);
+module.exports.notLike = value => new Operator('not like', value);
+module.exports.startsWith = value => new Operator('regexp', `^${_.escapeRegExp(value)}`);
+module.exports.endsWith = value => new Operator('regexp', `${_.escapeRegExp(value)}$`);
+module.exports.contains = value => new Operator('regexp', `^${_.escapeRegExp(value)}$`);
+module.exports.notStartsWith = value => new Operator('not regexp', `^${_.escapeRegExp(value)}`);
+module.exports.notEndsWith = value => new Operator('not regexp', `${_.escapeRegExp(value)}$`);
+module.exports.notContains = value => new Operator('not regexp', `^${_.escapeRegExp(value)}$`);

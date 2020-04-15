@@ -42,6 +42,7 @@ describe('set tests', () => {
       const j = joins.inventory2;
 
       it("should create set clause for inventory", () => {
+        const sql = j.dialect.template;
         expect(j.set({
           company: 'ACME001',
           sku: 'AFJ010',
@@ -51,13 +52,14 @@ describe('set tests', () => {
             bins: {
               bin: 'A14J',
               inventory: {
-                qty: 5
+                qty: motif.fn('min', 5, 6),
+                time: (col, tag) => tag`${col} - interval 5 day`
               }
             }
           }
         })).toBe(
           '"stock"."company" = \'ACME001\', "stock"."sku" = \'AFJ010\', "stock"."description" = \'Spirit level\', "s1"."warehouse"."name" = \'Mercury\', ' +
-          '"warehouse_bins"."bin" = \'A14J\', "inventory"."qty" = \'5\''
+          '"warehouse_bins"."bin" = \'A14J\', "inventory"."time" = "inventory"."time" - interval 5 day, "inventory"."qty" = min(5, 6)'
         );
       });
 
