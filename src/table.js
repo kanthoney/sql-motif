@@ -49,18 +49,21 @@ module.exports = defaults => {
       });
       this.config.indexes = this.config.indexes || [];
       this.joins = [];
+      this.onFields = [];
       this.config.joins.forEach(join => {
         if(join.table instanceof Table) {
+          join.name = join.name || join.table.config.name;
           join.table = new Table({
             ...join.table.config,
             alias: join.alias,
-            path: this.config.path.concat(join.path || join.name || join.table.config.alias || join.table.config.name)
+            path: this.config.path.concat(join.path || join.name)
           });
         } else {
+          join.name = join.name || join.table.name;
           join.table = new Table({
             ...join.table,
             alias: join.alias,
-            path: this.path.concat(join.path || join.name || join.table.alias || join.table.name)
+            path: this.path.concat(join.path || join.name)
           });
         }
         let on = join.on || [];
@@ -86,40 +89,28 @@ module.exports = defaults => {
             left = on[0];
             right = on[1];
           }
-          const leftCol = join.table.columnFromName(left);
+          left = join.table.config.path.concat(left).join('_');
+          right = this.config.path.concat(right).join('_');
+          const leftCol = join.table.columnFromAlias(left);
           const rightCol = this.columnFromAlias(right);
           if(leftCol && rightCol) {
+            leftCol.joinCol = rightCol;
             return acc.concat({ left: leftCol, right: rightCol });
+          } else {
+            console.warn(
+              `Problem creating join for table ${this.config.name} with left column '${left}' and right column '${right}'`
+            );
           }
           return acc;
         }, []);
-        let sql;
-        switch(join.type) {
-          case 'left':
-            sql = 'left join';
-            break;
-
-          case 'right':
-            sql = 'right join';
-            break;
-
-          case 'outer':
-            sql = 'outer join';
-            break;
-
-          default:
-            sql = 'inner join';
-            break;
-        }
-        sql += ` ${join.table.fullNameAs()}`;
-        if(on.length > 0) {
-          sql += ' on ' + on.map(on => `${on.left.sql.fullName} = ${on.right.sql.fullName}`).join(' and ');
-        }
+        on.forEach(on => {
+          on.left.table.onFields.push(on);
+        });
         join.colMap = on.reduce((acc, on) => {
           acc[on.right.alias || on.right.name] = on.left;
           return acc;
         }, {});
-        this.joins.push({ ...join, sql });
+        this.joins.push(join);
       });
     }
 
@@ -178,11 +169,34 @@ module.exports = defaults => {
           options.joins = [options.joins];
         }
       }
-      return [this.fullNameAs()].concat(this.joins.reduce((acc, join) => {
+      let clause = this.fullNameAs();
+      let on = this.On();
+      if(on) {
+        clause = `${clause} ${on}`;
+      }
+      return [clause].concat(this.joins.reduce((acc, join) => {
         if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
           return acc;
         }
-        return acc.concat(join.sql);
+        let clause;
+        switch(join.type) {
+          case 'left':
+            clause = 'left join';
+            break;
+
+          case 'right':
+           clause = 'right join';
+           break;
+
+          case 'outer':
+           clause = 'outer join';
+           break;
+
+          default:
+           clause = 'inner join';
+           break;
+        }
+        return acc.concat(`${clause} ${join.table.from()}`);
       }, [])).join(' ');
     }
 
@@ -191,14 +205,23 @@ module.exports = defaults => {
       return `from ${this.from(options)}`;
     }
 
+    on()
+    {
+      return this.onFields.map(field => `${field.left.sql.fullName} = ${field.right.sql.fullName}`).join(' and ');
+    }
+
+    On()
+    {
+      let clause = this.on();
+      if(clause) {
+        return `on ${clause}`;
+      }
+      return '';
+    }
+
     columnFromName(name)
     {
-      return this.columns.fieldFromName(name) || this.joins.reduce((acc, join) => {
-        if(acc !== undefined) {
-          return acc;
-        }
-        return join.table.columnFromName(name);
-      }, undefined);
+      return this.columns.fieldFromName(name);
     }
 
     columnFromAlias(alias)
@@ -211,25 +234,34 @@ module.exports = defaults => {
       }, undefined);
     }
 
-    select(selector)
+    select(selector, options)
     {
-      return this.selectArray(selector).map(field => {
+      return this.selectArray(selector, options).map(field => {
         return field.sql.fullNameAs;
       }).join(', ');
     }
 
-    selectArray(selector)
+    selectArray(selector, options)
     {
+      options = options || {};
+      if(options.joins && options.joins !== '*') {
+        if(!_.isArray(options.joins)) {
+          options.joins = [options.joins];
+        }
+      }
       return this.columns.fields(selector).concat(
         this.joins.reduce((acc, join) => {
+          if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
+            return acc;
+          }
           return acc.concat(join.table.columns.fields(selector));
         }, [])
       );
     }
 
-    Select(selector)
+    Select(selector, options)
     {
-      return `select ${this.select(selector)}`;
+      return `select ${this.select(selector, options)}`;
     }
 
     set(record, options)

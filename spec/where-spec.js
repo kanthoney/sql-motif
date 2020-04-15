@@ -3,10 +3,11 @@
 const tables = require('./tables')
 const joins = require('./joins');
 const op = require('../src/operators');
+const motif = require('../index');
 
 describe('where tests', () => {
 
-  fdescribe('table tests', () => {
+  describe('table tests', () => {
 
     describe('order tests', () => {
 
@@ -57,6 +58,12 @@ describe('where tests', () => {
         );
       });
 
+      it('should select orders before today', () => {
+        expect(t.where({ order_date: op.lt(motif.fn('curdate')) })).toBe(
+          '"s1"."orders"."order_date" < curdate()'
+        );
+      });
+
     });
 
     describe('order_lines tests', () => {
@@ -66,6 +73,52 @@ describe('where tests', () => {
       it("should select order lines where order_id = '123' and SKU = 'ADF1001'", () => {
         expect(t.where({ order_id: 123, sku: 'ADF1001' })).toBe(
           '"ol1"."order_id" = \'123\' and "ol1"."sku" = \'ADF1001\''
+        );
+      });
+
+    });
+
+  });
+
+  describe('join tests', () => {
+
+    describe('order join tests', () => {
+
+      const j = joins.orders;
+
+      it("should select orders where sku = 'JXC001'", () => {
+        expect(j.where({ lines: { sku: 'JXC001' } })).toBe(
+          '"order_lines"."sku" = \'JXC001\''
+        );
+      });
+
+      it("should select orders where order date is after 2020-04-01 with sku starting with 'HUT_909'", () => {
+        expect(j.where({ order_date: op.gt('2020-04-01'), lines: { sku: op.startsWith('HUT_909') } })).toBe(
+          '"s1"."orders"."order_date" > \'2020-04-01\' and "order_lines"."sku" like \'HUT\\_909%\''
+        );
+      });
+
+      it("should select orders where sku does not contain 'DF%G'", () => {
+        expect(j.where({ lines: { sku: op.notContains('DF%G') } })).toBe(
+          '"order_lines"."sku" not like \'%DF\\%G%\''
+        );
+      });
+
+    });
+
+    describe('inventory join tests', () => {
+
+      const j = joins.inventory;
+
+      it("should find inventory where sku = 'DDJ9823' and qty > 0", () => {
+        expect(j.where({ sku: 'DDJ9823', inventory: { qty: op.gt(0) } })).toBe(
+          '"stock"."sku" = \'DDJ9823\' and "i1"."qty" > \'0\''
+        );
+      });
+
+      it("should find inventory where bin code begins with A or B and qty = 0", () => {
+        expect(j.where({ bin: { bin: op.regExp('^[AB]') }, inventory: { qty: 0 } })).toBe(
+          '"warehouse_bins"."bin" regexp \'^[AB]\' and "i1"."qty" = \'0\''
         );
       });
 

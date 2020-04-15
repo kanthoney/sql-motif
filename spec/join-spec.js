@@ -52,4 +52,17 @@ describe('join tests', () => {
 
   });
 
+  describe('inventory2 tests', () => {
+
+    const j = joins.inventory2;
+
+    it('should create a join clause', () => {
+      expect(j.From()).toBe(
+        'from "stock" inner join "s1"."warehouse" on "s1"."warehouse"."company" = "stock"."company" inner join "warehouse_bins" on "warehouse_bins"."company" = "s1"."warehouse"."company" ' +
+        'and "warehouse_bins"."warehouse_name" = "s1"."warehouse"."name" inner join "inventory" on "inventory"."company" = "warehouse_bins"."company" and "inventory"."bin" = "warehouse_bins"."bin" ' +
+        'and "inventory"."sku" = "stock"."sku"'
+      );
+    });
+  });
+
 });

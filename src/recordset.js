@@ -2,7 +2,6 @@
 
 const _ = require('lodash');
 const Record = require('./record');
-const private = Symbol('private');
 
 class RecordSet
 {
@@ -10,39 +9,41 @@ class RecordSet
   {
     this.table = table;
     this.parent = parent;
-    this[private] = {
-      records: [],
-      recordMap: {}
-    }
+    this.records= [];
+    this.recordMap = {};
   }
 
-  addFromSQL(line)
+  addSQLResult(line)
   {
     if(_.isArray(line)) {
-      return line.map(line => this.addFromSQL(line));
+      return line.map(line => this.addSQLResult(line));
     }
-    const recordData = this.table.columns.reduce((acc, col) => {
-      const value = _.get(line, col.alias || col.name);
+    const recordData = this.table.columns.fields().reduce((acc, col) => {
+      const alias = col.table.config.path.concat(col.alias || col.name).join('_');
+      const value = _.get(line, alias);
       if(value !== undefined) {
         _.set(acc, col.path || col.alias || col.name, value);
       }
       return acc;
     }, {});
-    let record = new Record(this, record.data);
+    let record = new Record(this, recordData);
     const hash = record.hashKey();
-    if(this[private].recordMap[hash] === undefined) {
-      this[private].records.push(record);
-      this[private].recordMap[hash] = record;
+    if(_.isNil(hash)) {
+      return;
+    }
+    if(this.recordMap[hash] === undefined) {
+      this.records.push(record);
+      this.recordMap[hash] = record;
     } else {
-      record = this[private].recordMap[hash];
+      record = this.recordMap[hash];
     }
     this.table.joins.forEach(join => {
-      let recordSet = _.get(record, join.path || join.name);
+      let recordSet = _.get(record.data, join.path || join.name);
       if(recordSet === undefined) {
         recordSet = new RecordSet(join.table, record);
-        _.set(record, join.path || join.name, recordSet);
+        _.set(record.data, join.path || join.name, recordSet);
       }
-      recordSet.addFromSQL(line);
+      recordSet.addSQLResult(line);
     });
   }
 
@@ -59,7 +60,7 @@ class RecordSet
       if(parentCol === undefined) {
         return acc;
       }
-      const value = _.get(this[private].data, parentCol.path || parentCol.alias || parentCol.name);
+      const value = _.get(this.data, parentCol.path || parentCol.alias || parentCol.name);
       if(value !== undefined) {
         return value;
       }
@@ -72,7 +73,7 @@ class RecordSet
 
   toObject()
   {
-    return this[private].records.map(record => record.toObject());
+    return this.records.map(record => record.toObject());
   }
 
   toJSON()

@@ -36,7 +36,7 @@ class Dialect
       }
     }
     if(!this.options.likeEscapeChars) {
-      this.options.likeEscapeChars === '%_';
+      this.options.likeEscapeChars = '%_';
     }
   }
 
@@ -102,7 +102,7 @@ class Dialect
 
   escapeLikeNoQuotes(s)
   {
-    return s.replace(new RegExp(_.escapeRegExp(`[${this.options.likeEscapeChars}${this.options.escapeChars}]`), 'g'), c => `\\${c}`);
+    return `${s}`.replace(new RegExp('[' + _.escapeRegExp(`${this.options.likeEscapeChars}${this.options.escapeChars}`) + ']', 'g'), c => `\\${c}`);
   }
 
   escapeLike(s)

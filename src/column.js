@@ -9,12 +9,12 @@ class Column
     Object.assign(this, config || {});
     const name = this.table.dialect.escapeId(this.name);
     const fullName = `${this.table.as()}.${name}`;
-    const alias = this.table.config.path.concat(this.alias || this.name).join('_');
+    this.fullAlias = this.table.config.path.concat(this.alias || this.name).join('_');
     this.sql = {
       name,
       fullName,
-      fullNameAs: fullName + (alias !== this.name?` as ${this.table.dialect.escapeId(alias)}`:''),
-      as: alias?this.table.dialect.escapeId(alias):fullName
+      fullNameAs: fullName + (this.fullAlias !== this.name?` as ${this.table.dialect.escapeId(this.fullAlias)}`:''),
+      as: this.fullAlias?this.table.dialect.escapeId(this.fullAlias):fullName
     }
   }
 

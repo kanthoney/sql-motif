@@ -28,5 +28,16 @@ module.exports = {
     type: 'left',
     alias: 'i1',
     name: 'inventory'
+  }),
+  inventory2: tables.stock.join({
+    table: tables.warehouse.join({
+      table: tables.warehouse_bins.join({
+        table: tables.inventory,
+        on: ['company', 'bin']
+      }),
+      name: 'bins',
+      on: ['company', 'warehouse_name:name']
+    }),
+    on: ['company', 'bins_inventory_sku:sku']
   })
 }
