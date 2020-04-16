@@ -43,32 +43,7 @@ const orders = new Table({
   ]
 });
 
-console.log(orders.Create());
-
 /*
-create table "orders" (
-  "company" char(8) not null,
-  "order_id" char(36) not null,
-  "customer" char(8),
-  "delivery_contact" char(40) not null default '',
-  "delivery_address_company" char(40) not null default '',
-  "delivery_address_street" char(40) not null default '',
-  "delivery_address_locality" char(40) not null default '',
-  "delivery_address_city" char(40) not null default '',
-  "delivery_address_region" char(40) not null default '',
-  "delivery_address_postcode" char(15) not null default '',
-  "delivery_address_country" char(2) not null default 'GB',
-  "billing_contact" char(40) not null default '',
-  "billing_address_company" char(40) not null default '',
-  "billing_address_street" char(40) not null default '',
-  "billing_address_locality" char(40) not null default '',
-  "billing_address_city" char(40) not null default '',
-  "billing_address_region" char(40) not null default '',
-  "billing_address_postcode" char(15) not null default '',
-  "billing_address_country" char(2) not null default 'GB',
-  primary key("company", "order_id")
-);
-
 records processed by the table will be expected to be in this format:
 
 {
