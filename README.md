@@ -8,3 +8,7 @@ then you can still use it to generate the tedious parts such as field lists.
 ```
 npm install --save @kanthoney/sql-motif
 ```
+
+## Documentation
+
+See the [docs](./docs/index.md) folder for documentation
