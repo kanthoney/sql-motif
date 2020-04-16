@@ -81,6 +81,71 @@ stock.Select(); // select "stock"."sku", "stock"."description"
 
 ### Select methods
 
-* `select([selector])`. Produces a field list from the given [selector](./selector.md).
+* `select([selector, options])`. Produces a field list from the given [selector](./selector.md).
 
-* `Select([selector])`. Produces a select clause, including the `select` keyword, with a field list from the given [selector](./selector.md).
+* `Select([selector, options])`. Produces a select clause, including the `select` keyword, with a field list from the given [selector](./selector.md).
+
+### Set methods
+
+* `set(record, [options])`. Returns a `set` clause for the given record, excluding the `set` keyword. Takes an optional [`options`](./table-options.md) argument.
+
+* `Set(record, [options])`. Returns a `set` clause for the given record, including the `set` keyword.
+
+* `setNonKey(record, [options])`. Returns a `set` clause including only the non-key parts of `record`.
+
+* `SetNonKey(record, [options])`. Returns a `set` clause, including the `set` keyword, for the non-key parts of the record.
+
+### Where methods
+
+* `where(record, [options])`. Produces a `where` clause for the given record, excluding the `where` keyword. If an array of records is provided, produces a set of clauses for each record
+separated by `or`. Takes an optional [`options`](./table-options) argument.
+
+* `Where(record, [options])`. Produces a `where` clause for the given record or records, including the `where` keyword.
+
+* `whereKey(record, [options])`. Produces a `where` clause for the key fields of the record.
+
+* `WhereKey(record, [options])`. Produces a `where` clause for the key fields of the record, including the `where` keyword.
+
+### Insert methods
+
+* `insertColumns()` Produces a list of columns for an insert clause for the top level table not including joins.
+
+* `insertValues(record)` Produces a list of values for an insert statement from the given record. If `record` is an array produces a comma separated list of records.
+
+* `insert(record)`. Produces an `insert` statement for the record(s), excluding the `insert into` keywords.
+
+* `Insert(record)`. Produces a full insert statement for the record(s), including the `insert into` phrase.
+
+* `InsertIgnore(record)`. Produces a full insert statement for `insert ignore`. The default dialect produces `insert ignore into...`.
+
+### Update methods
+
+* `update(record, [old, options])`. Produces a full `update` query excluding the `update` keyword. If `old` is specified the key fields from `old` are used in the `where` clause, otherwise
+the key fields are taken from the `record`. Takes an optional [`options`](./table-options.md) argument.
+
+* `Update(record, [old, options])`. Produces a full `update` query including the `update` keyword.
+
+### Delete methods
+
+* `delete(record, [options])`. Produces a `delete` statement excluding the `delete` keyword. Takes an optional [`options`](./table-options) argument.
+
+* `Delete(record, [options])`. Produces a full `delete` statement including the `delete` keyword.
+
+### Create methods
+
+* `createColumnsArray()` Produces an array of clauses for the columns for use in a `create` statement. The `primary key` option is not included in the column specification - use `createPrimaryKey()`
+instead.
+
+* `createColumns()` Produces a comma separated list of clauses for the columns for use in a `create` statement.
+
+* `createPrimaryKey()`. Produces a `primary key` clause for use in a `create table` statement.
+
+* `create()` Produces a `create` statement for the top level table, excluding the `create table` keywords.
+
+* `Create()` Produces a full `create` statement for the top level table including the `create table` keywords.
+
+* `CreateTemp()` Produces a full `create` statement for creating a temporary table.
+
+* `CreateIfNotExists()` Produces a full `create` statement including an `if not exists` clause.
+
+* `CreateTempIfNotExists()` Produces a full `create` statement for a temporary table if it doesn't exists.

@@ -299,7 +299,7 @@ class Table
 
   setNonKey(record, options)
   {
-    return this.set(record, { joins: [], ...options, selector: col => !col.primaryKey });
+    return this.set(record, { joins: [], ...options, selector: col => !col.primaryKey, safe: false, fullSafe: false });
   }
 
   Set(record, options)
@@ -383,7 +383,7 @@ class Table
         return acc;
       }
       const subRecord = _.get(record, join.name);
-      const where = join.table.where(subRecord || {}, { ...options, brackets: _.isArray(subRecord) });
+      const where = join.table.where(subRecord || {}, { ...options, safe: false, brackets: _.isArray(subRecord) });
       if(!where) {
         return acc;
       }
@@ -482,7 +482,27 @@ class Table
     if(pk) {
       a.push(`primary key(${pk})`);
     }
-    return `(${a.join(', ')})`;
+    return `${this.fullName()} (${a.join(', ')})`;
+  }
+
+  Create()
+  {
+    return `create table ${this.create()}`;
+  }
+
+  CreateTemp()
+  {
+    return `create temporary table ${this.create()}`;
+  }
+
+  CreateIfNotExists()
+  {
+    return `create table if not exists ${this.create()}`;
+  }
+
+  CreateTempIfNotExists()
+  {
+    return `create temporary table if not exists ${this.create()}`;
   }
 
 };
