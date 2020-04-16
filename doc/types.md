@@ -111,6 +111,6 @@ where `key` is the alias of the type . The type specification can be:
 
 * A string, which can be an SQL type such as `char(40)` or another alias.
 
-* A column specification containing a type and defaults for any other parameters.
+* A [column specification](./column-spec.md) containing a type and defaults for any other parameters.
 
-* An array of column specifications, which will be expanded to a set of columns.
+* An array of [column specifications](./column-spec.md), which will be expanded to a set of columns.

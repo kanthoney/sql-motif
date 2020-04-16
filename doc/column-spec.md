@@ -2,6 +2,10 @@
 
  column in a table specification is specified by an object with the following fields:
 
+ * `name`. A string for the name of the SQL field.
+
+ * `alias`. An optional alias to use for the column. If specified, any records processed by `sql-motif` will use this instead of the SQL name.
+
  * `type`. A string containing an SQL type, or a [type](./types.md) specification
 
  * `notNull`. `true` if the column must not be null
