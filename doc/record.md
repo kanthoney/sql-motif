@@ -84,7 +84,7 @@ The values of the record can be plain values such as strings or numbers, or one 
 * A value of the `Operator` class. This allows you to use operators other than `=` in where clauses. For example:
 
 ```
-const { operators } = require('sql-motif');
+const { operators } = require('@kanthoney/sql-motif');
 
 console.log(stock.where({ sku: operators.ge('ACME') })) // "stock"."sku" >= 'ACME'
 ```
@@ -93,7 +93,7 @@ console.log(stock.where({ sku: operators.ge('ACME') })) // "stock"."sku" >= 'ACM
 and all the others are the values passed to it:
 
 ```
-const { fn } = require('sql-motif');
+const { fn } = require('@kanthoney/sql-motif');
 
 console.log(stock.where({ qty: fn('greatest', 2, 3, 4) })); // "stock"."qty" = greatest(2, 3, 4)
 ```
@@ -101,12 +101,12 @@ console.log(stock.where({ qty: fn('greatest', 2, 3, 4) })); // "stock"."qty" = g
 * A value of the `Verbatim` class is passed directly to the SQL query without being escaped or otherwise modified:
 
 ```
-const { verbatim } = require('sql-motif');
+const { verbatim } = require('@kanthoney/sql-motif');
 
 console.log(stock.where({ sku: verbatim('unescaped') })); // "stock"."sku" = unescaped
 ```
 
-* A function of the form `f(column, tag)`. The column is the column of the where query, and the tag is a template string tag that will escape entries in template strings. For example;
+* A function of the form `f(column, tag)`. The column is the column of the `where` or `set` clause, and the tag is a template string tag that will escape entries in template strings. For example;
 
 ```
 console.log(stock.Set({ qty: (col, sql) => sql`${col} + 1` })); // set "stock"."qty" = "stock"."qty" + 1
