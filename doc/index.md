@@ -41,7 +41,7 @@ The `motif` object has the following components:
 ```
 const { Fn, dialects } = require('@kanthoney/sql-motif');
 
-dialects.default.escape(Fn('sqrt', 2)); // 'sqrt(2)`
+dialects.default.escape(Fn('sqrt', 2)); // 'sqrt(2)'
 ```
 
 * `Verbatim`. Used to avoid escaping in queries, e.g.
@@ -51,7 +51,7 @@ const { Verbatim, dialects } = require('@kanthoney/sql-motif');
 
 dialects.default.escape(verbatim('unescaped')); // unescaped
 ```
-* `Idenifier`. Used to specify that the item to be escaped is an identifier, e.g.
+* `Identifier`. Used to specify that the item to be escaped is an identifier, e.g.
 
 ```
 const { Identifier } = require('@kanthoney/sql-motif');
