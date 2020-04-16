@@ -11,9 +11,9 @@ The join specification object can take the following parameters:
 
 * `on`. Specifies which columns are joined to which. This takes one of the following formats:
 
-** An object where the keys are the names of the columns of the joined table and the values are the names of the main table.
+  * An object where the keys are the names of the columns of the joined table and the values are the names of the main table.
 
-** A string or an array of strings of the form `'join_column:main_column'`. If `join_column` happens to be the same as `main_column` then you can simply use
+  * A string or an array of strings of the form `'join_column:main_column'`. If `join_column` happens to be the same as `main_column` then you can simply use
 `'join_column'`.
 
-** An array of arrays of the form `['join_column', 'main_column']`, or simply `['join_column']` if the two columns have the same name.
+  * An array of arrays of the form `['join_column', 'main_column']`, or simply `['join_column']` if the two columns have the same name.
