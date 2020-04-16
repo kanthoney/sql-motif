@@ -16,9 +16,8 @@ try {
       });
     }
 
-    escape(s)
-    {
-      return super._escape(s, mysql.escape);
+    libraryEscape(s) {
+      return mysql.escape(s);
     }
 
     quoteNoEscape(s) {

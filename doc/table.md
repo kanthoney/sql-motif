@@ -70,7 +70,7 @@ stock.Select(); // select "stock"."sku", "stock"."description"
 
 * `From()`. Returns a `from` clause including the `from` keyword.
 
-* `join(config)`. Produces a new table joined to a second table as specified in the [join config](./join-config.md).
+* `join(config)`. Produces a new table joined to a second table as specified in the [join `config`](./join-spec.md).
 
 ### Column methods.
 
@@ -81,7 +81,7 @@ stock.Select(); // select "stock"."sku", "stock"."description"
 
 ### Select methods
 
-* `select([selector, options])`. Produces a field list from the given [selector](./selector.md).
+* `select([selector, options])`. Produces a field list from the given [selector](./selector.md). Takes an optional [`options`](./table-options) argument.
 
 * `Select([selector, options])`. Produces a select clause, including the `select` keyword, with a field list from the given [selector](./selector.md).
 

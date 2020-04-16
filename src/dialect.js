@@ -32,11 +32,11 @@ class Dialect
         this.options.escapeChars += this.options.idQuotes[1];
       }
     }
-    if(!this.options.likeEscapeChars) {
-      this.options.likeEscapeChars = '%_';
+    if(!this.options.likeChars) {
+      this.options.likeChars = '%_';
     }
-    this.escape_re = new RegExp(this.options.escapeChars.split('').map(char => char==='\\'?`\\\\(?![${this.options.likeEscapeChars}])`:_.escapeRegExp(char)).join('|'), 'g');
-    this.like_escape_re = new RegExp(`[${_.escapeRegExp(this.options.likeEscapeChars)}]`, 'g');
+    this.escape_re = new RegExp(this.options.escapeChars.split('').map(char => char==='\\'?`\\\\(?![${this.options.likeChars}])`:_.escapeRegExp(char)).join('|'), 'g');
+    this.like_escape_re = new RegExp(`[${_.escapeRegExp(this.options.likeChars)}]`, 'g');
     this.template = (strings, ...args) => {
       let s = '';
       let i = 0;
@@ -71,7 +71,7 @@ class Dialect
     return moment(dt).format('YYYY-MM-DD HH:mm:ss');
   }
 
-  _escape(s, f)
+  escape(s)
   {
     const DateTime = require('./datetime');
     const Fn = require('./function');
@@ -112,17 +112,12 @@ class Dialect
     if(s instanceof Operator) {
       return s.clause(this);
     }
-    return f(s);
+    return this.libraryEscape(s);
   }
 
-  defaultEscape(s)
+  libraryEscape(s)
   {
     return `${this.options.quotes[0]}${this.escapeNoQuotes(s)}${this.options.quotes[1]}`;
-  }
-
-  escape(s)
-  {
-    return this._escape(s, this.defaultEscape.bind(this));
   }
 
   escapeId(s)
