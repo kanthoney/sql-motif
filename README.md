@@ -11,4 +11,4 @@ npm install --save @kanthoney/sql-motif
 
 ## Documentation
 
-See the [docs](./docs/index.md) folder for documentation
+See the [doc](./doc/index.md) folder for documentation
