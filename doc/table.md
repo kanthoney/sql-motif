@@ -70,7 +70,7 @@ stock.Select(); // select "stock"."sku", "stock"."description"
 
 * `From()`. Returns a `from` clause including the `from` keyword.
 
-* `join(config)`. Produces a new table joined to a second table as specified in the [join `config`](./join-spec.md).
+* <a name="join">`join(config)`</a>. Produces a new table joined to a second table as specified in the [join `config`](./join-spec.md).
 
 ### Column methods.
 
