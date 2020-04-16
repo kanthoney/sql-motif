@@ -47,6 +47,13 @@ class Table
       col.primaryKey = true;
     });
     this.config.indexes = this.config.indexes || [];
+    if(!_.isArray(this.config.indexes)) {
+      this.config.indexes = [this.config.indexes];
+    }
+    this.indexes = this.config.indexes.map(index => ({
+      ...index,
+      columns: _.isString(index.columns)?[index.columns]:index.columns
+    }));
     this.joins = [];
     this.onFields = [];
     this.config.joins.forEach(join => {
@@ -475,9 +482,43 @@ class Table
     return this.createPrimaryKeyArray().join(', ');
   }
 
+  createIndexesArray()
+  {
+    return this.indexes.reduce((acc, index) => {
+      let s = 'index';
+      if(index.unique) {
+        s = 'unique ' + s;
+      }
+      if(index.name) {
+        s += ` ${this.escapeId(index.name)}`;
+      }
+      let cols = index.columns.reduce((acc, name) => {
+        const col = this.column(name);
+        if(col) {
+          return acc.concat(col.sql.name);
+        }
+        return acc;
+      }, []);
+      if(cols.length === 0) {
+        return acc;
+      }
+      s += `(${cols.join(', ')})`;
+      return acc.concat(s);
+    }, []);
+  }
+
+  createIndexes()
+  {
+    return this.createIndexesArray().join(', ');
+  }
+
   create()
   {
     let a = this.createColumnsArray();
+    const idx = this.createIndexes();
+    if(idx) {
+      a.push(idx);
+    }
     const pk = this.createPrimaryKey();
     if(pk) {
       a.push(`primary key(${pk})`);

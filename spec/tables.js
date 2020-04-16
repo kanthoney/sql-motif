@@ -27,6 +27,15 @@ module.exports = {
       { name: 'description', type: 'text' },
       { name: 'qty', type: 'qty', notNull: true },
       { name: 'price', type: 'price', notNull: true }
+    ],
+    indexes: [
+      {
+        name: 'stock_idx',
+        columns: ['company', 'sku']
+      },
+      {
+        columns: 'order_id'
+      }
     ]
   }),
   stock: new Table({
@@ -69,6 +78,12 @@ module.exports = {
       { name: 'qty', type: 'int', notNull: true },
       { name: 'cost', type: 'price', notNull: true }
     ],
-    primaryKey: ['company', 'sku', 'warehouse_name', 'time', 'bin']
+    primaryKey: ['company', 'sku', 'warehouse_name', 'time', 'bin'],
+    indexes: [
+      {
+        unique: true,
+        columns: ['company', 'warehouse_name', 'bin']
+      }
+    ]
   })
 }
