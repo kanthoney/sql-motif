@@ -42,8 +42,10 @@ describe('create tests', () => {
 
     it('should create inventory table', () => {
       expect(t.Create()).toBe(
-        'create table "inventory" ("company" char(12) not null, "sku" char(25) not null, "warehouse_name" char(35) not null default \'\', "bin" char(8) not null, "time" datetime not null, ' +
-        '"qty" int not null, "cost" decimal(10, 2) not null, unique index("company", "warehouse_name", "bin"), primary key("company", "sku", "warehouse_name", "time", "bin"))'
+        'create table "inventory" ("company" char(12) not null, "sku" char(25) not null, "warehouse_name" char(35) not null default \'\', ' +
+        '"bin" char(8) not null, "time" datetime not null, "qty" int not null, "cost" decimal(10, 2) not null, unique index("company", "warehouse_name", "bin"), ' +
+        'primary key("company", "sku", "warehouse_name", "time", "bin"), foreign key ("company", "sku") references "stock" ("company", "sku") on update cascade on delete cascade, ' +
+        'foreign key ("company", "warehouse_name") references "warehouse" ("warehouse"."company", "warehouse"."name"))'
       );
     });
 

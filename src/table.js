@@ -54,6 +54,19 @@ class Table
       ...index,
       columns: _.isString(index.columns)?[index.columns]:index.columns
     }));
+    this.config.references = this.config.references || [];
+    if(!_.isArray(this.config.references)) {
+      this.config.references = [this.config.references];
+    }
+    this.references = this.config.references.map(ref => {
+      let columns = ref.columns || [];
+      if(_.isPlainObject(columns)) {
+        columns = Object.keys(columns).map(k => [k, columns[k]]);
+      } else if(_.isString(columns)) {
+        columns = [columns];
+      }
+      return { ...ref, columns };
+    });
     this.joins = [];
     this.onFields = [];
     this.config.joins.forEach(join => {
@@ -512,6 +525,80 @@ class Table
     return this.createIndexesArray().join(', ');
   }
 
+  createForeignKeysArray()
+  {
+    return this.references.reduce((acc, ref) => {
+      if(!ref.table || !ref.columns) {
+        return acc;
+      }
+      let tableName;
+      if(ref.table instanceof Table) {
+        tableName = ref.table.fullName();
+      } else {
+        if(_.isString(ref.table)) {
+          tableName = this.escapeId(ref.table);
+        } else if(table.name === undefined) {
+          return acc;
+        } else if(table.schema) {
+          tableName = `${this.escapeId(table.schema)}.${this.escapeId(table.name)}`;
+        } else {
+          tableName = this.escapeId(table.name);
+        }
+      }
+      const cols = ref.columns.reduce((acc, cols) => {
+        if(_.isString(cols)) {
+          const m = /([^:]+):([^:]+)/.exec(cols);
+          if(m) {
+            cols = [m[1], m[2]];
+          } else {
+            cols = [cols, cols];
+          }
+        } else if(cols.length === 1) {
+          cols = [cols[0], cols[0]];
+        }
+        let leftCol, rightCol;
+        leftCol = this.columns.fieldFromName(cols[0]);
+        if(!leftCol) {
+          return acc;
+        }
+        leftCol = leftCol.sql.name;
+        if(ref.table instanceof Table) {
+          rightCol = ref.table.columns.fieldFromName(cols[1]);
+          if(!rightCol) {
+            return acc;
+          }
+          rightCol = rightCol.sql.name;
+        } else {
+          rightCol = `${tableName}.${this.escapeId(cols[1])}`;
+        }
+        return acc.concat({ left: leftCol, right: rightCol });
+      }, []);
+      if(cols.length === 0) {
+        return acc;
+      }
+      let s = 'foreign key';
+      if(ref.name) {
+        s += ` ${this.escapeId(ref.name)}`;
+      }
+      s += ` (${cols.map(col => col.left).join(', ')}) references ${tableName} (${cols.map(col => col.right).join(', ')})`;
+      if(ref.onUpdate) {
+        s += ` on update ${ref.onUpdate}`;
+      }
+      if(ref.onDelete) {
+        s += ` on delete ${ref.onDelete}`;
+      }
+      if(ref.match) {
+        s += ` match ${ref.match}`;
+      }
+      return acc.concat(s);
+    }, []);
+  }
+
+  createForeignKeys()
+  {
+    return this.createForeignKeysArray().join(', ');
+  }
+
   create()
   {
     let a = this.createColumnsArray();
@@ -522,6 +609,10 @@ class Table
     const pk = this.createPrimaryKey();
     if(pk) {
       a.push(`primary key(${pk})`);
+    }
+    const fk = this.createForeignKeys();
+    if(fk) {
+      a.push(fk);
     }
     return `${this.fullName()} (${a.join(', ')})`;
   }
