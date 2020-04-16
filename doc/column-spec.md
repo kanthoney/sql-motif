@@ -13,3 +13,5 @@
  * `primaryKey`. `true` if the column is part of the primary key. Can be omitted if the `primaryKey` field is included in the table specification
 
  * `default`. The default value if none is given.
+
+ * `selector`. A string or an array of strings. Used by the table's select methods to select groups of fields without having to specify all of them.
