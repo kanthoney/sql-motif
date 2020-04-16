@@ -13,13 +13,13 @@ class Table
   {
     this.config = { ...config };
     if(!this.config.dialect) {
-      this.dialect = new dialects.default;
+      this.dialect = dialects.default;
     } else if(this.config.dialect instanceof Dialect) {
       this.dialect = this.config.dialect;
     } else if(dialects[this.config.dialect]) {
-      this.dialect = new dialects[this.config.dialect];
+      this.dialect = dialects[this.config.dialect];
     } else {
-      this.dialect = new dialects.default;
+      this.dialect = dialects.default;
     }
     this.config.path = this.config.path || [];
     if(!_.isArray(this.config.path)) {

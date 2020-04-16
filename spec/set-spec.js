@@ -52,7 +52,7 @@ describe('set tests', () => {
             bins: {
               bin: 'A14J',
               inventory: {
-                qty: motif.fn('min', 5, 6),
+                qty: motif.Fn('min', 5, 6),
                 time: (col, tag) => tag`${col} - interval 5 day`
               }
             }

@@ -1,19 +1,18 @@
 'use strict';
 
-const _ = require('lodash');
-
-class Fn
+const Fn = function(name, ...args)
 {
-  constructor(name, ...args)
-  {
-    this.name = name;
-    this.args = [...args];
+  if(!new.target) {
+    return new Fn(name, ...args);
   }
+  this.name = name;
+  this.args = [...args];
+  return this;
+}
 
-  clause(dialect)
-  {
-    return `${this.name}(${this.args.map(arg => dialect.escape(arg)).join(', ')})`;
-  }
+Fn.prototype.clause = function(dialect)
+{
+  return `${this.name}(${this.args.map(arg => dialect.escape(arg)).join(', ')})`;
 }
 
 module.exports = Fn;

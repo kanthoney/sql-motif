@@ -59,7 +59,7 @@ describe('where tests', () => {
       });
 
       it('should select orders before today', () => {
-        expect(t.where({ order_date: op.lt(motif.fn('curdate')) })).toBe(
+        expect(t.where({ order_date: op.lt(motif.Fn('curdate')) })).toBe(
           '"s1"."orders"."order_date" < curdate()'
         );
       });

@@ -15,10 +15,10 @@ module.exports = defaults => {
     },
     Dialect: require('./src/dialect'),
     dialects: require('./src/dialects'),
-    verbatim: text => new Verbatim(text),
-    datetime: dt => new DateTime(dt),
-    fn: (name, ...args) => new Fn(name, ...args),
-    identifier: name => new Identifier(name),
+    Verbatim: Verbatim,
+    DateTime: DateTime,
+    Fn: Fn,
+    Identifier: Identifier,
     Operator: require('./src/operator'),
     operators: require('./src/operators')
   };
@@ -26,9 +26,9 @@ module.exports = defaults => {
 module.exports.Table = Table;
 module.exports.Dialect = require('./src/dialect');
 module.exports.dialects = require('./src/dialects');
-module.exports.verbatim = text => new Verbatim(text);
-module.exports.datetime = dt => new DateTime(dt);
-module.exports.fn = (name, ...args) => new Fn(name, ...args);
-module.exports.identifier = name => new Identifier(name);
+module.exports.Verbatim = Verbatim;
+module.exports.DateTime = DateTime;
+module.exports.Fn = Fn;
+module.exports.Identifier = Identifier;
 module.exports.Operator = require('./src/operator');
 module.exports.operators = require('./src/operators');

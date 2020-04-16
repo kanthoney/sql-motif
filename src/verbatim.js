@@ -1,16 +1,17 @@
 'use strict';
 
-class Verbatim
+const Verbatim = function(text)
 {
-  constructor(text)
-  {
-    this.text = text;
+  if(!new.target) {
+    return new Verbatim(text);
   }
+  this.text = text;
+  return this;
+}
 
-  toString()
-  {
-    return this.text;
-  }
+Verbatim.prototype.toString = function()
+{
+  return this.text;
 }
 
 module.exports = Verbatim;

@@ -34,18 +34,36 @@ The `motif` object has the following components:
 
 * `operators`. A set of [operators](./operators.md) for including in `where` queries.
 
-* `fn`. A function for creating SQL functions. The first argument is the name of the SQL function and the rest are passed as arguments, e.g.
+* `Operator`. The `Operator` class for creating your own [operators](./operators.md).
+
+* `Fn`. A function for creating SQL functions. The first argument is the name of the SQL function and the rest are passed as arguments, e.g.
 
 ```
-const { fn, dialects } = require('@kanthoney/sql-motif');
+const { Fn, dialects } = require('@kanthoney/sql-motif');
 
-dialects.default.escape(fn('sqrt', 2)); // 'sqrt(2)`
+dialects.default.escape(Fn('sqrt', 2)); // 'sqrt(2)`
 ```
 
-* `verbatim`. Used to avoid escaping in queries, e.g.
+* `Verbatim`. Used to avoid escaping in queries, e.g.
 
 ```
-const { verbatim, dialects } = require('@kanthoney/sql-motif');
+const { Verbatim, dialects } = require('@kanthoney/sql-motif');
 
 dialects.default.escape(verbatim('unescaped')); // unescaped
+```
+* `Idenifier`. Used to specify that the item to be escaped is an identifier, e.g.
+
+```
+const { Identifier } = require('@kanthoney/sql-motif');
+
+orders.where({ order_date: Identifier('delivery_date') }); // "orders"."order_date" = "delivery_date";
+```
+
+* `DateTime`. Used to specify that the value should be interpreted as a DateTime, not just a date.
+
+```
+const { dialects, DateTime } = require('@kanthoney/sql-motif');
+
+dialects.default.escape(new Date); // '2020-04-16'
+dialects.default.escape(DateTime(new Date)); // '2020-04-16 16:58:17'
 ```

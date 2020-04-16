@@ -1,7 +1,7 @@
 'use strict';
 
-const dialect = new (require('../src/dialects').default);
-const { operators, fn, verbatim } = require('../index');
+const dialect = require('../src/dialects').default;
+const { operators, Fn, Verbatim } = require('../index');
 const _ = require('lodash');
 
 describe('operator tests', () => {
@@ -22,10 +22,10 @@ describe('operator tests', () => {
       "isn\'t",
       null,
       5,
-      fn('curdate'),
+      Fn('curdate'),
       '23%',
       '',
-      verbatim('test')
+      Verbatim('test')
     ];
 
     Object.keys(ops).forEach(op => {
@@ -56,8 +56,8 @@ describe('operator tests', () => {
       ['a'],
       'a',
       ['b', 'c', 'd'],
-      ['a', fn('sqrt', 2)],
-      [verbatim('default')],
+      ['a', Fn('sqrt', 2)],
+      [Verbatim('default')],
       null
     ];
 

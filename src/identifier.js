@@ -1,11 +1,11 @@
 'use strict';
 
-class Identifier
+const Identifier = function(name)
 {
-  constructor(name)
-  {
-    this.name = name;
+  if(!new.target) {
+    return new Identifier(name);
   }
+  this.name = name;
 };
 
 module.exports = Identifier;

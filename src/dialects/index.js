@@ -2,7 +2,8 @@
 
 const mysql = require('./mysql');
 if(mysql) {
-  module.exports.mysql = mysql;
+  module.exports.mysql = new mysql;
 }
 
-module.exports.default = require('../dialect');
+const Dialect = require('../dialect');
+module.exports.default = new Dialect;

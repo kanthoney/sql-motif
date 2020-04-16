@@ -1,11 +1,12 @@
 'use strict';
 
-class DateTime
+const DateTime = function(value)
 {
-  constructor(value)
-  {
-    this.value = value;
+  if(!new.target) {
+    return new DateTime(value);
   }
+  this.value = value;
+  return this;
 }
 
 module.exports = DateTime;
