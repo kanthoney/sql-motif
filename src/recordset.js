@@ -18,36 +18,43 @@ class RecordSet
     if(_.isArray(line)) {
       return line.map(line => this.addSQLResult(line));
     }
+    let empty = true;
     const { recordData, joined } = this.table.columns.fields().reduce((acc, col) => {
       const alias = col.table.config.path.concat(col.alias || col.name).join('_');
-      const value = _.get(line, alias);
+      let value = _.get(line, alias);
+      if(!_.isNil(value)) {
+        empty = false;
+      }
+      if(value === undefined) {
+        value = _.get(this.joined, col.path);
+      }
       if(value !== undefined) {
         _.set(acc.recordData, col.path, value);
       }
       acc.joined = col.joinedTo.reduce((acc, path) => {
         _.set(acc, path, value);
+        return acc;
       }, acc.joined);
       return acc;
     }, { recordData: {}, joined: {} });
     let record = new Record(this, recordData);
     const hash = record.hashKey();
-    if(_.isNil(hash)) {
-      return;
-    }
-    if(this.recordMap[hash] === undefined) {
-      this.records.push(record);
-      this.recordMap[hash] = record;
-    } else {
-      record = this.recordMap[hash];
-    }
-    this.table.joins.forEach(join => {
-      let recordSet = _.get(record.data, join.path || join.name);
-      if(recordSet === undefined) {
-        recordSet = new RecordSet(join.table, _.get(joined, join.path || join.name) || {});
-        _.set(record.data, join.path || join.name, recordSet);
+    if(!empty) {
+      if(this.recordMap[hash] === undefined) {
+        this.records.push(record);
+        this.recordMap[hash] = record;
+      } else {
+        record = this.recordMap[hash];
       }
-      recordSet.addSQLResult(line);
-    });
+      this.table.joins.forEach(join => {
+        let recordSet = _.get(record.data, join.path || join.name);
+        if(recordSet === undefined) {
+          recordSet = new RecordSet(join.table, Object.assign({}, _.get(joined, join.table.config.path), _.get(this.joined, join.path || join.name)));
+          _.set(record.data, join.path || join.name, recordSet);
+        }
+        recordSet.addSQLResult(line);
+      });
+    }
   }
 
   addRecord(record)
@@ -324,9 +331,9 @@ class RecordSet
     });
   }
 
-  toObject()
+  toObject(options)
   {
-    return this.records.map(record => record.toObject());
+    return this.records.map(record => record.toObject(options));
   }
 
   toJSON()

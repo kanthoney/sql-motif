@@ -39,7 +39,7 @@ class Record
     return this.recordSet.table.joins.reduce((acc, join) => {
       const recordSet = _.get(this.data, join.path || join.name);
       if(recordSet instanceof RecordSet) {
-        _.set(acc, join.path || join.name, recordSet.toObject());
+        _.set(acc, join.path || join.name, recordSet.toObject(options));
       }
       return acc;
     }, this.recordSet.table.columns.fields().reduce((acc, col) => {
