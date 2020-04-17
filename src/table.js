@@ -5,6 +5,7 @@ const dialects = require('./dialects');
 const ColumnSet = require('./column-set');
 const Operator = require('./operator');
 const operators = require('./operators');
+const RecordSet = require('./recordset');
 const _ = require('lodash');
 
 class Table
@@ -635,6 +636,16 @@ class Table
   CreateTempIfNotExists()
   {
     return `create temporary table if not exists ${this.create()}`;
+  }
+
+  validate(record, context)
+  {
+    if(record instanceof RecordSet) {
+      return record.validate(context);
+    }
+    const r = new RecordSet(this);
+    r.addRecord(record);
+    return r.validate(context);
   }
 
 };
