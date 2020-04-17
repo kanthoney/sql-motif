@@ -14,34 +14,28 @@ class Record
   {
     if(this.hash === undefined) {
       const hash = this.recordSet.table.columns.fields().reduce((acc, col) => {
-        if(col.primaryKey) {
-          let value = _.get(this.data, col.path || col.alias || col.name);
-          return acc.concat(value);
+        const path = col.path;
+        if(col.primaryKey || _.has(this.recordSet.joined, path)) {
+          let value = _.get(this.data, path);
+          if(value !== undefined) {
+            _.set(acc, path, value);
+          }
         }
         return acc;
-      }, []);
-      if(hash.filter(col => !_.isNil(col)).length === 0) {
-        this.hash = null;
-      } else {
+      }, {});
+      if(Object.keys(hash).reduce((acc, k) => acc || !_.isNil(hash[k]), false)) {
         this.hash = JSON.stringify(hash);
+      } else {
+        this.hash = null;
       }
     }
     return this.hash;
   }
 
-  joinValue(col)
+  toObject(options)
   {
-    const parent = this.recordSet.parent;
-    if(!parent instanceof Record) {
-      return;
-    }
-    return parent.recordSet.joinValue(col);
-  }
-
-  toObject()
-  {
+    options = options || {};
     const RecordSet = require('./recordset');
-    const parentTable = this.recordSet.parent?this.recordSet.parent.recordSet.table:null;
     return this.recordSet.table.joins.reduce((acc, join) => {
       const recordSet = _.get(this.data, join.path || join.name);
       if(recordSet instanceof RecordSet) {
@@ -49,9 +43,12 @@ class Record
       }
       return acc;
     }, this.recordSet.table.columns.fields().reduce((acc, col) => {
-      const value = _.get(this.data, col.path || col.alias || col.name);
-      if(value !== undefined) {
-        _.set(acc, col.path || col.alias || col.name, value);
+      let value = _.get(this.data, col.path);
+      if(value === undefined && options.includeJoined) {
+        value = _.get(this.recordSet.joined, col.path);
+      }
+      if(value !== undefined && (options.includeJoined || !_.has(this.recordSet.joined, col.path))) {
+        _.set(acc, col.path, value);
       }
       return acc;
     }, {}));
@@ -59,7 +56,7 @@ class Record
 
   toJSON()
   {
-    return JSON.stringify(this.toObject());
+    return JSON.stringify(this.toObject({ includeJoined: true }));
   }
 
 }

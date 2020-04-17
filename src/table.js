@@ -115,6 +115,7 @@ class Table
         const rightCol = this.column(right);
         if(leftCol && rightCol) {
           leftCol.joinCol = rightCol;
+          rightCol.joinedTo.push(leftCol);
           return acc.concat({ left: leftCol, right: rightCol });
         } else {
           console.warn(
@@ -641,11 +642,11 @@ class Table
   validate(record, context)
   {
     if(record instanceof RecordSet) {
-      return record.validate(context);
+      return record.validateRecord(context);
     }
     const r = new RecordSet(this);
     r.addRecord(record);
-    return r.validate(context);
+    return r.validateRecord(context);
   }
 
 };

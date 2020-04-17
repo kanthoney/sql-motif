@@ -7,20 +7,23 @@ class Column
   constructor(config)
   {
     Object.assign(this, config || {});
+    this.alias = this.alias || this.name;
+    this.path = this.path || this.alias;
     const name = this.table.dialect.escapeId(this.name);
     const fullName = `${this.table.as()}.${name}`;
-    this.fullAlias = this.table.config.path.concat(this.alias || this.name).join('_');
+    this.fullAlias = this.table.config.path.concat(this.alias).join('_');
     this.sql = {
       name,
       fullName,
       fullNameAs: fullName + (this.fullAlias !== this.name?` as ${this.table.dialect.escapeId(this.fullAlias)}`:''),
       as: this.fullAlias?this.table.dialect.escapeId(this.fullAlias):fullName
     }
+    this.joinedTo = [];
   }
 
   passesSelection(selector)
   {
-    const alias = this.table.config.path.concat(this.alias || this.name).join('_');
+    const alias = this.table.config.path.concat(this.alias).join('_');
     if(selector === undefined || selector === '*' ||
         (_.isRegExp(selector) && selector.test(alias) ||
         (_.isFunction(selector) && selector(this)))) {
@@ -51,7 +54,7 @@ class Column
 
   isValid(record)
   {
-    const path = this.path || this.alias || this.name;
+    const path = this.path;
     const value = _.get(record, path);
     if(this.notNull && _.isNil(value)) {
       return { path, error: `Field must not be null` };
@@ -93,13 +96,12 @@ class Column
 
   fill(record, context)
   {
-    const path = this.path || this.alias || this.name;
-    const value = _.get(record, path);
+    const value = _.get(record, this.path);
     if(value === undefined && this.default !== undefined) {
       if(_.isFunction(this.default)) {
-        _.set(record, path, this.default(col, context));
+        _.set(record, this.path, this.default(col, context));
       } else {
-        _.set(record, path, this.default);
+        _.set(record, this.path, this.default);
       }
     }
     return record;

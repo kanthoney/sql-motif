@@ -90,7 +90,7 @@ class ColumnSet
     }, null);
   }
 
-  values(record, options)
+  values(record, options, all)
   {
     options = options || {};
     return this.columns.reduce((acc, col) => {
@@ -100,7 +100,7 @@ class ColumnSet
         if(!options.selector || col.passesSelection(options.selector)) {
           const path = col.path || col.alias || col.name;
           let value = _.get(record, path);
-          if(value !== undefined) {
+          if(value !== undefined || all) {
             return acc.concat({ col, value });
           }
         }
