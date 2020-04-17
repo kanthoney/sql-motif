@@ -642,6 +642,107 @@ describe("validate tests", () => {
 
     });
 
+    describe("inventory2 tests", () => {
+
+      const j = joins.inventory2;
+
+      it('should validate correct record', done => {
+        const record = {
+          company: 'AAZ909',
+          sku: 'CUP001',
+          description: 'Sink plunger',
+          warehouse: [
+            {
+              name: 'Atlas',
+              description: 'Comfy',
+              address: {
+                company: 'Hot Stuff Ltd',
+                street: '9 Blarney St',
+                locality: 'Expressions Business Park',
+                city: 'Huddersfield',
+                region: '',
+                postalCode: 'HD7 9XJ',
+                country: 'GB'
+              },
+              bins: [
+                {
+                  bin: 'AD14E2',
+                  inventory: [
+                    {
+                      qty: 16,
+                      cost: 7.68,
+                      time: '2020-01-22 16:14:14'
+                    },
+                    {
+                      qty: 8,
+                      cost: 7.68,
+                      time: '2019-06-12 16:48:34'
+                    }
+                  ]
+                },
+                {
+                  bin: 'AL15A1',
+                  inventory: [
+                    {
+                      qty: 9,
+                      cost: 8.34,
+                      time: '2019-11-21 09:12:54'
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              name: 'Mercury',
+              description: 'Cramped',
+              address: {
+                company: 'Hot Stuff Ltd',
+                street: '18 Heaton St',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B12 8GL',
+                country: 'GB'
+              },
+              bins: [
+                {
+                  bin: 'D56A',
+                  inventory: {
+                    cost: 6.75,
+                    qty: 8,
+                    time: '2018-09-17 10:46:29'
+                  }
+                }
+              ]
+            }
+          ]
+        };
+        expect(JSON.stringify(j.validate(record))).toBe(
+          '{"results":[{"record":{"company":"AAZ909","sku":"CUP001","description":"Sink plunger","warehouse":[{"company":"AAZ909","name":"Atlas","description":"Comfy",' +
+          '"address":{"company":"Hot Stuff Ltd","street":"9 Blarney St","locality":"Expressions Business Park","city":"Huddersfield","region":"","postalCode":"HD7 9XJ","country":"GB"},' +
+          '"bins":[{"company":"AAZ909","warehouse_name":"Atlas","bin":"AD14E2","inventory":[{"company":"AAZ909","sku":"CUP001","warehouse_name":"Atlas","bin":"AD14E2",' +
+          '"time":"2020-01-22 16:14:14","qty":16,"cost":7.68},{"company":"AAZ909","sku":"CUP001","warehouse_name":"Atlas","bin":"AD14E2","time":"2019-06-12 16:48:34","qty":8,"cost":7.68}]},' +
+          '{"company":"AAZ909","warehouse_name":"Atlas","bin":"AL15A1","inventory":[{"company":"AAZ909","sku":"CUP001","warehouse_name":"Atlas","bin":"AL15A1",' +
+          '"time":"2019-11-21 09:12:54","qty":9,"cost":8.34}]}]},{"company":"AAZ909","name":"Mercury","description":"Cramped","address":{"company":"Hot Stuff Ltd","street":"18 Heaton St",' +
+          '"locality":"","city":"Birmingham","region":"","postalCode":"B12 8GL","country":"GB"},"bins":[{"company":"AAZ909","warehouse_name":"Mercury","bin":"D56A",' +
+          '"inventory":[{"company":"AAZ909","sku":"CUP001","warehouse_name":"Mercury","bin":"D56A","time":"2018-09-17 10:46:29","qty":8,"cost":6.75}]}]}]},"valid":true,"errors":{}}],"valid":true}'
+        );
+        j.validateAsync(record).then(result => {
+          expect(JSON.stringify(result)).toBe(
+            '{"results":[{"record":{"company":"AAZ909","sku":"CUP001","description":"Sink plunger","warehouse":[{"company":"AAZ909","name":"Atlas","description":"Comfy",' +
+            '"address":{"company":"Hot Stuff Ltd","street":"9 Blarney St","locality":"Expressions Business Park","city":"Huddersfield","region":"","postalCode":"HD7 9XJ","country":"GB"},' +
+            '"bins":[{"company":"AAZ909","warehouse_name":"Atlas","bin":"AD14E2","inventory":[{"company":"AAZ909","sku":"CUP001","warehouse_name":"Atlas","bin":"AD14E2",' +
+            '"time":"2020-01-22 16:14:14","qty":16,"cost":7.68},{"company":"AAZ909","sku":"CUP001","warehouse_name":"Atlas","bin":"AD14E2","time":"2019-06-12 16:48:34","qty":8,"cost":7.68}]},' +
+            '{"company":"AAZ909","warehouse_name":"Atlas","bin":"AL15A1","inventory":[{"company":"AAZ909","sku":"CUP001","warehouse_name":"Atlas","bin":"AL15A1",' +
+            '"time":"2019-11-21 09:12:54","qty":9,"cost":8.34}]}]},{"company":"AAZ909","name":"Mercury","description":"Cramped","address":{"company":"Hot Stuff Ltd","street":"18 Heaton St",' +
+            '"locality":"","city":"Birmingham","region":"","postalCode":"B12 8GL","country":"GB"},"bins":[{"company":"AAZ909","warehouse_name":"Mercury","bin":"D56A",' +
+            '"inventory":[{"company":"AAZ909","sku":"CUP001","warehouse_name":"Mercury","bin":"D56A","time":"2018-09-17 10:46:29","qty":8,"cost":6.75}]}]}]},"valid":true,"errors":{}}],"valid":true}'
+          );
+        }).catch(fail).finally(done);
+      });
+
+    });
+
   });
 
 });

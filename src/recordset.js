@@ -24,8 +24,7 @@ class RecordSet
       if(value !== undefined) {
         _.set(acc.recordData, col.path, value);
       }
-      acc.joined = col.joinedTo.reduce((acc, jcol) => {
-        const path = jcol.table.config.path.concat(jcol.path || jcol.alias || jcol.name);
+      acc.joined = col.joinedTo.reduce((acc, path) => {
         _.set(acc, path, value);
       }, acc.joined);
       return acc;
@@ -57,12 +56,14 @@ class RecordSet
       return record.forEach(record => this.addRecord(record));
     }
     const { recordData, joined } = this.table.columns.values(record, null, true).reduce((acc, field) => {
-      const { col, value } = field;
-      const path = col.path || col.alias || col.name;
+      let { col, value } = field;
+      const path = col.path;
+      if(value === undefined) {
+        value = _.get(this.joined, path);
+      }
       if(value !== undefined) {
         _.set(acc.recordData, path, value);
-        acc.joined = col.joinedTo.reduce((acc, jcol) => {
-          const path = jcol.table.config.path.concat(jcol.path || jcol.alias || jcol.name);
+        acc.joined = col.joinedTo.reduce((acc, path) => {
           _.set(acc, path, value);
           return acc;
         }, acc.joined);
@@ -78,7 +79,7 @@ class RecordSet
       if(value !== undefined) {
         let recordSet = _.get(r.data, join.path || join.name);
         if(recordSet === undefined) {
-          recordSet = new RecordSet(join.table, _.get(joined, join.path || join.name) || {});
+          recordSet = new RecordSet(join.table, Object.assign({}, _.get(joined, join.table.config.path), _.get(this.joined, join.path || join.name)));
           _.set(r.data, join.path || join.name, recordSet);
         }
         recordSet.addRecord(value);

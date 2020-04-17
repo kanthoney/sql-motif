@@ -33,7 +33,7 @@ module.exports = {
     table: tables.warehouse.join({
       table: tables.warehouse_bins.join({
         table: tables.inventory,
-        on: ['company', 'bin']
+        on: ['company', 'bin', 'warehouse_name']
       }),
       name: 'bins',
       on: ['company', 'warehouse_name:name']

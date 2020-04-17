@@ -95,7 +95,7 @@ class ColumnSet
     options = options || {};
     return this.columns.reduce((acc, col) => {
       if(col instanceof ColumnSet) {
-        return acc.concat(col.values(record, options));
+        return acc.concat(col.values(record, options, all));
       } else if(col instanceof Column) {
         if(!options.selector || col.passesSelection(options.selector)) {
           const path = col.path || col.alias || col.name;
