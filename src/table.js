@@ -649,6 +649,16 @@ class Table
     return r.validateRecord(context);
   }
 
+  validateAsync(record, context)
+  {
+    if(record instanceof RecordSet) {
+      return recordSet.validateRecordAsync(context);
+    }
+    const r = new RecordSet(this);
+    r.addRecord(record);
+    return r.validateRecordAsync(context);
+  }
+
 };
 
 module.exports = Table;

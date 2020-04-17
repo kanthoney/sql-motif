@@ -147,7 +147,7 @@ class RecordSet
             }
             if(_.isFunction(v)) {
               try {
-                const result = v(value, col, record, context);
+                const result = v(value, col, context);
                 if(result === true) {
                   return null;
                 }
@@ -187,33 +187,40 @@ class RecordSet
 
   validateRecordAsync(context)
   {
-    return Promise.all(this.records, record => {
-      return Promise.all(this.table.columns.values(record.data).map(field => {
-        const { col, value } = field;
-        const path = col.path || col.alias || col.name;
+    return Promise.all(this.records.map(record => {
+      let a = this.table.columns.values(record.data, null, true).map(field => {
+        let { col, value } = field;
+        const path = col.path;
+        let joinedValue = _.get(this.joined, path);
+        if(!_.isNil(joinedValue) && !_.isNil(value) && joinedValue !== value) {
+          return { path, value, error: `join mismatch. Parent: '${joinedValue}', child: '${value}'` };
+        }
+        if(value === undefined) {
+          value = joinedValue;
+        }
         if(col.notNull && _.isNil(value)) {
-          return { path, value, errors: col.validationError || 'Field must not be null' };
+          return { path, value, error: col.validationError || 'Field must not be null' };
         }
         if(!col.notNull && value === null) {
-          return null;
+          return { path, value };
         }
         if(col.validate) {
           const validate = v => {
             if(_.isString(v)) {
               if(`${value}` !== v) {
-                return { path, error: col.validationError || 'Field is not valid' };
+                return { path, value, error: col.validationError || 'Field is not valid' };
               }
               return { path, value };
             }
             if(_.isRegExp(v)) {
               if(!v.test(value)) {
-                return { path, error: col.validationError || `Field did not conform to regular expression '${v.toString()}'` }
+                return { path, value, error: col.validationError || `Field did not conform to regular expression '${v.toString()}'` }
               }
               return { path, value };
             }
             if(_.isFunction(v)) {
               try {
-                return Promise.resolve(v(value, col, record.data, context)).then(result => {
+                return Promise.resolve(v(value, col, context)).then(result => {
                   if(result === true) {
                     return { path, value };
                   }
@@ -247,35 +254,45 @@ class RecordSet
         const path = join.path || join.name;
         const recordSet = _.get(record.data, path);
         if(recordSet instanceof RecordSet) {
-          return acc.concat(recordSet.validateRecordsAsync(context).then(result => {
+          return acc.concat(recordSet.validateRecordAsync(context).then(result => {
             return { path, value: result.results, valid: result.valid, isSubrecord: true }
           }));
         }
         return acc;
-      }, [])).then(result => {
+      }, []));
+      return Promise.all(a).then(result => {
         return result.reduce((acc, result) => {
           if(result.isSubrecord) {
+            const { records, errors } = result.value.reduce((acc, result) => {
+              acc.records.push(result.record);
+              acc.errors.push(result.errors);
+              return acc;
+            }, { records: [], errors: [] });
+            _.set(acc.record, result.path, records);
             if(!result.valid) {
               acc.valid = false;
+              _.set(acc.errors, result.path, errors);
             }
-          } else if(result.error) {
-            acc.valid = false;
-            _.set(acc.errors, path, result.error);
-          }
-          if(result.value !== undefined) {
-            _.set(acc.record, result.path, result.value);
+          } else {
+            if(result.error) {
+              acc.valid = false;
+              _.set(acc.errors, result.path, result.error);
+            }
+            if(result.value !== undefined) {
+              _.set(acc.record, result.path, result.value);
+            }
           }
           return acc;
         }, { record: {}, valid: true, errors: {} });
-      }));
-    }).then(result => {
+      });
+    })).then(result => {
       return result.reduce((acc, result) => {
         if(!result.valid) {
           acc.valid = false;
         }
-        acc.results.concat(result);
+        acc.results.push(result);
         return acc;
-      }, { results, valid: true });
+      }, { results: [], valid: true });
     });
   }
 
