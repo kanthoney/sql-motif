@@ -114,8 +114,10 @@ class RecordSet
           }
         }
         return acc;
-      }, this.table.columns.values(record.data, null, true).reduce((acc, field) => {
-        let { col, value } = field;
+      }, this.table.columns.values(record.data, null, true).reduce((acc, { col, value }) => {
+        if(col.calc) {
+          return acc;
+        }
         const path = col.path;
         if(value !== undefined) {
           _.set(acc.record, path, value);
@@ -196,21 +198,23 @@ class RecordSet
   validateRecordAsync(context)
   {
     return Promise.all(this.records.map(record => {
-      let a = this.table.columns.values(record.data, null, true).map(field => {
-        let { col, value } = field;
+      let a = this.table.columns.values(record.data, null, true).reduce((acc, { col, value }) => {
+        if(col.calc) {
+          return acc;
+        }
         const path = col.path;
         let joinedValue = _.get(this.joined, path);
         if(!_.isNil(joinedValue) && !_.isNil(value) && joinedValue !== value) {
-          return { path, value, error: `join mismatch. Parent: '${joinedValue}', child: '${value}'` };
+          return acc.concat({ path, value, error: `join mismatch. Parent: '${joinedValue}', child: '${value}'` });
         }
         if(value === undefined) {
           value = joinedValue;
         }
         if(col.notNull && _.isNil(value)) {
-          return { path, value, error: col.validationError || 'Field must not be null' };
+          return acc.concat({ path, value, error: col.validationError || 'Field must not be null' });
         }
         if(!col.notNull && value === null) {
-          return { path, value };
+          return aacc.concat({ path, value });
         }
         if(col.validate) {
           const validate = v => {
@@ -255,10 +259,10 @@ class RecordSet
             }
             return { path, value };
           }
-          return validate(col.validate);
+          return acc.concat(validate(col.validate));
         }
-        return { path, value };
-      }).concat(this.table.joins.reduce((acc, join) => {
+        return acc.concat({ path, value });
+      }, []).concat(this.table.joins.reduce((acc, join) => {
         const path = join.path || join.name;
         const recordSet = _.get(record.data, path);
         if(recordSet instanceof RecordSet) {

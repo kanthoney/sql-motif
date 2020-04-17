@@ -24,14 +24,14 @@ class ColumnSet
 
   passesSelection(selector)
   {
-    if(selector === undefined || selector === '*' || selector === (this.config.alias || this.config.name)) {
+    if((!this.config.hidden && (selector === undefined || selector === '*')) || selector === (this.config.alias || this.config.name)) {
       return true;
     } else if(_.isArray(selector)) {
       return selector.reduce((acc, selector) => acc || this.passesSelection(selector), false);
     } else if(this.config.selector && _.isString(selector)) {
       const m = /^([\.@])(.+)/.exec(selector);
       if(m) {
-        if(m[1] === '@' && (this.config.table.config.alias || this.config.table.config.name) === m[2]) {
+        if(m[1] === '@' && (this.config.table.config.alias || this.config.table.config.name) === m[2] && !this.config.hidden) {
           return true;
         }
         if(m[1] === '.' && (m[2] === this.config.selector || (_.isArray(this.config.selector) && this.config.selector.includes(selector)))) {

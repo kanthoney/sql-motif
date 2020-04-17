@@ -75,6 +75,7 @@ class Table
         join.name = join.name || join.table.config.name;
         join.table = new Table({
           ...join.table.config,
+          columns: join.table.config.columns.concat(join.columns || []),
           alias: join.alias,
           path: this.config.path.concat(join.path || join.name)
         });
@@ -82,6 +83,7 @@ class Table
         join.name = join.name || join.table.name;
         join.table = new Table({
           ...join.table,
+          columns: join.table.columns.concat(join.columns || []),
           alias: join.alias,
           path: this.path.concat(join.path || join.name)
         });
@@ -243,7 +245,7 @@ class Table
   columnName(alias)
   {
     const col = this.column(alias);
-    if(col) {
+    if(col && !col.calc) {
       return col.sql.fullName;
     }
     return '';
@@ -262,7 +264,7 @@ class Table
   select(selector, options)
   {
     return this.selectArray(selector, options).map(field => {
-      return field.sql.fullNameAs;
+      return field.SQL(true);
     }).join(', ');
   }
 
@@ -297,13 +299,17 @@ class Table
         options.joins = [options.joins];
       }
     }
-    return this.columns.values(record, options).map(field => {
-      if(field.value instanceof Operator) {
-        return `${field.col.sql.fullName} ${field.value.clause(this.dialect)}`;
-      } else if(field.value instanceof Function) {
-        return `${field.col.sql.fullName} = ${this.escape(field.value(field.col, this.dialect.template))}`;
+    return this.columns.values(record, options).map(({ col, value }) => {
+      if(col.calc) {
+        return acc;
+      }
+      const fullName = col.sql.fullName;
+      if(value instanceof Operator) {
+        return `${fullName} ${value.clause(this.dialect)}`;
+      } else if(value instanceof Function) {
+        return `${fullName} = ${this.escape(value(col, this.dialect.template))}`;
       } else {
-        return `${field.col.sql.fullName} = ${this.escape(field.value)}`;
+        return `${fullName} = ${this.escape(value)}`;
       }
     }).concat(this.joins.reduce((acc, join) => {
       if(options.joins && options.join !== '*' && !options.joins.includes(join.name)) {
@@ -393,13 +399,13 @@ class Table
       }
       return [clauses.join(' or ')];
     }
-    return this.columns.values(record, options).map(field => {
-      if(field.value instanceof Operator) {
-        return `${field.col.sql.fullName} ${field.value.clause(this.dialect)}`;
-      } else if(field.value instanceof Function) {
-        return `${field.col.sql.fullName} = ${this.escape(field.value(field.col, this.dialect.template))}`;
+    return this.columns.values(record, options).map(({ col, value }) => {
+      if(value instanceof Operator) {
+        return `${col.SQL()} ${value.clause(this.dialect)}`;
+      } else if(value instanceof Function) {
+        return `${col.SQL()} = ${this.escape(value(col, this.dialect.template))}`;
       }
-      return `${field.col.sql.fullName} ${operators.eq(field.value).clause(this.dialect)}`;
+      return `${col.SQL()} ${operators.eq(value).clause(this.dialect)}`;
     }).concat(this.joins.reduce((acc, join) => {
       if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
         return acc;

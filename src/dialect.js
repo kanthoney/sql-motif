@@ -104,7 +104,7 @@ class Dialect
       return this.escapeId(s);
     }
     if(s instanceof Column) {
-      return s.sql.fullName;
+      return s.SQL();
     }
     if(s instanceof Table) {
       return s.fullName();

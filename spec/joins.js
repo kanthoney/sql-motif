@@ -6,6 +6,9 @@ module.exports = {
   orders: tables.orders.join({
     table: tables.order_lines,
     on: ['company', 'order_id'],
+    columns: [
+      { name: 'line_count', calc: (table, sql) => sql`count(distinct ${table.column('lines_line_no')})`, hidden: true }
+    ],
     name: 'lines'
   }),
   inventory: tables.stock.join({

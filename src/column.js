@@ -24,9 +24,9 @@ class Column
   passesSelection(selector)
   {
     const alias = this.table.config.path.concat(this.alias).join('_');
-    if(selector === undefined || selector === '*' ||
-        (_.isRegExp(selector) && selector.test(alias) ||
-        (_.isFunction(selector) && selector(this)))) {
+    if((!this.hidden && (selector === undefined || selector === '*' ||
+        (_.isRegExp(selector) && selector.test(alias)))) ||
+        (_.isFunction(selector) && selector(this))) {
       return true;
     }
     if(_.isString(selector)) {
@@ -35,7 +35,7 @@ class Column
       }
       let m = /^([\.@])(.*)/.exec(selector);
       if(m) {
-        if(m[1] === '@' && m[2] === (this.table.config.alias || this.table.config.name)) {
+        if(m[1] === '@' && m[2] === (this.table.config.alias || this.table.config.name) && !this.hidden) {
           return true;
         }
         if(m[1] === '.' && this.selector) {
@@ -52,59 +52,14 @@ class Column
     return false;
   }
 
-  isValid(record)
+  SQL(as)
   {
-    const path = this.path;
-    const value = _.get(record, path);
-    if(this.notNull && _.isNil(value)) {
-      return { path, error: `Field must not be null` };
+    if(_.isString(this.calc)) {
+      return as?`${this.calc} as ${this.table.dialect.escpaeId(this.fullAlias)}`:this.calc;
+    } else if(_.isFunction(this.calc)) {
+      return as?`${this.calc(this.table, this.table.dialect.template)} as ${this.table.dialect.escapeId(this.fullAlias)}`:this.calc(this.table, this.table.dialect.template);
     }
-    const validate = validator => {
-      if(_.isRegExp(validator) && !validator.test(value)) {
-        return { path, error: this.validateError || `Failed regular expression '${validate.toString()}'` };
-      } else if(_.isFunction(validator)) {
-        const result = validator(value, this, record);
-        if(result === true) {
-          return {};
-      }  else if(_.isString(result)) {
-          return { path, error: result };
-        }
-        return { path, error: this.validationError || 'Field failed function validation' };
-      }
-      if(_.isString(validator)) {
-        if(validator !== value && !_.isNil(value)) {
-          return { path, error: this.validationError || 'Field failed string validation' };
-        }
-        return {};
-      }
-      if(_.isArray(validator)) {
-        if(!validator.reduce((acc, validator) => {
-          if(acc) {
-            return true;
-          }
-          if(validate(validator).path) {
-            return false;
-          }
-        }, false)) {
-          return { path, error: this.validationError || 'Field failed validation' };
-        }
-      }
-      return {};
-    }
-    return validate(this.validate);
-  }
-
-  fill(record, context)
-  {
-    const value = _.get(record, this.path);
-    if(value === undefined && this.default !== undefined) {
-      if(_.isFunction(this.default)) {
-        _.set(record, this.path, this.default(col, context));
-      } else {
-        _.set(record, this.path, this.default);
-      }
-    }
-    return record;
+    return as?this.sql.fullNameAs:this.sql.fullName;
   }
 
 }
