@@ -8,7 +8,7 @@ module.exports = {
   primaryId: { type: 'id', primaryKey: true, notNull: true },
   addressLine: { type: 'char(35)', notNull: true, default: '', selector: 'addressLine' },
   postalCode: { type: 'char(15)', notNull: true, default: '' },
-  country: { type: 'char(2)', notNull: true, default: 'GB' },
+  country: { type: 'char(2)', notNull: true, default: 'GB', validate: ['GB', 'IE', 'US', 'DE', 'FR'], validationError: 'Invalid country code' },
   address: { type: [
     { name: 'company', type: 'addressLine' },
     { name: 'street', type: 'addressLine', validate: (s, col, context) => (context && context.allowEmptyStreets)?true:s === ''?'Street must not be empty':true },
@@ -16,7 +16,7 @@ module.exports = {
     { name: 'city', type: 'addressLine' },
     { name: 'region', type: 'addressLine' },
     { name: 'postalCode', type: 'postalCode' },
-    { name: 'country', type: 'country', validate: ['GB', 'IE', 'US', 'DE', 'FR'], validationError: 'Invalid country code' }
+    { name: 'country', type: 'country' }
   ], selector: 'address' },
   contact: [
     { name: 'name', type: 'addressLine', validate: /.+/, validationError: 'Name must not be empty' },

@@ -441,6 +441,73 @@ describe("validate tests", () => {
         }).catch(fail).finally(done);
       });
 
+      it("should fail validation on missing sku", done => {
+        const record = {
+          company: 'ACE010',
+          order_id: '3cea0a72-0e82-4a97-aea2-e28293e8fae6',
+          customer: 'NEF202',
+          order_date: '2020-04-16',
+          delivery: {
+            name: 'Terry Test',
+            address: {
+              company: '',
+              street: '18 Mansfield Drive',
+              locality: '',
+              city: 'Huddersfield',
+              region: '',
+              postalCode: 'HD18 9TT',
+              country: 'GB'
+            }
+          },
+          invoice: {
+            name: 'Belinda Berger',
+            address: {
+              company: '',
+              street: '40 Netfield Close',
+              locality: '',
+              city: 'Manchester',
+              region: '',
+              postalCode: 'M1 4JF',
+              country: 'GB'
+            }
+          },
+          lines: [
+            {
+              line_no: 1,
+              sku: 'AAJ191',
+              description: 'Hammer',
+              qty: 5,
+              price: '8.32'
+            },
+            {
+              line_no: 2,
+              sku: '',
+              description: 'Saw',
+              qty: 8,
+              price: '13.54'
+            }
+          ]
+        };
+        expect(JSON.stringify(j.validate(record))).toBe(
+          '{"results":[{"record":{"company":"ACE010","order_id":"3cea0a72-0e82-4a97-aea2-e28293e8fae6","order_date":"2020-04-16","customer":"NEF202",' +
+          '"delivery":{"name":"Terry Test","address":{"company":"","street":"18 Mansfield Drive","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +
+          '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}},' +
+          '"lines":[{"company":"ACE010","order_id":"3cea0a72-0e82-4a97-aea2-e28293e8fae6","line_no":1,"sku":"AAJ191","description":"Hammer","qty":5,"price":"8.32"},' +
+          '{"company":"ACE010","order_id":"3cea0a72-0e82-4a97-aea2-e28293e8fae6","line_no":2,"sku":"","description":"Saw","qty":8,"price":"13.54"}]},"valid":false,' +
+          '"errors":{"lines":[{},{"sku":"SKU must not be empty"}]}}],"valid":false}'
+        );
+        j.validateAsync(record).then(result => {
+          expect(JSON.stringify(result)).toBe(
+            '{"results":[{"record":{"company":"ACE010","order_id":"3cea0a72-0e82-4a97-aea2-e28293e8fae6","order_date":"2020-04-16","customer":"NEF202",' +
+            '"delivery":{"name":"Terry Test","address":{"company":"","street":"18 Mansfield Drive","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +
+            '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}},' +
+            '"lines":[{"company":"ACE010","order_id":"3cea0a72-0e82-4a97-aea2-e28293e8fae6","line_no":1,"sku":"AAJ191","description":"Hammer","qty":5,"price":"8.32"},' +
+            '{"company":"ACE010","order_id":"3cea0a72-0e82-4a97-aea2-e28293e8fae6","line_no":2,"sku":"","description":"Saw","qty":8,"price":"13.54"}]},"valid":false,' +
+            '"errors":{"lines":[{},{"sku":"SKU must not be empty"}]}}],"valid":false}'
+          );
+        }).catch(fail).finally(done);
+      });
+
       it("should fail on invalid qty", done => {
         const record = {
           company: 'ACE010',
