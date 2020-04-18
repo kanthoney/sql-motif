@@ -47,7 +47,7 @@ class Record
       if(value === undefined && options.includeJoined) {
         value = _.get(this.recordSet.joined, col.path);
       }
-      if(value !== undefined && (options.includeJoined || !_.has(this.recordSet.joined, col.path))) {
+      if(value !== undefined && (options.includeJoined || _.isNil(_.get(this.recordSet.joined, col.path)))) {
         _.set(acc, col.path, value);
       }
       return acc;

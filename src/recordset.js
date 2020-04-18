@@ -8,7 +8,7 @@ class RecordSet
   constructor(table, joined)
   {
     this.table = table;
-    this.joined = joined;
+    this.joined = joined || {};
     this.records= [];
     this.recordMap = {};
   }
@@ -37,23 +37,23 @@ class RecordSet
       }, acc.joined);
       return acc;
     }, { recordData: {}, joined: {} });
-    let record = new Record(this, recordData);
+    let record = new Record(this, empty?{}:recordData);
     const hash = record.hashKey();
-    if(!empty) {
-      if(this.recordMap[hash] === undefined) {
+    if(this.recordMap[hash] !== undefined) {
+      record = this.recordMap[hash];
+    }
+    this.table.joins.forEach(join => {
+      empty = false;
+      let recordSet = _.get(record.data, join.path || join.name);
+      if(recordSet === undefined) {
+        recordSet = new RecordSet(join.table, Object.assign({}, _.get(joined, join.table.config.path), _.get(this.joined, join.path || join.name)));
+        _.set(record.data, join.path || join.name, recordSet);
+      }
+      recordSet.addSQLResult(line);
+    });
+    if(!empty && this.recordMap[hash] === undefined) {
         this.records.push(record);
         this.recordMap[hash] = record;
-      } else {
-        record = this.recordMap[hash];
-      }
-      this.table.joins.forEach(join => {
-        let recordSet = _.get(record.data, join.path || join.name);
-        if(recordSet === undefined) {
-          recordSet = new RecordSet(join.table, Object.assign({}, _.get(joined, join.table.config.path), _.get(this.joined, join.path || join.name)));
-          _.set(record.data, join.path || join.name, recordSet);
-        }
-        recordSet.addSQLResult(line);
-      });
     }
   }
 
