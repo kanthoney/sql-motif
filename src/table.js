@@ -265,6 +265,17 @@ class Table
     }, undefined);
   }
 
+  tables(options)
+  {
+    options = options || {};
+    return [this].concat(this.joins.reduce((acc, join) => {
+      if((options.writeable && join.lookup) || (options.joins && options.joins !== '*' && !options.joins.includes(join.name))) {
+        return acc;
+      }
+      return acc.concat(join.table.tables(options));
+    }, []));
+  }
+
   select(selector, options)
   {
     return this.selectArray(selector, options).map(field => {
@@ -319,7 +330,7 @@ class Table
         return `${fullName} = ${this.escape(value)}`;
       }
     }).concat(this.joins.reduce((acc, join) => {
-      if(options.joins && options.join !== '*' && !options.joins.includes(join.name)) {
+      if(join.lookup || (options.joins && options.join !== '*' && !options.joins.includes(join.name))) {
         return acc;
       }
       const subRecord = _.get(record, join.name);
@@ -477,7 +488,8 @@ class Table
   delete(record, options)
   {
     options = { joins: [], selector: col => col.primaryKey, ...options };
-    return `${this.From(options)} ${this.WhereKey(record, options)}`;
+    const tables = this.tables({ ...options, writeable: true }).map(table => table.as()).join(', ');
+    return `${tables} ${this.From(options)} ${this.WhereKey(record, options)}`;
   }
 
   Delete(record, options)

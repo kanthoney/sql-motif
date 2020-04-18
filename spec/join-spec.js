@@ -45,7 +45,7 @@ describe('join tests', () => {
 
     it('should create a delete statement', () => {
       expect(j.Delete({ company: 'ACME01', sku: 'ABC065', description: 'item', inventory: { warehouse_name: 'atlas' }}, { joins: 'inventory'})).toBe(
-        'delete from "stock" left join "inventory" as "i1" on "i1"."company" = "stock"."company" and "i1"."sku" = "stock"."sku" and "i1"."bin" = "warehouse_bins"."bin" ' +
+        'delete "stock", "i1" from "stock" left join "inventory" as "i1" on "i1"."company" = "stock"."company" and "i1"."sku" = "stock"."sku" and "i1"."bin" = "warehouse_bins"."bin" ' +
         'where "stock"."company" = \'ACME01\' and "stock"."sku" = \'ABC065\' and "i1"."warehouse_name" = \'atlas\''
       );
     });
