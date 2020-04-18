@@ -43,16 +43,16 @@ class ColumnSet
     return false;
   }
 
-  fields(selector)
+  fields(selector, all)
   {
     return this.columns.reduce((acc, col) => {
       if(col instanceof ColumnSet) {
-        if(col.passesSelection(selector)) {
-          return acc.concat(col.fields());
+        if(all || col.passesSelection(selector)) {
+          return acc.concat(col.fields('*', all));
         }
         return acc.concat(col.fields(selector));
       } else if(col instanceof Column) {
-        if(col.passesSelection(selector)) {
+        if(all || col.passesSelection(selector)) {
           return acc.concat(col);
         }
       }

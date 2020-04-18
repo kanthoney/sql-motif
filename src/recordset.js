@@ -343,6 +343,19 @@ class RecordSet
     });
   }
 
+  get(path)
+  {
+    path = _.toPath(path);
+    if(path.lenth === 0) {
+      return this;
+    }
+    const record = _.get(this.records, path[0]);
+    if(record instanceof Record) {
+      return record.get(path.slice(1));
+    }
+    return;
+  }
+
   toObject(options)
   {
     return this.records.map(record => record.toObject(options));
@@ -350,7 +363,7 @@ class RecordSet
 
   toJSON()
   {
-    return JSON.stringify(this.toObject());
+    return this.toObject({ mapJoined: true, includeJoined: true });
   }
 };
 

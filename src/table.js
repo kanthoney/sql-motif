@@ -197,7 +197,7 @@ class Table
     if(on) {
       clause = `${clause} ${on}`;
     }
-    return [clause].concat(this.joins.reduce((acc, join) => {
+    const joins = this.joins.reduce((acc, join) => {
       if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
         return acc;
       }
@@ -219,8 +219,12 @@ class Table
         clause = 'inner join';
         break;
       }
-      return acc.concat(`${clause} ${join.table.from(options)}`);
-    }, [])).join(' ');
+      return acc.concat(`${clause} ${join.table.from({ ...options, brackets: true })}`);
+    }, []);
+    if(joins.length > 0 && options.brackets) {
+      return `(${[clause].concat(joins).join(' ')})`;
+    }
+    return [clause].concat(joins).join(' ');
   }
 
   From(options)
@@ -677,7 +681,7 @@ class Table
   orderBy(fields)
   {
     if(!fields) {
-      fields = this.config.primaryKey);
+      fields = this.config.primaryKey;
     }
     return fields.reduce((acc, field) => {
       let dir = 'asc';
