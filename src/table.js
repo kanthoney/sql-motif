@@ -293,6 +293,9 @@ class Table
 
   setArray(record, options)
   {
+    if(record instanceof RecordSet) {
+      return this.setArray(record.toObject({ includeJoined: true }));
+    }
     options = options || {};
     if(options.joins && options.joins !== '*') {
       if(!_.isArray(options.joins)) {
@@ -347,6 +350,9 @@ class Table
 
   insertValues(record)
   {
+    if(record instanceof RecordSet) {
+      return this.insertValues(record.toObject({ includeJoined: true }));
+    }
     if(_.isArray(record)) {
       return record.map(record => this.insertValues(record)).join(', ');
     }
@@ -377,6 +383,9 @@ class Table
 
   whereArray(record, options)
   {
+    if(record instanceof RecordSet) {
+      return this.whereArray(record.toObject({ includeJoined: true }));
+    }
     options = _.defaults(options || {}, { default: '' });
     if(options.joins && options.joins !== '*') {
       if(!_.isArray(options.joins)) {
@@ -645,26 +654,116 @@ class Table
     return `create temporary table if not exists ${this.create()}`;
   }
 
-  validate(record, context)
+  groupBy(fields)
+  {
+    fields = [].concat(_.isNil(fields)?[]:fields);
+    if(fields.length === 0) {
+      fields = this.config.primaryKey;
+    }
+    return fields.reduce((acc, key) => {
+      return acc.concat(this.columns.fieldFromName(key) || this.column(key) || []);
+    }, []).map(col => col.sql.fullName).join(', ');
+  }
+
+  GroupBy(fields)
+  {
+    const clause = this.groupBy(fields);
+    if(clause) {
+      return `GROUP BY ${clause}`;
+    }
+    return '';
+  }
+
+  orderBy(fields)
+  {
+    if(!fields) {
+      fields = this.config.primaryKey);
+    }
+    return fields.reduce((acc, field) => {
+      let dir = 'asc';
+      const m = /^(.+)\s+(asc|desc)$/i.exec(field);
+      if(m) {
+        field = m[1];
+        dir = m[2];
+      }
+      let col = this.columns.fieldFromName(field);
+      if(col) {
+        return acc.concat({ col, dir });
+      }
+      col = this.column(field);
+      if(col) {
+        return acc.concat({ col, dir });
+      }
+      return acc;
+    }, []).map(({ col, dir }) => `${col.sql.fullName} ${dir}`).join(', ');
+  }
+
+  OrderBy(fields)
+  {
+    const clause = this.orderBy(fields);
+    if(clause) {
+      return `ORDER BY ${clause}`;
+    }
+    return '';
+  }
+
+  limit(start, count)
+  {
+    if(count === undefined) {
+      if(start === undefined) {
+        return '';
+      }
+      return this.escape(start);
+    }
+    return `${this.escape(start)}, ${this.escape(count)}`;
+  }
+
+  Limit(start, count)
+  {
+    if(count === undefined) {
+      if(start === undefined) {
+        return '';
+      }
+      return `limit ${this.escape(start)}`;
+    }
+    return `limit ${this.escape(start)}, ${this.escape(count)}`;
+  }
+
+  toRecordSet(record)
   {
     if(record instanceof RecordSet) {
-      return record.validateRecord(context);
+      return record;
     }
     const r = new RecordSet(this);
     r.addRecord(record);
-    return r.validateRecord(context);
+    return r;
+  }
+
+  validate(record, context)
+  {
+    return this.toRecordSet(record).validate(context);
   }
 
   validateAsync(record, context)
   {
-    if(record instanceof RecordSet) {
-      return recordSet.validateRecordAsync(context);
-    }
-    const r = new RecordSet(this);
-    r.addRecord(record);
-    return r.validateRecordAsync(context);
+    return this.toRecordSet(record).validateAsync(context);
   }
 
+  fill(record, context)
+  {
+    return this.toRecordSet(record).fill(context);
+  }
+
+  fillAsync(record, context)
+  {
+    return this.toRecordSet(record).fillAsync(context);
+  }
+
+  collate(lines)
+  {
+    const r = new RecordSet(this);
+    return r.addSQLResult(lines);
+  }
 };
 
 module.exports = Table;

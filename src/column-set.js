@@ -24,20 +24,21 @@ class ColumnSet
 
   passesSelection(selector)
   {
-    if((!this.config.hidden && (selector === undefined || selector === '*')) || selector === (this.config.alias || this.config.name)) {
+    if(!this.config.hidden && (selector === undefined || selector === '*')) {
       return true;
     } else if(_.isArray(selector)) {
       return selector.reduce((acc, selector) => acc || this.passesSelection(selector), false);
-    } else if(this.config.selector && _.isString(selector)) {
+    } else if(_.isString(selector)) {
       const m = /^([\.@])(.+)/.exec(selector);
       if(m) {
-        if(m[1] === '@' && (this.config.table.config.alias || this.config.table.config.name) === m[2] && !this.config.hidden) {
+        if(!this.config.hidden && m[1] === '@' && (this.config.table.config.alias || this.config.table.config.name) === m[2]) {
           return true;
         }
-        if(m[1] === '.' && (m[2] === this.config.selector || (_.isArray(this.config.selector) && this.config.selector.includes(selector)))) {
+        if(!this.config.hidden && m[1] === '.' && this.config.tags && this.config.tags.split(/\s+/g).includes(m[2])) {
           return true;
         }
       }
+      return selector === (this.config.alias || this.config.name);
     }
     return false;
   }

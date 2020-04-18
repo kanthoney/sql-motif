@@ -6,7 +6,7 @@ module.exports = {
   bin: 'char(8)',
   id: { type: 'char(36)', validate: /^[\da-fA-f]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}$/, validationError: 'Invalid UUID' },
   primaryId: { type: 'id', primaryKey: true, notNull: true },
-  addressLine: { type: 'char(35)', notNull: true, default: '', selector: 'addressLine' },
+  addressLine: { type: 'char(35)', notNull: true, default: '', tags: 'addressLine' },
   postalCode: { type: 'char(15)', notNull: true, default: '' },
   country: { type: 'char(2)', notNull: true, default: 'GB', validate: ['GB', 'IE', 'US', 'DE', 'FR'], validationError: 'Invalid country code' },
   address: { type: [
@@ -17,7 +17,7 @@ module.exports = {
     { name: 'region', type: 'addressLine' },
     { name: 'postalCode', type: 'postalCode' },
     { name: 'country', type: 'country' }
-  ], selector: 'address' },
+  ], tags: 'address' },
   contact: [
     { name: 'name', type: 'addressLine', validate: /.+/, validationError: 'Name must not be empty' },
     { name: 'address', type: 'address' }

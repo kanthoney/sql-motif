@@ -19,7 +19,7 @@ class TypeExpander
       return col;
     }
     if(!col.type) {
-      return new Column({ ...col, type: 'varchar(255)' });
+      return new Column({ ...col });
     }
     if(_.isArray(col.type)) {
       const name = col.name;
@@ -27,11 +27,11 @@ class TypeExpander
       const alias = col.alias || col.name;
       const path = col.path || [alias];
       const table = col.table;
-      const selector = col.selector;
+      const tags = col.tags;
       return new ColumnSet({
         columns: type.map(subType => ({
           ...subType,
-          ...(_.omit(col, ['type', 'selector'])),
+          ...(_.omit(col, ['type', 'tags'])),
           path: path.concat(subType.alias || subType.name),
           alias: `${alias}_${subType.alias || subType.name}`,
           name: `${name}_${subType.name}`
@@ -40,7 +40,7 @@ class TypeExpander
         alias,
         path,
         table,
-        selector,
+        tags,
         types: this.types
       });
     }
@@ -60,6 +60,7 @@ class TypeExpander
     return this.expand({
       ...type,
       ...col,
+      tags: (col.tags || '').split(/\s+/g).concat((type.tags || '').split(/\s+/g)).join(' '),
       type: type.type
     })
   }

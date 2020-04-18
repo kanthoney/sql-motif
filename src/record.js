@@ -44,7 +44,7 @@ class Record
       return acc;
     }, this.recordSet.table.columns.fields().reduce((acc, col) => {
       let value = _.get(this.data, col.path);
-      if(value === undefined && options.includeJoined) {
+      if(value === undefined && options.mapJoined) {
         value = _.get(this.recordSet.joined, col.path);
       }
       if(value !== undefined && (options.includeJoined || _.isNil(_.get(this.recordSet.joined, col.path)))) {
@@ -56,7 +56,7 @@ class Record
 
   toJSON()
   {
-    return JSON.stringify(this.toObject({ includeJoined: true }));
+    return this.toObject({ mapJoined: true, includeJoined: true });
   }
 
 }

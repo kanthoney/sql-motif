@@ -149,3 +149,38 @@ instead.
 * `CreateIfNotExists()` Produces a full `create` statement including an `if not exists` clause.
 
 * `CreateTempIfNotExists()` Produces a full `create` statement for a temporary table if it doesn't exists.
+
+### Group, order and limit
+
+* `groupBy([fields])`. Creates a group by clause without the `group by` keywords. `fields` is an array of column names or aliases. If empty, defaults to the primary key of the main table.
+
+* `GroupBy([fields])`. Creates a group by clause including the `group by` keywords.
+
+* `orderBy([fields])`. Creates an order by clause excluding the `order by` keywords. `fields` is a list of fields in the form `<field_name> [<dir>]`, where dir is either `asc` or `desc`,
+or can be omitted to use the default of `asc`.
+
+* `OrderBy([fields])`. Creates on order by clause including the `order by` keywords.
+
+* `limit([start,] count)`. Creates a limit clause without the `limit` keyword.
+
+* `Limit([start,] count)`. Creates a limit clause with the `limit` keyword.
+
+### Validation
+
+* `validate(record, context)`. Validates a record or array of records, checking the value for each column against the `validate` entry in the [column specification](./column-spec.md).
+The function will return an object of the form `{ result, valid }`. `valid` is a boolean which is true if all records passed validation. `result` is an array of objects of the form
+`{ record, valid, errors }`. `record` is the original record, `valid` is true if the record is valid, and `errors` is an object with the same structure as `record` containing any errors.
+
+* `validateAsync(record, context)`. Validates a record or array of records, returning a promise resolving to a validation result object as in the previous method. Used if the `validate`
+function in any of the [column specifications](./column-spec.md) returns a promise.
+
+### Filling
+
+* `fill(record, context)`. Used to fill missing values in a record or array of records, using the `default` field of the [column specification](./column-spec.md). `context`
+is a user-defined object passed to any `default`s that are functions. Returns a record set.
+
+* `fillAsync(record, context)`. Fills in a record or array of records returning a promise. Used if any `default` functions return a promise.
+
+### SQL result collation
+
+* `collate(lines)`. Takes a set of lines resulting from an SQL query and collates them, packing subrecords into the appropriate locations specified in the join spec.

@@ -38,8 +38,8 @@ class Column
         if(m[1] === '@' && m[2] === (this.table.config.alias || this.table.config.name) && !this.hidden) {
           return true;
         }
-        if(m[1] === '.' && this.selector) {
-          if(m[2] === this.selector || (_.isArray(this.selector) && this.selector.includes(m[2]))) {
+        if(m[1] === '.' && this.tags) {
+          if(this.tags.split(/\s+/g).includes(m[2])) {
             return true;
           }
         }
