@@ -76,6 +76,18 @@ describe('where tests', () => {
         );
       });
 
+      it("should select orders where delivery street is '20 Highfield Street' or delivery city is 'Manchester'", () => {
+        expect(t.where({ delivery: { address: [ { street: '20 Highfield Street' }, { city: 'Manchester' } ] } })).toBe(
+          '("s1"."orders"."delivery_address_street" = \'20 Highfield Street\' or "s1"."orders"."delivery_address_city" = \'Manchester\')'
+        );
+      });
+
+      it("should select orders where customer is 'KJA001' and delivery street is '20 Highfield Street' or delivery city is 'Manchester'", () => {
+        expect(t.where({ customer: 'KJA001', delivery: { address: [ { street: '20 Highfield Street' }, { city: 'Manchester' } ] } })).toBe(
+          '"s1"."orders"."customer" = \'KJA001\' and ("s1"."orders"."delivery_address_street" = \'20 Highfield Street\' or "s1"."orders"."delivery_address_city" = \'Manchester\')'
+        );
+      });
+
     });
 
     describe('order_lines tests', () => {

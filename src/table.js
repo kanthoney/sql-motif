@@ -396,70 +396,10 @@ class Table
     return this.dialect.insertIgnore(this, record);
   }
 
-  whereArray(record, options)
-  {
-    if(record instanceof RecordSet) {
-      return this.whereArray(record.toObject({ includeJoined: true }));
-    }
-    options = _.defaults(options || {}, { default: '', joined: {} });
-    if(options.joins && options.joins !== '*') {
-      if(!_.isArray(options.joins)) {
-        options.joins = [options.joins];
-      }
-    }
-    if(_.isArray(record)) {
-      if(record.length === 0) {
-        return options.default;
-      }
-      const clauses = record.map(record => this.where(record, { ...options, brackets: true }));
-      if(clauses.length === 0) {
-        return [];
-      }
-      if(clauses.length === 1) {
-        return clauses;
-      }
-      if(options.brackets) {
-        return [`(${clauses.join(' or ')})`];
-      }
-      return [clauses.join(' or ')];
-    }
-    return this.columns.values(record, options).map(({ col, value }) => {
-      if(options.safe) {
-        if(!_.isNil(value) || _.get(options.joined, col.path)) {
-          col.joinedTo.forEach(path => {
-            _.set(options.joined, path, true);
-          });
-        }
-      }
-      if(value instanceof Operator) {
-        return value.clause(this.dialect, col);
-      } else if(value instanceof Function) {
-        return `${col.SQL()} = ${this.escape(value(col, this.dialect.template))}`;
-      }
-      return operators.eq(value).clause(this.dialect, col);
-    }).concat(this.joins.reduce((acc, join) => {
-      if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
-        return acc;
-      }
-      const subRecord = _.get(record, join.path || join.name);
-      const where = join.table.where(subRecord || {}, {
-        ...options,
-        joined: _.get(options.joined, join.path || join.name),
-        needed: _.get(options.needed, join.path || join.name),
-        safe: options.safe && !join.readOnly,
-        brackets: _.isArray(subRecord)
-      });
-      if(!where) {
-        return acc;
-      }
-      return acc.concat(where);
-    }, []));
-  }
-
   where(record, options)
   {
     options = { default: '', ...options };
-    const clauses = this.whereArray(record, options);
+    const clauses = this.columns.whereArray(record, options);
     if(clauses.length === 0) {
       return options.default;
     }
