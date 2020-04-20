@@ -323,7 +323,7 @@ class Table
       }
       const fullName = col.sql.fullName;
       if(value instanceof Operator) {
-        return `${fullName} ${value.clause(this.dialect)}`;
+        return `${value.clause(this.dialect), col}`;
       } else if(value instanceof Function) {
         return `${fullName} = ${this.escape(value(col, this.dialect.template))}`;
       } else {
@@ -425,11 +425,11 @@ class Table
     }
     return this.columns.values(record, options).map(({ col, value }) => {
       if(value instanceof Operator) {
-        return `${col.SQL()} ${value.clause(this.dialect)}`;
+        return value.clause(this.dialect, col);
       } else if(value instanceof Function) {
         return `${col.SQL()} = ${this.escape(value(col, this.dialect.template))}`;
       }
-      return `${col.SQL()} ${operators.eq(value).clause(this.dialect)}`;
+      return operators.eq(value).clause(this.dialect, col);
     }).concat(this.joins.reduce((acc, join) => {
       if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
         return acc;
