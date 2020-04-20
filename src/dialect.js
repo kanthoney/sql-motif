@@ -9,33 +9,44 @@ class Dialect
   constructor(options)
   {
     this.options = options || {};
-    if(this.options.quotes) {
-      if(this.options.quotes.length === 1) {
-        this.options.quotes = `${this.options.quotes}${this.options.quotes}`;
-      }
-    } else {
-      this.options.quotes = "''";
+    if(!this.options.quotes) {
+      this.options.quotes = "'";
     }
-    if(this.options.idQuotes) {
-      if(this.options.idQuotes.length === 1) {
-        this.options.idQuotes = `${this.options.idQuotes}${this.options.idQuotes}`;
-      }
-    } else {
-      this.options.idQuotes = '""';
-    }
-    if(!this.options.escapeChars) {
-      this.options.escapeChars = `\\${this.options.quotes[0]}${this.options.idQuotes[0]}`;
-      if(this.options.quotes[1] !== this.options.quotes[0]) {
-        this.options.escapeChars += this.options.quotes[1];
-      }
-      if(this.options.idQuotes[1] !== this.options.idQuotes[0]) {
-        this.options.escapeChars += this.options.idQuotes[1];
-      }
+    if(!this.options.idQuotes) {
+      this.options.idQuotes = '"';
     }
     if(!this.options.likeChars) {
       this.options.likeChars = '%_';
     }
-    this.escape_re = new RegExp(this.options.escapeChars.split('').map(char => char==='\\'?`\\\\(?![${this.options.likeChars}])`:_.escapeRegExp(char)).join('|'), 'g');
+    if(this.options.backslash) {
+      if(!this.options.escapeChars) {
+        this.options.escapeChars = `\\${this.options.quotes[0]}${this.options.idQuotes[0]}`;
+        if(this.options.quotes.length > 1) {
+          this.options.escapeChars += this.options.quotes[1];
+        }
+        if(this.options.idQuotes.length > 1) {
+          this.options.escapeChars += this.options.idQuotes[1];
+        }
+      }
+      this.escape_re = new RegExp(this.options.escapeChars.split('').map(char => char==='\\'?`\\\\(?![${this.options.likeChars}])`:_.escapeRegExp(char)).join('|'), 'g');
+    } else {
+      if(this.options.quotes.length === 1) {
+        this.escape_re = new RegExp(_.escapeRegExp(this.options.quotes), 'g');
+      } else {
+        this.escape_re = new RegExp(`[${_.escapeRegExp(this.options.quotes)}]`, 'g');
+      }
+      if(this.options.idQuotes.length === 1) {
+        this.id_escape_re = new RegExp(_.escapeRegExp(this.options.idQuotes), 'g');
+      } else {
+        this.id_escape_re = new RegExp(`[${_.escapeRegExp(this.options.idQuotes)}]`, 'g');
+      }
+    }
+    if(this.options.quotes.length === 1) {
+      this.options.quotes += this.options.quotes;
+    }
+    if(this.options.idQuotes.length === 1) {
+      this.options.idQuotes += this.options.idQuotes;
+    }
     this.like_escape_re = new RegExp(`[${_.escapeRegExp(this.options.likeChars)}]`, 'g');
     this.template = (strings, ...args) => {
       let s = '';
@@ -53,7 +64,18 @@ class Dialect
 
   escapeNoQuotes(s)
   {
-    return `${s}`.replace(this.escape_re, c => `\\${c}`);
+    if(this.options.useBackslashEscape) {
+      return `${s}`.replace(this.escape_re, c => `\\${c}`);
+    }
+    return `${s}`.replace(this.escape_re, c => `${c}${c}`);
+  }
+
+  escapeIdNoQuotes(s)
+  {
+    if(this.options.useBackslashEscape) {
+      return `${s}`.replace(this.escape_re, c => `\\${c}`);
+    }
+    return `${s}`.replace(this.id_escape_re, c => `${c}${c}`);
   }
 
   quoteNoEscape(s)
@@ -122,7 +144,7 @@ class Dialect
 
   escapeId(s)
   {
-    return `${this.options.idQuotes[0]}${this.escapeNoQuotes(s)}${this.options.idQuotes[1]}`;
+    return `${this.options.idQuotes[0]}${this.escapeIdNoQuotes(s)}${this.options.idQuotes[1]}`;
   }
 
   escapeLike(s)

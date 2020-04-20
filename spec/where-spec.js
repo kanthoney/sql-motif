@@ -58,6 +58,18 @@ describe('where tests', () => {
         );
       });
 
+      it("should select orders where delivery name is 'Terry Test' and invoice country is 'GB' and street is 'St. John's Street'", () => {
+        expect(t.where({ delivery: { name: 'Terry Test' }, invoice: { address: { street: "St. John's Street", country: 'GB' } } })).toBe(
+          '"s1"."orders"."delivery_name" = \'Terry Test\' and "s1"."orders"."billing_address_street" = \'St. John\'\'s Street\' and "s1"."orders"."billing_address_country" = \'GB\''
+        );
+      });
+
+      it("should select orders where delivery name is 'Barney \"Rubble\" Rimmington' and invoice country is 'GB'", () => {
+        expect(t.where({ delivery: { name: 'Barney "Rubble" Rimmington' }, invoice: { address: { country: 'GB' } } })).toBe(
+          '"s1"."orders"."delivery_name" = \'Barney "Rubble" Rimmington\' and "s1"."orders"."billing_address_country" = \'GB\''
+        );
+      });
+
       it('should select orders before today', () => {
         expect(t.where({ order_date: op.lt(motif.Fn('curdate')) })).toBe(
           '"s1"."orders"."order_date" < curdate()'
@@ -94,13 +106,13 @@ describe('where tests', () => {
 
       it("should select orders where order date is after 2020-04-01 with sku starting with 'HUT_$909'", () => {
         expect(j.where({ order_date: op.gt('2020-04-01'), lines: { sku: op.startsWith('HUT_$909') } })).toBe(
-          '"s1"."orders"."order_date" > \'2020-04-01\' and "order_lines"."sku" regexp \'^HUT_\\\\$909\''
+          '"s1"."orders"."order_date" > \'2020-04-01\' and "order_lines"."sku" regexp \'^HUT_\\$909\''
         );
       });
 
       it("should select orders where sku does not contain 'DF^G'", () => {
         expect(j.where({ lines: { sku: op.notContains('DF^G') } })).toBe(
-          '"order_lines"."sku" not regexp \'^DF\\\\^G$\''
+          '"order_lines"."sku" not regexp \'^DF\\^G$\''
         );
       });
 

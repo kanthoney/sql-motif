@@ -269,7 +269,7 @@ class Table
   {
     options = options || {};
     return [this].concat(this.joins.reduce((acc, join) => {
-      if((options.writeable && join.lookup) || (options.joins && options.joins !== '*' && !options.joins.includes(join.name))) {
+      if((options.writeable && join.readOnly) || (options.joins && options.joins !== '*' && !options.joins.includes(join.name))) {
         return acc;
       }
       return acc.concat(join.table.tables(options));
@@ -330,7 +330,7 @@ class Table
         return `${fullName} = ${this.escape(value)}`;
       }
     }).concat(this.joins.reduce((acc, join) => {
-      if(join.lookup || (options.joins && options.join !== '*' && !options.joins.includes(join.name))) {
+      if(join.readOnly || (options.joins && options.join !== '*' && !options.joins.includes(join.name))) {
         return acc;
       }
       const subRecord = _.get(record, join.name);

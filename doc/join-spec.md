@@ -19,3 +19,5 @@ The join specification object can take the following parameters:
 `'join_column'`.
 
   * An array of arrays of the form `['join_column', 'main_column']`, or simply `['join_column']` if the two columns have the same name.
+
+* `readOnly`. Set to `true` to exclude table from data changing queries.
