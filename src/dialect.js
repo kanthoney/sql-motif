@@ -93,6 +93,11 @@ class Dialect
     return moment(dt).format('YYYY-MM-DD HH:mm:ss');
   }
 
+  escapeBuffer(s)
+  {
+    return `X${this.options.quotes[0]}${s.toString('hex')}${this.options.quotes[1]}`;
+  }
+
   escape(s)
   {
     const DateTime = require('./datetime');
@@ -111,7 +116,7 @@ class Dialect
       return s.text;
     }
     if(global.Buffer && s instanceof global.Buffer) {
-      return `X${this.escape(s.toString('hex'))}`;
+      return this.escapeBuffer(s);
     }
     if(s instanceof Date || moment.isMoment(s)) {
       return this.escape(this.formatDate(s));
