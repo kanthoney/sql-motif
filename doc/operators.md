@@ -67,5 +67,4 @@ const regExp = value => new Operator('regexp', value);
 
 The constructor takes the name of the operator as the first argument and the value of the second.
 
-If this isn't enough, you may have to extend the Operator class, overriding the `clause(dialect, col)` function. This takes the dialect and column being processed and produces the part of
-the clause to the right of the column name.
+If this isn't enough, you may have to extend the Operator class, overriding the `clause(dialect, [rhs])` function. The first argument is the dialect, and the second is the right hand side (usually a column) if this needs to be output.

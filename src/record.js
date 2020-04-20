@@ -13,7 +13,7 @@ class Record
   hashKey()
   {
     if(this.hash === undefined) {
-      const hash = this.recordSet.table.columns.fields().reduce((acc, col) => {
+      const hash = this.recordSet.join.table.columns.fields().reduce((acc, col) => {
         const path = col.path;
         if(col.primaryKey || _.has(this.recordSet.joined, path)) {
           let value = _.get(this.data, path);
@@ -55,13 +55,13 @@ class Record
   {
     const RecordSet = require('./recordset');
     options = options || {};
-    return this.recordSet.table.joins.reduce((acc, join) => {
+    return this.recordSet.join.table.joins.reduce((acc, join) => {
       const recordSet = _.get(this.data, join.path || join.name);
       if(recordSet instanceof RecordSet) {
         _.set(acc, join.path || join.name, recordSet.toObject(options));
       }
       return acc;
-    }, this.recordSet.table.columns.fields('*', true).reduce((acc, col) => {
+    }, this.recordSet.join.table.columns.fields('*', true).reduce((acc, col) => {
       let value = _.get(this.data, col.path);
       if(value === undefined && options.mapJoined) {
         value = _.get(this.recordSet.joined, col.path);

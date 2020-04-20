@@ -5,9 +5,14 @@ const Record = require('./record');
 
 class RecordSet
 {
-  constructor(table, joined)
+  constructor(join, joined)
   {
-    this.table = table;
+    const Table = require('./table');
+    if(join instanceof Table) {
+      this.join = { table: join };
+    } else {
+      this.join = join;
+    }
     this.joined = joined || {};
     this.records= [];
     this.recordMap = {};
@@ -20,7 +25,7 @@ class RecordSet
       return this;
     }
     let empty = true;
-    const { recordData, joined } = this.table.columns.fields().reduce((acc, col) => {
+    const { recordData, joined } = this.join.table.columns.fields().reduce((acc, col) => {
       const alias = col.table.config.path.concat(col.alias || col.name).join('_');
       let value = _.get(line, alias);
       if(!_.isNil(value)) {
@@ -43,11 +48,11 @@ class RecordSet
     if(this.recordMap[hash] !== undefined) {
       record = this.recordMap[hash];
     }
-    this.table.joins.forEach(join => {
+    this.join.table.joins.forEach(join => {
       empty = false;
       let recordSet = _.get(record.data, join.path || join.name);
       if(recordSet === undefined) {
-        recordSet = new RecordSet(join.table, Object.assign({}, _.get(joined, join.table.config.path), _.get(this.joined, join.path || join.name)));
+        recordSet = new RecordSet(join, Object.assign({}, _.get(joined, join.table.config.path), _.get(this.joined, join.path || join.name)));
         _.set(record.data, join.path || join.name, recordSet);
       }
       recordSet.addSQLResult(line);
@@ -64,7 +69,7 @@ class RecordSet
     if(_.isArray(record)) {
       return record.forEach(record => this.addRecord(record));
     }
-    const { recordData, joined } = this.table.columns.values(record, null, true).reduce((acc, field) => {
+    const { recordData, joined } = this.join.table.columns.values(record, null, true).reduce((acc, field) => {
       let { col, value } = field;
       const path = col.path;
       if(value === undefined) {
@@ -83,12 +88,12 @@ class RecordSet
     const hash = r.hashKey();
     this.records.push(r);
     this.recordMap[hash] = r;
-    this.table.joins.forEach(join => {
+    this.join.table.joins.forEach(join => {
       const value = _.get(record, join.path || join.name);
       if(value !== undefined) {
         let recordSet = _.get(r.data, join.path || join.name);
         if(recordSet === undefined) {
-          recordSet = new RecordSet(join.table, Object.assign({}, _.get(joined, join.table.config.path), _.get(this.joined, join.path || join.name)));
+          recordSet = new RecordSet(join, Object.assign({}, _.get(joined, join.table.config.path), _.get(this.joined, join.path || join.name)));
           _.set(r.data, join.path || join.name, recordSet);
         }
         recordSet.addRecord(value);
@@ -100,7 +105,7 @@ class RecordSet
   validate(context)
   {
     return this.records.reduce((acc, record) => {
-      const result = this.table.joins.reduce((acc, join) => {
+      const result = this.join.table.joins.reduce((acc, join) => {
         const path = join.path || join.name;
         const subRecord = _.get(record.data, path);
         if(subRecord instanceof RecordSet) {
@@ -114,7 +119,7 @@ class RecordSet
           }
         }
         return acc;
-      }, this.table.columns.values(record.data, null, true).reduce((acc, { col, value }) => {
+      }, this.join.table.columns.values(record.data, null, true).reduce((acc, { col, value }) => {
         if(col.calc) {
           return acc;
         }
@@ -188,10 +193,10 @@ class RecordSet
     }, { results: [], valid: true });
   }
 
-  validateAsync(context)
+  async validateAsync(context)
   {
     return Promise.all(this.records.map(record => {
-      return Promise.all(this.table.columns.values(record.data, null, true).reduce((acc, { col, value }) => {
+      return Promise.all(this.join.table.columns.values(record.data, null, true).reduce((acc, { col, value }) => {
         if(col.calc) {
           return acc;
         }
@@ -210,7 +215,7 @@ class RecordSet
           return acc;
         }
         if(col.validate) {
-          const validate = v => {
+          const validate = async v => {
             if(_.isString(v)) {
               if(`${value}` !== v) {
                 return { path, error: col.validationError || 'Field is not valid' };
@@ -225,37 +230,32 @@ class RecordSet
             }
             if(_.isFunction(v)) {
               try {
-                return Promise.resolve(v(value, col, context)).then(result => {
-                  if(result === true) {
-                    return null;
-                  }
-                  return { path, error: result || col.validationError || 'Field failed function validation' }
-                }).catch(error => {
-                  return { path, error: (error instanceof Error?error.message:error) || col.validationError || 'Field failed function validation' };
-                });
+                const result = await v(value, col, context);
+                if(result === true) {
+                  return null;
+                }
+                return { path, error: result || col.validationError || 'Field failed function validation' };
               } catch(error) {
                 return { path, error: (error instanceof Error?error.message:error) || col.validationError || 'Field failed function validation' };
               }
             }
             if(_.isArray(v)) {
-              return Promise.all(v, validate).then(result => {
-                return result.reduce((acc, result) => {
-                  if(!acc.error) {
-                    return acc;
-                  }
-                  if(!result.error) {
-                    delete acc.error;
-                  }
+              return (await Promise.all(v, validate)).reduce((acc, result) => {
+                if(!acc.error) {
                   return acc;
-                }, { path, error: col.validationError || 'Field did not match any validator' });
-              });
+                }
+                if(!result.error) {
+                  delete acc.error;
+                }
+                return acc;
+              }, { path, error: col.validationError || 'Field did not match any validator' });
             }
             return null;
           }
           return acc.concat(validate(col.validate));
         }
         return acc.concat({ path, value });
-      }, []).concat(this.table.joins.reduce((acc, join) => {
+      }, []).concat(this.join.table.joins.reduce((acc, join) => {
         const path = join.path || join.name;
         const recordSet = _.get(record.data, path);
         if(recordSet instanceof RecordSet) {
@@ -290,7 +290,7 @@ class RecordSet
   fill(context)
   {
     this.records.forEach(record => {
-      this.table.columns.fields().forEach(col => {
+      this.join.table.columns.fields().forEach(col => {
         const path = col.path;
         let value = _.get(record, path);
         if(_.isNil(_.get(this.joined, path)) && col.default !== undefined && (value === undefined || (col.notNull && value === null))) {
@@ -302,7 +302,7 @@ class RecordSet
           _.set(record.data, path, value);
         }
       });
-      this.table.joins.forEach(join => {
+      this.join.table.joins.forEach(join => {
         const path = join.path || join.name;
         const subRecord = _.get(record, path);
         if(subRecord instanceof RecordSet) {
@@ -316,7 +316,7 @@ class RecordSet
   fillAsync(context)
   {
     return Promise.all(this.records.map(record => {
-      return Promise.all(this.table.columns.fields().map(col => {
+      return Promise.all(this.join.table.columns.fields().map(col => {
         const path = col.path;
         let value = _.get(record, path);
         if(_.isNil(_.get(this.joined, path)) && col.default !== undefined && (value === undefined || (col.notNull && value === null))) {
@@ -330,7 +330,7 @@ class RecordSet
           _.set(record.data, path, value);
         }
       })).then(() => {
-        return Promise.all(this.table.joins.map(join => {
+        return Promise.all(this.join.table.joins.map(join => {
           const path = join.path || join.name;
           const subRecord = _.get(record, path);
           if(subRecord instanceof RecordSet) {
