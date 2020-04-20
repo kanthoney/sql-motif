@@ -4,9 +4,8 @@ Some table query generation methods take an optional `options` argument to adjus
 
 * `joins`. This is an array of the names of joined tables to include in the query. It can also be the string `'*'` to specify all joined tables. If omitted all joined tables are included.
 
-* `safe`. If set to `true`, in a query involving a `where` clause, throw an error if any of the primary key fields of the top level table (not including joined tables) is missing.
-
-* `fullSafe`. If set to `true`, in a query involving a `where` clause throw an error if any of the primary key fields are missing, including those o joined tables.
+* `safe` (*experimental*). If set to `true`, in a query involving a `where` clause, throw an error if any of the primary key fields of the top level table or any non-read-only joined tables is missing.
+Marked as experimental as it does not currently detect the situation where the key is in a joined subtable column.
 
 * `brackets`. For a `where` clause, enclose the clause in brackets if there are more than one subclauses.
 

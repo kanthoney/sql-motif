@@ -2,9 +2,9 @@
 
 class SafetyError extends Error
 {
-  constructor()
+  constructor(col)
   {
-    super('Safety Error - part of primary key missing');
+    super(`Safety Error - ${col.sql.fullName} column missing from primary key`);
   }
 };
 

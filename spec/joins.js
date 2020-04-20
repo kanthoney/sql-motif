@@ -42,5 +42,18 @@ module.exports = {
       on: ['company', 'warehouse_name:name']
     }),
     on: ['company', 'bins_inventory_sku:sku']
+  }),
+  inventory3: tables.inventory.join({
+    name: 'bins',
+    table: tables.warehouse_bins.join({
+      table: tables.warehouse,
+      on: ['company', 'name:warehouse_name']
+    }),
+    on: ['company', 'warehouse_name', 'bin'],
+    readOnly: true
+  }).join({
+    table: tables.stock,
+    on: ['company', 'sku'],
+    readOnly: true
   })
 }

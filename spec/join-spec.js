@@ -37,19 +37,6 @@ describe('join tests', () => {
       );
     });
 
-    it('should create an update statement', () => {
-      expect(j.Update({ company: 'ACME01', sku: 'ABC065', description: 'plastic thingy' })).toBe(
-        'update "stock" set "stock"."description" = \'plastic thingy\' where "stock"."company" = \'ACME01\' and "stock"."sku" = \'ABC065\''
-      );
-    });
-
-    it('should create a delete statement', () => {
-      expect(j.Delete({ company: 'ACME01', sku: 'ABC065', description: 'item', inventory: { warehouse_name: 'atlas' }}, { joins: 'inventory'})).toBe(
-        'delete "stock", "i1" from "stock" left join "inventory" as "i1" on "i1"."company" = "stock"."company" and "i1"."sku" = "stock"."sku" and "i1"."bin" = "warehouse_bins"."bin" ' +
-        'where "stock"."company" = \'ACME01\' and "stock"."sku" = \'ABC065\' and "i1"."warehouse_name" = \'atlas\''
-      );
-    });
-
   });
 
   describe('inventory2 tests', () => {

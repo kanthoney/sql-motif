@@ -125,6 +125,11 @@ the key fields are taken from the `record`. Takes an optional [`options`](./tabl
 
 * `Update(record, [old, options])`. Produces a full `update` query including the `update` keyword.
 
+* `updateSafe(record, [old, options])` (*experimental*). Produces an `update` query, throwing an error if any part of the primary key is missing from either the main table or
+joined tables not marked as read only. Does not currently detect if the missing key can be obtained from one of the subtables.
+
+* `UpdateSafe(record, [old, options])` (*experimental*). Produces an `update` query, including the `update` keyword, throwing an error if the part of the primary key is missing.
+
 ### Delete methods
 
 * `delete(record, [options])`. Produces a `delete` statement excluding the `delete` keyword. Takes an optional [`options`](./table-options) argument.

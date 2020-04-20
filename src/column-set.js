@@ -99,14 +99,13 @@ class ColumnSet
         return acc.concat(col.values(record, options, all));
       } else if(col instanceof Column) {
         if(!options.selector || col.passesSelection(options.selector)) {
-          const path = col.path || col.alias || col.name;
-          let value = _.get(record, path);
+          let value = _.get(record, col.path);
           if(value !== undefined || all) {
             return acc.concat({ col, value });
           }
         }
-        if((options.safe || options.fullSafe) && col.primaryKey) {
-          throw new SafetyError;
+        if(options.safe && col.primaryKey && !_.get(options.joined, col.path)) {
+          throw new SafetyError(col);
         }
       }
       return acc;

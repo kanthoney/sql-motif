@@ -80,7 +80,7 @@ class Table
           path: this.config.path.concat(join.path || join.name)
         });
       } else {
-        join.name = join.name || join.table.name;
+        join.name = join.name || join.config.name;
         join.table = new Table({
           ...join.table,
           columns: join.table.columns.concat(join.columns || []),
@@ -330,7 +330,7 @@ class Table
         return `${fullName} = ${this.escape(value)}`;
       }
     }).concat(this.joins.reduce((acc, join) => {
-      if(join.readOnly || (options.joins && options.join !== '*' && !options.joins.includes(join.name))) {
+      if(join.readOnly || (options.joins && options.joins !== '*' && !options.joins.includes(join.name))) {
         return acc;
       }
       const subRecord = _.get(record, join.name);
@@ -345,7 +345,7 @@ class Table
 
   setNonKey(record, options)
   {
-    return this.set(record, { joins: [], ...options, selector: col => !col.primaryKey, safe: false, fullSafe: false });
+    return this.set(record, { ...options, selector: col => !col.primaryKey, safe: false });
   }
 
   Set(record, options)
@@ -401,7 +401,7 @@ class Table
     if(record instanceof RecordSet) {
       return this.whereArray(record.toObject({ includeJoined: true }));
     }
-    options = _.defaults(options || {}, { default: '' });
+    options = _.defaults(options || {}, { default: '', joined: {} });
     if(options.joins && options.joins !== '*') {
       if(!_.isArray(options.joins)) {
         options.joins = [options.joins];
@@ -424,6 +424,13 @@ class Table
       return [clauses.join(' or ')];
     }
     return this.columns.values(record, options).map(({ col, value }) => {
+      if(options.safe) {
+        if(!_.isNil(value) || _.get(options.joined, col.path)) {
+          col.joinedTo.forEach(path => {
+            _.set(options.joined, path, true);
+          });
+        }
+      }
       if(value instanceof Operator) {
         return value.clause(this.dialect, col);
       } else if(value instanceof Function) {
@@ -434,8 +441,14 @@ class Table
       if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
         return acc;
       }
-      const subRecord = _.get(record, join.name);
-      const where = join.table.where(subRecord || {}, { ...options, safe: false, brackets: _.isArray(subRecord) });
+      const subRecord = _.get(record, join.path || join.name);
+      const where = join.table.where(subRecord || {}, {
+        ...options,
+        joined: _.get(options.joined, join.path || join.name),
+        needed: _.get(options.needed, join.path || join.name),
+        safe: options.safe && !join.readOnly,
+        brackets: _.isArray(subRecord)
+      });
       if(!where) {
         return acc;
       }
@@ -458,7 +471,7 @@ class Table
 
   whereKey(record, options)
   {
-    return this.where(record, { joins: [], ...options, selector: col => col.primaryKey });
+    return this.where(record, { ...options, selector: col => col.primaryKey });
   }
 
   Where(record, options)
@@ -473,7 +486,7 @@ class Table
 
   update(record, old, options)
   {
-    options = { joins: [], ...options };
+    options = options || {};
     if(old) {
       return `${this.from(options)} ${this.Set(record, options)} ${this.WhereKey(old, options)}`;
     }
@@ -483,6 +496,16 @@ class Table
   Update(record, old, options)
   {
     return `update ${this.update(record, old, options)}`;
+  }
+
+  updateSafe(record, old, options)
+  {
+    return this.update(record, old, { ...options, safe: true });
+  }
+
+  UpdateSafe(record, old, options)
+  {
+    return this.Update(record, old, { ...options, safe: true });
   }
 
   delete(record, options)
