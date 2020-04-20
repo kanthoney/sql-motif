@@ -484,6 +484,26 @@ class Table
     return `where ${this.whereKey(record, options)}`;
   }
 
+  whereKeySafe(record, options)
+  {
+    return this.whereKey(record, { ...options, safe: true });
+  }
+
+  WhereKeySafe(record, options)
+  {
+    return `where ${this.whereKeySafe(record, options)}`;
+  }
+
+  whereSafe(record, options)
+  {
+    return this.where(record, { ...options, safe: true });
+  }
+
+  WhereSafe(record, options)
+  {
+    return `where ${this.whereSafe(record, options)}`;
+  }
+
   update(record, old, options)
   {
     options = options || {};
@@ -510,7 +530,7 @@ class Table
 
   delete(record, options)
   {
-    options = { joins: [], selector: col => col.primaryKey, ...options };
+    options = { selector: col => col.primaryKey, ...options };
     const tables = this.tables({ ...options, writeable: true }).map(table => table.as()).join(', ');
     return `${tables} ${this.From(options)} ${this.WhereKey(record, options)}`;
   }
@@ -518,6 +538,16 @@ class Table
   Delete(record, options)
   {
     return `delete ${this.delete(record, options)}`;
+  }
+
+  deleteSafe(record, options)
+  {
+    return this.delete(record, { ...options, safe: true });
+  }
+
+  DeleteSafe(record, options)
+  {
+    return `delete ${this.deleteSafe(record, options)}`;
   }
 
   createColumnsArray()

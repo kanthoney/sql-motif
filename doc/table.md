@@ -106,6 +106,15 @@ separated by `or`. Takes an optional [`options`](./table-options) argument.
 
 * `WhereKey(record, [options])`. Produces a `where` clause for the key fields of the record, including the `where` keyword.
 
+* `whereSafe(record, [options])` (*experimental*). Produces a `where` clause for the key fields of the record. Throws an error if part of the primary key of the main table
+or any joined tables that are not read only is missing. Does not currently check subtables to see if the missing key could be obtained from there.
+
+* `WhereSafe(record, [options])` (*experimental*). Produces a `where` clause for the key fields of the record, including the `where` keyword. Throws error if part of primary key is missing.
+
+* `whereKeySafe(record, [options])` (*experimental*). Produces a `where` clause for the key fields of the record. Throws error if part of primary key is missing.
+
+* `WhereKeySafe(record, [options])` (*experimental*). Produces a `where` clause for the key fields of the record, including the `where` keyword. Throws error if part of primary key is missing.
+
 ### Insert methods
 
 * `insertColumns()` Produces a list of columns for an insert clause for the top level table not including joins.
@@ -135,6 +144,11 @@ joined tables not marked as read only. Does not currently detect if the missing 
 * `delete(record, [options])`. Produces a `delete` statement excluding the `delete` keyword. Takes an optional [`options`](./table-options) argument.
 
 * `Delete(record, [options])`. Produces a full `delete` statement including the `delete` keyword.
+
+* `deleteSafe(record, [options])` (*experimental*). Produces a `delete` statement excluding the `delete` keyword. Takes an optional [`options`](./table-options) argument. Throws an error
+if part of the primary key of the main table or a joined table not marked as read only is not detected. Does not currently check subtables to see if the missing key can be found there.
+
+* `DeleteSafe(record, [options])` (*experimental*). Produces a full `delete` statement including the `delete` keyword. Throws an error if the primary key is not complete.
 
 ### Create methods
 
