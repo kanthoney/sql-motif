@@ -74,6 +74,10 @@ describe('escape tests', () => {
       expect(d.escape(Fn('ifnull', t.column('order_id'), '6a49edb7-45f3-4478-849e-badd08ee0930'))).toBe('ifnull("s1"."orders"."order_id", \'6a49edb7-45f3-4478-849e-badd08ee0930\')');
     });
 
+    it('should escape a buffer', () => {
+      expect(d.escape(Buffer.from('Hello'))).toBe("X'48656c6c6f'");
+    });
+
   });
 
   describe('mysql dialect', () => {
@@ -140,6 +144,11 @@ describe('escape tests', () => {
         const t = tables.orders;
         expect(d.escape(Fn('ifnull', t.column('order_id'), '6a49edb7-45f3-4478-849e-badd08ee0930'))).toBe('ifnull("s1"."orders"."order_id", \'6a49edb7-45f3-4478-849e-badd08ee0930\')');
       });
+
+      it('should escape a buffer', () => {
+        expect(d.escape(Buffer.from('Hello'))).toBe("X'48656c6c6f'");
+      });
+
     }
   });
 
@@ -207,6 +216,11 @@ describe('escape tests', () => {
         const t = tables.orders;
         expect(d.escape(Fn('ifnull', t.column('order_id'), '6a49edb7-45f3-4478-849e-badd08ee0930'))).toBe('ifnull("s1"."orders"."order_id", \'6a49edb7-45f3-4478-849e-badd08ee0930\')');
       });
+
+      it('should escape a buffer', () => {
+        expect(d.escape(Buffer.from('Hello'))).toBe("X'48656c6c6f'");
+      });
+
     }
   });
 
