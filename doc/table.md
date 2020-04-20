@@ -159,6 +159,8 @@ instead.
 
 * `createPrimaryKey()`. Produces a `primary key` clause for use in a `create table` statement.
 
+* `createArray()`. Produces an array of clauses including columns, indexes, foreign keys and the primary key for use in a create statement.
+
 * `create()` Produces a `create` statement for the top level table, excluding the `create table` keywords.
 
 * `Create()` Produces a full `create` statement for the top level table including the `create table` keywords.

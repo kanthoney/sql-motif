@@ -578,7 +578,11 @@ class Table
 
   createPrimaryKey()
   {
-    return this.createPrimaryKeyArray().join(', ');
+    const a = this.createPrimaryKeyArray();
+    if(a.length > 0) {
+      return `primary key(${a.join(', ')})`;
+    }
+    return '';
   }
 
   createIndexesArray()
@@ -685,22 +689,19 @@ class Table
     return this.createForeignKeysArray().join(', ');
   }
 
+  createArray()
+  {
+    return [].concat(
+      this.createColumnsArray(),
+      this.createIndexesArray(),
+      this.createPrimaryKey() || [],
+      this.createForeignKeysArray()
+    );
+  }
+
   create()
   {
-    let a = this.createColumnsArray();
-    const idx = this.createIndexes();
-    if(idx) {
-      a.push(idx);
-    }
-    const pk = this.createPrimaryKey();
-    if(pk) {
-      a.push(`primary key(${pk})`);
-    }
-    const fk = this.createForeignKeys();
-    if(fk) {
-      a.push(fk);
-    }
-    return `${this.fullName()} (${a.join(', ')})`;
+    return `${this.fullName()} (${this.createArray().join(', ')})`;
   }
 
   Create()
