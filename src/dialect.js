@@ -123,7 +123,7 @@ class Dialect
       return s.clause(this);
     }
     if(s instanceof Identifier) {
-      return this.escapeId(s);
+      return this.escapeId(s.name);
     }
     if(s instanceof Column) {
       return s.SQL();
