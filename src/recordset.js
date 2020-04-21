@@ -136,25 +136,7 @@ class RecordSet
   fill(context)
   {
     this.records.forEach(record => {
-      this.join.table.columns.fields().forEach(col => {
-        const path = col.path;
-        let value = _.get(record, path);
-        if(_.isNil(_.get(this.joined, path)) && col.default !== undefined && (value === undefined || (col.notNull && value === null))) {
-          if(_.isFunction(col.default)) {
-            value = col.default(col, context);
-          } else {
-            value = col.default;
-          }
-          _.set(record.data, path, value);
-        }
-      });
-      this.join.table.joins.forEach(join => {
-        const path = join.path || join.name;
-        const subRecord = _.get(record, path);
-        if(subRecord instanceof RecordSet) {
-          subRecord.fill(context);
-        }
-      });
+      record.fill(context);
     });
     return this;
   }
@@ -162,28 +144,7 @@ class RecordSet
   fillAsync(context)
   {
     return Promise.all(this.records.map(record => {
-      return Promise.all(this.join.table.columns.fields().map(col => {
-        const path = col.path;
-        let value = _.get(record, path);
-        if(_.isNil(_.get(this.joined, path)) && col.default !== undefined && (value === undefined || (col.notNull && value === null))) {
-          if(_.isFunction(col.default)) {
-            return col.default(col, context).then(value => {
-              _.set(record.data, path, value);
-            });
-          } else {
-            value = col.default;
-          }
-          _.set(record.data, path, value);
-        }
-      })).then(() => {
-        return Promise.all(this.join.table.joins.map(join => {
-          const path = join.path || join.name;
-          const subRecord = _.get(record, path);
-          if(subRecord instanceof RecordSet) {
-            return subRecord.fillAsync(context);
-          }
-        }));
-      });
+      return record.fillAsync(context);
     })).then(() => {
       return this;
     });

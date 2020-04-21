@@ -1,10 +1,12 @@
 'use strict';
 
+const uuid = require('uuid');
+
 module.exports = {
   sku: { type: 'char(25)', validate: /./, validationError: 'SKU must not be empty' },
   account: 'char(12)',
   bin: 'char(8)',
-  id: { type: 'char(36)', validate: /^[\da-fA-f]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}$/, validationError: 'Invalid UUID' },
+  id: { type: 'char(36)', validate: /^[\da-fA-f]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}$/, validationError: 'Invalid UUID', default: () => uuid.v4() },
   primaryId: { type: 'id', primaryKey: true, notNull: true },
   addressLine: { type: 'char(35)', notNull: true, default: '', tags: 'addressLine' },
   postalCode: { type: 'char(15)', notNull: true, default: '' },

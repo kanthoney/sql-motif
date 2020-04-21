@@ -242,6 +242,69 @@ class Record
     }, { record: this.toObject({ mapJoined: true, includeJoined: true, noSubRecords: true }), valid: this.valid, errors: this.errors });
   }
 
+  fill(context)
+  {
+    const RecordSet = require('./recordset');
+    this.recordSet.join.table.columns.fields().forEach(col => {
+      const path = col.path;
+      let value = _.get(this.data, path);
+      if(value === undefined) {
+        value = _.get(this.recordSet.joined, path);
+      }
+      if(col.default !== undefined && (value === undefined || (col.notNull && value === null))) {
+        if(_.isFunction(col.default)) {
+          value = col.default(col, context);
+        } else {
+          value = col.default;
+        }
+        _.set(this.data, path, value);
+        col.joinedTo.forEach(path => {
+          _.set(this.recordSet.joined, path, value);
+        });
+      }
+    });
+    this.recordSet.join.table.joins.forEach(join => {
+      const path = join.path || join.name;
+      const subRecord = _.get(this.data, path);
+      if(subRecord instanceof RecordSet) {
+        Object.assign(subRecord.joined, _.get(this.recordSet.joined, path));
+        subRecord.fill(context);
+      }
+    });
+    return this;
+  }
+
+  fillAsync(context)
+  {
+    const RecordSet = require('./recordset');
+    return Promise.all(this.recordSet.join.table.columns.fields().map(col => {
+      const path = col.path;
+      let value = _.get(this.data, path);
+      if(_.isNil(_.get(this.recordSet.joined, path)) && col.default !== undefined && (value === undefined || (col.notNull && value === null))) {
+        if(_.isFunction(col.default)) {
+          return col.default(col, context).then(value => {
+            _.set(record.data, path, value);
+          });
+        } else {
+          value = col.default;
+        }
+        _.set(this.data, path, value);
+        col.joinedTo.forEach(path => {
+          _.set(this.recordSet.joined, path, value);
+        });
+      }
+    })).then(() => {
+      return Promise.all(this.recordSet.join.table.joins.map(join => {
+        const path = join.path || join.name;
+        const subRecord = _.get(this.data, path);
+        if(subRecord instanceof RecordSet) {
+          Object.assign(subRecord.joined, _.get(this.recordSet.joined, path));
+          return subRecord.fillAsync(context);
+        }
+      }));
+    });
+  }
+
   toObject(options)
   {
     const RecordSet = require('./recordset');
