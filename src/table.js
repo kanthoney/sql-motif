@@ -221,7 +221,7 @@ class Table
       }
       return acc.concat(`${clause} ${join.table.from({ ...options, brackets: true })}`);
     }, []);
-    if(joins.length > 0 && options.brackets) {
+    if(joins.length > 0 && options.brackets && !this.dialect.options.joinBracketsNotAllowed) {
       return `(${[clause].concat(joins).join(' ')})`;
     }
     return [clause].concat(joins).join(' ');
@@ -304,6 +304,19 @@ class Table
   Select(selector, options)
   {
     return `select ${this.select(selector, options)}`;
+  }
+
+  selectWhere(selector, where, options)
+  {
+    if(where) {
+      return `${this.select(selector)} ${this.From(options)} ${this.Where(where, options)}`;
+    }
+    return `${this.select(selector)} ${this.From(options)}`;
+  }
+
+  SelectWhere(selector, where, options)
+  {
+    return `select ${this.selectWhere(selector, where, options)}`;
   }
 
   setArray(record, options)
@@ -679,7 +692,7 @@ class Table
   {
     const clause = this.groupBy(fields);
     if(clause) {
-      return `GROUP BY ${clause}`;
+      return `group by ${clause}`;
     }
     return '';
   }
@@ -712,7 +725,7 @@ class Table
   {
     const clause = this.orderBy(fields);
     if(clause) {
-      return `ORDER BY ${clause}`;
+      return `order by ${clause}`;
     }
     return '';
   }
@@ -773,6 +786,18 @@ class Table
   {
     const r = new RecordSet(this);
     return r.addSQLResult(lines);
+  }
+
+  extend(config)
+  {
+    return new Table({
+      ...this.config,
+      ...config,
+      columns: this.config.columns.concat(config.columns || []),
+      indexes: this.config.indexes.concat(config.indexes || []),
+      references: this.config.references.concat(config.references || []),
+      joins: this.config.joins.concat(config.joins || [])
+    });
   }
 };
 

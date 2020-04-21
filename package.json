@@ -19,5 +19,8 @@
   },
   "optionalDependencies": {
     "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "sqlite3": "^4.1.1"
   }
 }

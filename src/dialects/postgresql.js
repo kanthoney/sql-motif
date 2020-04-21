@@ -10,8 +10,8 @@ module.exports = class PostgreSQLDialect extends Dialect
     return `${this.options.quotes[0]}\\x${s.toString('hex')}${this.options.quotes[1]}`;
   }
 
-  insertIgnore(clause)
+  insertIgnore(table, record)
   {
-    return `insert ${clause} on conflict do nothing`;
+    return `insert into ${table.insert(record)} on conflict do nothing`;
   }
 }

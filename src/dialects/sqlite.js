@@ -4,8 +4,13 @@ const Dialect = require('../dialect');
 
 module.exports = class SQLiteDialect extends Dialect
 {
-  insertIgnore(clause)
+  constructor()
   {
-    return `insert or ignore ${clause}`;
+    super({ joinBracketsNotAllowed: true });
+  }
+
+  insertIgnore(table, record)
+  {
+    return `insert or ignore into ${table.insert(record)}`;
   }
 }
