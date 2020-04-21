@@ -9,6 +9,7 @@ module.exports = {
     columns: [
       { name: 'line_count', calc: (table, sql) => sql`count(distinct ${table.column('lines_line_no')})`, hidden: true }
     ],
+    context: { line_no: 1 },
     name: 'lines'
   }),
   inventory: tables.stock.join({

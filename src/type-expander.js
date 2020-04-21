@@ -31,7 +31,7 @@ class TypeExpander
       return new ColumnSet({
         columns: type.map(subType => ({
           ...subType,
-          ...(_.omit(col, ['type', 'tags'])),
+          ...(_.omit(col, ['type', 'tags', 'context'])),
           path: path.concat(subType.alias || subType.name),
           alias: `${alias}_${subType.alias || subType.name}`,
           name: `${name}_${subType.name}`

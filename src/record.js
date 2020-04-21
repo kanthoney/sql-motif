@@ -202,12 +202,19 @@ class Record
       }
       return acc.concat({ path, value });
     }, []).concat(this.recordSet.join.table.joins.reduce((acc, join) => {
-      const path = join.path || join.name;
-      const recordSet = _.get(this.data, path);
-      if(recordSet instanceof RecordSet) {
-        return acc.concat(recordSet.validateAsync(context));
-      }
-      return acc;
+      return acc.concat(new Promise(resolve => {
+        if(_.isFunction(join.context)) {
+          resolve(join.context({ ...context }));
+        } else {
+          resolve({ ...context, ...join.context });
+        }
+      }).then(context => {
+        const path = join.path || join.name;
+        const recordSet = _.get(this.data, path);
+        if(recordSet instanceof RecordSet) {
+          return recordSet.validateAsync(context);
+        }
+      }));
     }, []))).then(result => {
       result.forEach(result => {
         if(result instanceof RecordSet) {
@@ -268,7 +275,10 @@ class Record
       const subRecord = _.get(this.data, path);
       if(subRecord instanceof RecordSet) {
         Object.assign(subRecord.joined, _.get(this.recordSet.joined, path));
-        subRecord.fill(context);
+        if(_.isFunction(join.context)) {
+          subRecord.fill(join.context({ ...context }));
+        }
+        subRecord.fill({ ...context, ...join.context });
       }
     });
     return this;
@@ -295,13 +305,26 @@ class Record
       }
     })).then(() => {
       return Promise.all(this.recordSet.join.table.joins.map(join => {
-        const path = join.path || join.name;
-        const subRecord = _.get(this.data, path);
-        if(subRecord instanceof RecordSet) {
-          Object.assign(subRecord.joined, _.get(this.recordSet.joined, path));
-          return subRecord.fillAsync(context);
-        }
+        return new Promise(resolve => {
+          if(_.isFunction(join.context)) {
+            resolve(join.context({ ...context }));
+          } else {
+            resolve({ ...context, ...join.context });
+          }
+        }).then(context => {
+          const path = join.path || join.name;
+          const subRecord = _.get(this.data, path);
+          if(subRecord instanceof RecordSet) {
+            Object.assign(subRecord.joined, _.get(this.recordSet.joined, path));
+            if(_.isFunction(join.context)) {
+              return subRecord.fillAsync(join.context({ ...context }));
+            }
+            return subRecord.fillAsync({ ...context, ...join.context });
+          }
+        });
       }));
+    }).then(() => {
+      return this;
     });
   }
 

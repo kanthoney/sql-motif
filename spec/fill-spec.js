@@ -81,6 +81,12 @@ describe('fill tests', () => {
               description: 'Hammer',
               qty: 5,
               cost: 8.64
+            },
+            {
+              sku: 'GN878',
+              description: 'Screwdriver',
+              qty: 8,
+              cost: 7.83
             }
           ]
         };
@@ -88,8 +94,63 @@ describe('fill tests', () => {
         const order_id = result.toJSON()[0].order_id;
         expect(JSON.stringify(result)).toBe(
           `[{"order_id":"${order_id}","delivery":{"name":"","address":{"company":"","street":"","locality":"","city":"","region":"","postalCode":"","country":"GB"}},` +
+          `"invoice":{"name":"","address":{"company":"","street":"","locality":"","city":"","region":"","postalCode":"","country":"GB"}},"lines":[{"order_id":"${order_id}",` +
+          `"line_no":1,"sku":"AA451","description":"Hammer","qty":5},{"order_id":"${order_id}","line_no":2,"sku":"GN878","description":"Screwdriver","qty":8}]}]`
+        );
+      });
+
+      it('should fill empty records', () => {
+        const records = [
+          {
+            lines: [
+              {
+                sku: 'AA451',
+                description: 'Hammer',
+                qty: 5,
+                cost: 8.64
+              },
+              {
+                sku: 'GN878',
+                description: 'Screwdriver',
+                qty: 8,
+                cost: 7.83
+              }
+            ]
+          },
+          {
+            lines: [
+              {
+                sku: 'VB989',
+                description: 'Pliers',
+                cost: 5.34,
+                qty: 1
+              },
+              {
+                sku: 'WS565',
+                description: 'Wire cutters',
+                cost: 8.45,
+                qty: 1
+              },
+              {
+                sku: 'SC674',
+                description: 'Hacksaw',
+                cost: 6.56,
+                qty: 2
+              }
+            ]
+          }
+        ];
+        const result = j.fill(records);
+        const order_ids = result.toJSON().map(record => record.order_id);
+        expect(JSON.stringify(result)).toBe(
+          `[{"order_id":"${order_ids[0]}","delivery":{"name":"","address":{"company":"","street":"","locality":"","city":"","region":"","postalCode":"","country":"GB"}},` +
+          `"invoice":{"name":"","address":{"company":"","street":"","locality":"","city":"","region":"","postalCode":"","country":"GB"}},"lines":[{"order_id":"${order_ids[0]}",` +
+          `"line_no":1,"sku":"AA451","description":"Hammer","qty":5},{"order_id":"${order_ids[0]}","line_no":2,"sku":"GN878","description":"Screwdriver","qty":8}]},` +
+          `{"order_id":"${order_ids[1]}","delivery":{"name":"","address":{"company":"","street":"","locality":"","city":"","region":"","postalCode":"","country":"GB"}},` +
           `"invoice":{"name":"","address":{"company":"","street":"","locality":"","city":"","region":"","postalCode":"","country":"GB"}},` +
-          `"lines":[{"order_id":"${order_id}","sku":"AA451","description":"Hammer","qty":5}]}]`
+          `"lines":[{"order_id":"${order_ids[1]}","line_no":1,"sku":"VB989","description":"Pliers","qty":1},` +
+          `{"order_id":"${order_ids[1]}","line_no":2,"sku":"WS565","description":"Wire cutters","qty":1},` +
+          `{"order_id":"${order_ids[1]}","line_no":3,"sku":"SC674","description":"Hacksaw","qty":2}]}]`
         );
       });
 
