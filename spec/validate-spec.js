@@ -42,7 +42,7 @@ describe("validate tests", () => {
             }
           }
         };
-        expect(JSON.stringify(t.validate(record))).toBe(
+        expect(JSON.stringify(t.validate(record).validationResult())).toBe(
           '{"results":[{"record":{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","order_date":"2020-04-16","customer":"NEF202",' +
           '"delivery":{"name":"Terry Test","address":{"company":"","street":"18 Mansfield Drive","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +
           '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}}},' +
@@ -81,7 +81,7 @@ describe("validate tests", () => {
             }
           }
         };
-        expect(JSON.stringify(t.validate(record))).toBe(
+        expect(JSON.stringify(t.validate(record).validationResult())).toBe(
           '{"results":[{"record":{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","order_date":"2020-04-16","customer":"NEF202",' +
           '"delivery":{"name":"Terry Test","address":{"company":"","street":"18 Mansfield Drive","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +
           '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}}},' +
@@ -120,7 +120,7 @@ describe("validate tests", () => {
             }
           }
         };
-        expect(JSON.stringify(t.validate(record))).toBe(
+        expect(JSON.stringify(t.validate(record).validationResult())).toBe(
           '{"results":[{"record":{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","order_date":"2020-04-16","customer":"NEF202",' +
           '"delivery":{"name":"Terry Test","address":{"company":"","street":"18 Mansfield Drive","locality":"","city":"Huddersfield","region":"",' +
           '"postalCode":"HD18 9TT","country":"GB"}},"invoice":{"name":"","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester",' +
@@ -159,7 +159,7 @@ describe("validate tests", () => {
             }
           }
         };
-        expect(JSON.stringify(t.validate(record))).toBe(
+        expect(JSON.stringify(t.validate(record).validationResult())).toBe(
           '{"results":[{"record":{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","order_date":"2020-04-16","customer":"NEF202",' +
           '"delivery":{"name":"Terry Test","address":{"company":"","street":"18 Mansfield Drive","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"AU"}},' +
           '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}}},' +
@@ -175,7 +175,7 @@ describe("validate tests", () => {
 
       it("should validate empty list of order lines", () => {
         const records = [];
-        expect(JSON.stringify(t.validate(records))).toBe(
+        expect(JSON.stringify(t.validate(records).validationResult())).toBe(
           '{"results":[],"valid":true}'
         );
       });
@@ -201,7 +201,7 @@ describe("validate tests", () => {
             price: '13.54'
           },
         ];
-        expect(JSON.stringify(t.validate(records))).toBe(
+        expect(JSON.stringify(t.validate(records).validationResult())).toBe(
           '{"results":[{"record":{"company":"AA5496","order_id":"fa52237c-c6f2-4063-a541-44720840cc9b","line_no":1,"sku":"AAJ191","description":"Hammer","qty":5,"price":"8.32"},' +
           '"valid":true,"errors":{}},{"record":{"company":"AA5496","order_id":"fa52237c-c6f2-4063-a541-44720840cc9b","line_no":2,"sku":"AA8708","description":"Saw","qty":8,"price":"13.54"},' +
           '"valid":true,"errors":{}}],"valid":true}'
@@ -229,7 +229,7 @@ describe("validate tests", () => {
             price: '13.54'
           },
         ];
-        expect(JSON.stringify(t.validate(records))).toBe(
+        expect(JSON.stringify(t.validate(records).validationResult())).toBe(
           '{"results":[{"record":{"company":"AA5496","order_id":"fa52237c-c6f2-4063-a541-44720840cc9b","line_no":1,"sku":"AAJ191","description":"Hammer","qty":5,"price":"8.32"},' +
           '"valid":true,"errors":{}},{"record":{"company":"AA5496","order_id":"fa52237c-c6f2-4063-a541-44720840cc9b","line_no":2,"sku":"AA8708","description":"Saw","qty":8,"price":"13.54"},' +
           '"valid":true,"errors":{}}],"valid":true}'
@@ -293,7 +293,7 @@ describe("validate tests", () => {
             }
           ]
         };
-        expect(JSON.stringify(j.validate(record))).toBe(
+        expect(JSON.stringify(j.validate(record).validationResult())).toBe(
           '{"results":[{"record":{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","order_date":"2020-04-16","customer":"NEF202",' +
           '"delivery":{"name":"Terry Test","address":{"company":"","street":"18 Mansfield Drive","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +
           '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}},' +
@@ -301,7 +301,7 @@ describe("validate tests", () => {
           '{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","line_no":2,"sku":"AA8708","description":"Saw","qty":8,"price":"13.54"}]},"valid":true,"errors":{}}],"valid":true}'
         );
         j.validateAsync(record).then(result => {
-          expect(JSON.stringify(result)).toBe(
+          expect(JSON.stringify(result.validationResult())).toBe(
             '{"results":[{"record":{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","order_date":"2020-04-16","customer":"NEF202",' +
             '"delivery":{"name":"Terry Test","address":{"company":"","street":"18 Mansfield Drive","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +
             '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}},' +
@@ -357,7 +357,7 @@ describe("validate tests", () => {
             }
           ]
         };
-        expect(JSON.stringify(j.validate(record))).toBe(
+        expect(JSON.stringify(j.validate(record).validationResult())).toBe(
           '{"results":[{"record":{"company":"ACE010","order_date":"2020-04-16","customer":"NEF202","delivery":{"name":"Terry Test","address":{"company":"","street":"18 Mansfield Drive",' +
           '"locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close",' +
           '"locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}},"lines":[{"company":"ACE010","line_no":1,"sku":"AAJ191","description":"Hammer","qty":5,' +
@@ -365,7 +365,7 @@ describe("validate tests", () => {
           '"lines":[{"order_id":"Invalid UUID"},{"order_id":"Invalid UUID"}]}}],"valid":false}'
         );
         j.validateAsync(record).then(result => {
-          expect(JSON.stringify(result)).toBe(
+          expect(JSON.stringify(result.validationResult())).toBe(
             '{"results":[{"record":{"company":"ACE010","order_date":"2020-04-16","customer":"NEF202","delivery":{"name":"Terry Test","address":{"company":"","street":"18 Mansfield Drive",' +
             '"locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close",' +
             '"locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}},"lines":[{"company":"ACE010","line_no":1,"sku":"AAJ191","description":"Hammer","qty":5,' +
@@ -421,7 +421,7 @@ describe("validate tests", () => {
             }
           ]
         };
-        expect(JSON.stringify(j.validate(record))).toBe(
+        expect(JSON.stringify(j.validate(record).validationResult())).toBe(
           '{"results":[{"record":{"company":"ACE010","order_date":"2020-04-16","customer":"NEF202","delivery":{"name":"Terry Test",' +
           '"address":{"company":"","street":"18 Mansfield Drive","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +
           '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}},' +
@@ -430,7 +430,7 @@ describe("validate tests", () => {
           '{"order_id":"Invalid UUID","sku":"SKU must not be empty"}]}}],"valid":false}'
         );
         j.validateAsync(record).then(result => {
-          expect(JSON.stringify(result)).toBe(
+          expect(JSON.stringify(result.validationResult())).toBe(
             '{"results":[{"record":{"company":"ACE010","order_date":"2020-04-16","customer":"NEF202","delivery":{"name":"Terry Test",' +
             '"address":{"company":"","street":"18 Mansfield Drive","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +
             '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}},' +
@@ -488,7 +488,7 @@ describe("validate tests", () => {
             }
           ]
         };
-        expect(JSON.stringify(j.validate(record))).toBe(
+          expect(JSON.stringify(j.validate(record).validationResult())).toBe(
           '{"results":[{"record":{"company":"ACE010","order_id":"3cea0a72-0e82-4a97-aea2-e28293e8fae6","order_date":"2020-04-16","customer":"NEF202",' +
           '"delivery":{"name":"Terry Test","address":{"company":"","street":"18 Mansfield Drive","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +
           '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}},' +
@@ -497,7 +497,7 @@ describe("validate tests", () => {
           '"errors":{"lines":[{},{"sku":"SKU must not be empty"}]}}],"valid":false}'
         );
         j.validateAsync(record).then(result => {
-          expect(JSON.stringify(result)).toBe(
+          expect(JSON.stringify(result.validationResult())).toBe(
             '{"results":[{"record":{"company":"ACE010","order_id":"3cea0a72-0e82-4a97-aea2-e28293e8fae6","order_date":"2020-04-16","customer":"NEF202",' +
             '"delivery":{"name":"Terry Test","address":{"company":"","street":"18 Mansfield Drive","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +
             '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}},' +
@@ -555,7 +555,7 @@ describe("validate tests", () => {
             }
           ]
         };
-        expect(JSON.stringify(j.validate(record))).toBe(
+        expect(JSON.stringify(j.validate(record).validationResult())).toBe(
           '{"results":[{"record":{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","order_date":"2020-04-16","customer":"NEF202",' +
           '"delivery":{"name":"Terry Test","address":{"company":"","street":"18 Mansfield Drive","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +
           '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}},' +
@@ -564,7 +564,7 @@ describe("validate tests", () => {
           '"errors":{"lines":[{"price":"Invalid price"},{}]}}],"valid":false}'
         );
         j.validateAsync(record).then(result => {
-          expect(JSON.stringify(result)).toBe(
+          expect(JSON.stringify(result.validationResult())).toBe(
             '{"results":[{"record":{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","order_date":"2020-04-16","customer":"NEF202",' +
             '"delivery":{"name":"Terry Test","address":{"company":"","street":"18 Mansfield Drive","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +
             '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}},' +
@@ -622,7 +622,7 @@ describe("validate tests", () => {
             }
           ]
         };
-        expect(JSON.stringify(j.validate(record, { allowEmptyStreets: true }))).toBe(
+        expect(JSON.stringify(j.validate(record, { allowEmptyStreets: true }).validationResult())).toBe(
           '{"results":[{"record":{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","order_date":"2020-04-16","customer":"NEF202",' +
           '"delivery":{"name":"Terry Test","address":{"company":"","street":"","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +
           '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}},' +
@@ -630,7 +630,7 @@ describe("validate tests", () => {
           '{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","line_no":2,"sku":"AA8708","description":"Saw","qty":8,"price":"13.54"}]},"valid":true,"errors":{}}],"valid":true}'
         );
         j.validateAsync(record, { allowEmptyStreets: true }).then(result => {
-          expect(JSON.stringify(result)).toBe(
+          expect(JSON.stringify(result.validationResult())).toBe(
             '{"results":[{"record":{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","order_date":"2020-04-16","customer":"NEF202",' +
             '"delivery":{"name":"Terry Test","address":{"company":"","street":"","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +
             '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}},' +
@@ -717,7 +717,7 @@ describe("validate tests", () => {
             }
           ]
         };
-        expect(JSON.stringify(j.validate(record))).toBe(
+        expect(JSON.stringify(j.validate(record).validationResult())).toBe(
           '{"results":[{"record":{"company":"AAZ909","sku":"CUP001","description":"Sink plunger","warehouse":[{"company":"AAZ909","name":"Atlas","description":"Comfy",' +
           '"address":{"company":"Hot Stuff Ltd","street":"9 Blarney St","locality":"Expressions Business Park","city":"Huddersfield","region":"","postalCode":"HD7 9XJ","country":"GB"},' +
           '"bins":[{"company":"AAZ909","warehouse_name":"Atlas","bin":"AD14E2","inventory":[{"company":"AAZ909","sku":"CUP001","warehouse_name":"Atlas","bin":"AD14E2",' +
@@ -728,7 +728,7 @@ describe("validate tests", () => {
           '"inventory":[{"company":"AAZ909","sku":"CUP001","warehouse_name":"Mercury","bin":"D56A","time":"2018-09-17 10:46:29","qty":8,"cost":6.75}]}]}]},"valid":true,"errors":{}}],"valid":true}'
         );
         j.validateAsync(record).then(result => {
-          expect(JSON.stringify(result)).toBe(
+          expect(JSON.stringify(result.validationResult())).toBe(
             '{"results":[{"record":{"company":"AAZ909","sku":"CUP001","description":"Sink plunger","warehouse":[{"company":"AAZ909","name":"Atlas","description":"Comfy",' +
             '"address":{"company":"Hot Stuff Ltd","street":"9 Blarney St","locality":"Expressions Business Park","city":"Huddersfield","region":"","postalCode":"HD7 9XJ","country":"GB"},' +
             '"bins":[{"company":"AAZ909","warehouse_name":"Atlas","bin":"AD14E2","inventory":[{"company":"AAZ909","sku":"CUP001","warehouse_name":"Atlas","bin":"AD14E2",' +

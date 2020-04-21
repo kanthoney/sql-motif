@@ -104,187 +104,33 @@ class RecordSet
 
   validate(context)
   {
+    this.valid = true;
     return this.records.reduce((acc, record) => {
-      const result = this.join.table.joins.reduce((acc, join) => {
-        const path = join.path || join.name;
-        const subRecord = _.get(record.data, path);
-        if(subRecord instanceof RecordSet) {
-          const result = subRecord.validate(context);
-          const errors = result.results.reduce((acc, result) => {
-            return acc.concat(result.errors);
-          }, []);
-          if(!result.valid) {
-            acc.valid = false;
-            _.set(acc.errors, path, errors);
-          }
-        }
-        return acc;
-      }, this.join.table.columns.values(record.data, null, true).reduce((acc, { col, value }) => {
-        if(col.calc) {
-          return acc;
-        }
-        const path = col.path;
-        const joinedValue = _.get(this.joined, path);
-        if(!_.isNil(joinedValue) && !_.isNil(value) && joinedValue !== value) {
-          _.set(acc.errors, path, `join mismatch. Parent: '${joinedValue}', child: '${value}'`);
-          acc.valid = false;
-          return acc;
-        }
-        if(col.notNull && _.isNil(value)) {
-          if(!_.has(acc.errors, path)) {
-            _.set(acc.errors, path, col.validationError || 'Field must not be null');
-            acc.valid = false;
-          }
-          return acc;
-        } else if(!col.notNull && _.isNil(value)) {
-          return acc;
-        }
-        if(col.validate) {
-          const validate = v => {
-            if(_.isString(v)) {
-              if(`${value}` !== v) {
-                return { path, error: col.validationError || 'Field is not valid' };
-              }
-              return null;
-            }
-            if(_.isRegExp(v)) {
-              if(!v.test(value)) {
-                return { path, error: col.validationError || `Field did not conform to regular expression '${v.toString()}'` }
-              }
-              return null;
-            }
-            if(_.isFunction(v)) {
-              try {
-                const result = v(value, col, context);
-                if(result === true) {
-                  return null;
-                }
-                return { path, error: result || col.validationError || 'Field failed function validation' }
-              } catch(error) {
-                return { path, error: (error instanceof Error?error.message:error) || col.validationError || 'Field failed function validation' };
-              }
-            }
-            if(_.isArray(v)) {
-              return v.reduce((acc, v) => {
-                if(_.isNil(acc)) {
-                  return acc;
-                }
-                const result = validate(v);
-                if(_.isNil(result)) {
-                  return null;
-                }
-                return acc;
-              }, { path, error: col.validationError || 'Field did not match any validator' });
-            }
-          }
-          const result = validate(col.validate);
-          if(result) {
-            acc.valid = false;
-            _.set(acc.errors, path, result.error);
-          }
-        }
-        return acc;
-      }, { record, valid: true, errors: {} }));
-      if(!result.valid) {
+      if(!record.validate(context).valid) {
         acc.valid = false;
       }
-      acc.results.push(result);
       return acc;
-    }, { results: [], valid: true });
+    }, this);
   }
 
-  async validateAsync(context)
+  validateAsync(context)
   {
+    this.valid = true;
     return Promise.all(this.records.map(record => {
-      return Promise.all(this.join.table.columns.values(record.data, null, true).reduce((acc, { col, value }) => {
-        if(col.calc) {
-          return acc;
+      return record.validateAsync(context);
+    })).then(records => {
+      records.forEach(record => {
+        if(!record.valid) {
+          this.valid = false;
         }
-        const path = col.path;
-        let joinedValue = _.get(this.joined, path);
-        if(!_.isNil(joinedValue) && !_.isNil(value) && joinedValue !== value) {
-          return acc.concat({ path, error: `join mismatch. Parent: '${joinedValue}', child: '${value}'` });
-        }
-        if(value === undefined) {
-          value = joinedValue;
-        }
-        if(col.notNull && _.isNil(value)) {
-          return acc.concat({ path, error: col.validationError || 'Field must not be null' });
-        }
-        if(!col.notNull && value === null) {
-          return acc;
-        }
-        if(col.validate) {
-          const validate = async v => {
-            if(_.isString(v)) {
-              if(`${value}` !== v) {
-                return { path, error: col.validationError || 'Field is not valid' };
-              }
-              return null;
-            }
-            if(_.isRegExp(v)) {
-              if(!v.test(value)) {
-                return { path, error: col.validationError || `Field did not conform to regular expression '${v.toString()}'` }
-              }
-              return null;
-            }
-            if(_.isFunction(v)) {
-              try {
-                const result = await v(value, col, context);
-                if(result === true) {
-                  return null;
-                }
-                return { path, error: result || col.validationError || 'Field failed function validation' };
-              } catch(error) {
-                return { path, error: (error instanceof Error?error.message:error) || col.validationError || 'Field failed function validation' };
-              }
-            }
-            if(_.isArray(v)) {
-              return (await Promise.all(v, validate)).reduce((acc, result) => {
-                if(!acc.error) {
-                  return acc;
-                }
-                if(!result.error) {
-                  delete acc.error;
-                }
-                return acc;
-              }, { path, error: col.validationError || 'Field did not match any validator' });
-            }
-            return null;
-          }
-          return acc.concat(validate(col.validate));
-        }
-        return acc.concat({ path, value });
-      }, []).concat(this.join.table.joins.reduce((acc, join) => {
-        const path = join.path || join.name;
-        const recordSet = _.get(record.data, path);
-        if(recordSet instanceof RecordSet) {
-          return acc.concat(recordSet.validateAsync(context).then(result => {
-            return result.valid?null:{ path, error: result.results.reduce((acc, result) => acc.concat(result.errors), []) }
-          }));
-        }
-        return acc;
-      }, []))).then(result => {
-        return result.reduce((acc, result) => {
-          if(!result) {
-            return acc;
-          }
-          if(result.error) {
-            acc.valid = false;
-            _.set(acc.errors, result.path, result.error);
-          }
-          return acc;
-        }, { record, valid: true, errors: {} });
       });
-    })).then(result => {
-      return result.reduce((acc, result) => {
-        if(!result.valid) {
-          acc.valid = false;
-        }
-        acc.results.push(result);
-        return acc;
-      }, { results: [], valid: true });
+      return this;
     });
+  }
+
+  validationResult()
+  {
+    return { results: this.records.map(record => record.validationResult()), valid: this.valid };
   }
 
   fill(context)
@@ -341,6 +187,20 @@ class RecordSet
     })).then(() => {
       return this;
     });
+  }
+
+  reduce(f, acc)
+  {
+    acc = this.records.reduce((acc, record) => {
+      return this.joins.reduce((acc, join) => {
+        const subRecord = _.get(record.data, join.path || join.name);
+        if(subRecord instanceof RecordSet) {
+          return subRecord.reduce(f, acc);
+        }
+        return acc;
+      }, f(acc, this.join, record.data));
+    }, acc);
+    return acc;
   }
 
   get(path)

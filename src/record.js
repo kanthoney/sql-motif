@@ -8,6 +8,8 @@ class Record
   {
     this.recordSet = recordSet;
     this.data = data;
+    this.valid = true;
+    this.errors = {};
   }
 
   hashKey()
@@ -51,17 +53,200 @@ class Record
     return value;
   }
 
+  validate(context)
+  {
+    this.valid = true;
+    this.errors = {};
+    const RecordSet = require('./recordset');
+    this.recordSet.join.table.columns.values(this.data, null, true).forEach(({ col, value }) => {
+      if(col.calc) {
+        return;
+      }
+      const path = col.path;
+      const joinedValue = _.get(this.recordSet.joined, path);
+      if(!_.isNil(joinedValue) && !_.isNil(value) && joinedValue !== value) {
+        _.set(acc.errors, path, `join mismatch. Parent: '${joinedValue}', child: '${value}'`);
+        this.valid = false;
+        return;
+      }
+      if(col.notNull && _.isNil(value)) {
+        if(!_.has(this.errors, path)) {
+          _.set(this.errors, path, col.validationError || 'Field must not be null');
+          this.valid = false;
+        }
+        return;
+      } else if(!col.notNull && _.isNil(value)) {
+        return;
+      }
+      if(col.validate) {
+        const validate = v => {
+          if(_.isString(v)) {
+            if(`${value}` !== v) {
+              return { path, error: col.validationError || 'Field is not valid' };
+            }
+            return null;
+          }
+          if(_.isRegExp(v)) {
+            if(!v.test(value)) {
+              return { path, error: col.validationError || `Field did not conform to regular expression '${v.toString()}'` }
+            }
+            return null;
+          }
+          if(_.isFunction(v)) {
+            try {
+              const result = v(value, col, context);
+              if(result === true) {
+                return null;
+              }
+              return { path, error: result || col.validationError || 'Field failed function validation' }
+            } catch(error) {
+              return { path, error: (error instanceof Error?error.message:error) || col.validationError || 'Field failed function validation' };
+            }
+          }
+          if(_.isArray(v)) {
+            return v.reduce((acc, v) => {
+              if(_.isNil(acc)) {
+                return acc;
+              }
+              const result = validate(v);
+              if(_.isNil(result)) {
+                return null;
+              }
+              return acc;
+            }, { path, error: col.validationError || 'Field did not match any validator' });
+          }
+        }
+        const result = validate(col.validate);
+        if(result) {
+          this.valid = false;
+          _.set(this.errors, path, result.error);
+        }
+      }
+      return;
+    });
+    this.recordSet.join.table.joins.forEach(join => {
+      const path = join.path || join.name;
+      const subRecord = _.get(this.data, path);
+      if(subRecord instanceof RecordSet) {
+        subRecord.validate(context);
+        if(!subRecord.valid) {
+          this.valid = false;
+        }
+      }
+    });
+    return this;
+  }
+
+  validateAsync(context)
+  {
+    const RecordSet = require('./recordset');
+    this.valid = true;
+    this.errors = {};
+    return Promise.all(this.recordSet.join.table.columns.values(this.data, null, true).reduce((acc, { col, value }) => {
+      if(col.calc) {
+        return acc;
+      }
+      const path = col.path;
+      let joinedValue = _.get(this.recordSet.joined, path);
+      if(!_.isNil(joinedValue) && !_.isNil(value) && joinedValue !== value) {
+        return acc.concat({ path, error: `join mismatch. Parent: '${joinedValue}', child: '${value}'` });
+      }
+      if(value === undefined) {
+        value = joinedValue;
+      }
+      if(col.notNull && _.isNil(value)) {
+        return acc.concat({ path, error: col.validationError || 'Field must not be null' });
+      }
+      if(!col.notNull && value === null) {
+        return acc;
+      }
+      if(col.validate) {
+        const validate = async v => {
+          if(_.isString(v)) {
+            if(`${value}` !== v) {
+              return { path, error: col.validationError || 'Field is not valid' };
+            }
+            return null;
+          }
+          if(_.isRegExp(v)) {
+            if(!v.test(value)) {
+              return { path, error: col.validationError || `Field did not conform to regular expression '${v.toString()}'` }
+            }
+            return null;
+          }
+          if(_.isFunction(v)) {
+            try {
+              const result = await v(value, col, context);
+              if(result === true) {
+                return null;
+              }
+              return { path, error: result || col.validationError || 'Field failed function validation' };
+            } catch(error) {
+              return { path, error: (error instanceof Error?error.message:error) || col.validationError || 'Field failed function validation' };
+            }
+          }
+          if(_.isArray(v)) {
+            return (await Promise.all(v, validate)).reduce((acc, result) => {
+              if(!acc.error) {
+                return acc;
+              }
+              if(!result.error) {
+                delete acc.error;
+              }
+              return acc;
+            }, { path, error: col.validationError || 'Field did not match any validator' });
+          }
+          return null;
+        }
+        return acc.concat(validate(col.validate));
+      }
+      return acc.concat({ path, value });
+    }, []).concat(this.recordSet.join.table.joins.reduce((acc, join) => {
+      const path = join.path || join.name;
+      const recordSet = _.get(this.data, path);
+      if(recordSet instanceof RecordSet) {
+        return acc.concat(recordSet.validateAsync(context));
+      }
+      return acc;
+    }, []))).then(result => {
+      result.forEach(result => {
+        if(result instanceof RecordSet) {
+          if(!result.valid) {
+            this.valid = false;
+          }
+          return;
+        }
+        if(result && result.error) {
+          this.valid = false;
+          _.set(this.errors, result.path, result.error);
+        }
+      });
+      return this;
+    });
+  }
+
+  validationResult()
+  {
+    const RecordSet = require('./recordset');
+    return this.recordSet.join.table.joins.reduce((acc, join) => {
+      const subRecords = _.get(this.data, join.path || join.name);
+      if(subRecords instanceof RecordSet) {
+        const result = subRecords.validationResult();
+        if(!result.valid) {
+          acc.valid = false;
+          _.set(acc.errors, join.path || join.name, result.results.map(result => result.errors));
+        }
+        _.set(acc.record, join.path || join.name, result.results.map(result => result.record));
+      }
+      return acc;
+    }, { record: this.toObject({ mapJoined: true, includeJoined: true, noSubRecords: true }), valid: this.valid, errors: this.errors });
+  }
+
   toObject(options)
   {
     const RecordSet = require('./recordset');
     options = options || {};
-    return this.recordSet.join.table.joins.reduce((acc, join) => {
-      const recordSet = _.get(this.data, join.path || join.name);
-      if(recordSet instanceof RecordSet) {
-        _.set(acc, join.path || join.name, recordSet.toObject(options));
-      }
-      return acc;
-    }, this.recordSet.join.table.columns.fields('*', true).reduce((acc, col) => {
+    const acc = this.recordSet.join.table.columns.fields('*', true).reduce((acc, col) => {
       let value = _.get(this.data, col.path);
       if(value === undefined && options.mapJoined) {
         value = _.get(this.recordSet.joined, col.path);
@@ -70,7 +255,17 @@ class Record
         _.set(acc, col.path, value);
       }
       return acc;
-    }, {}));
+    }, {});
+    if(!options.noSubRecords) {
+      return this.recordSet.join.table.joins.reduce((acc, join) => {
+        const recordSet = _.get(this.data, join.path || join.name);
+        if(recordSet instanceof RecordSet) {
+          _.set(acc, join.path || join.name, recordSet.toObject(options));
+        }
+        return acc;
+      }, acc);
+    }
+    return acc;
   }
 
   toJSON()
