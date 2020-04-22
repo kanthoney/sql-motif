@@ -167,12 +167,21 @@ class ColumnSet
           });
         }
       }
-      if(value instanceof Operator) {
-        return acc.concat(value.clause(table.dialect, col));
-      } else if(value instanceof Function) {
-        return acc.concat(`${col.SQL()} = ${table.escape(value(col, this.dialect.template))}`);
+      const clause = value => {
+        if(_.isArray(value)) {
+          if(value.length > 1) {
+            return `(${value.map(value => clause(value)).join(' or ')})`;
+          }
+          return `${value.map(value => clause(value)).join(' or ')}`;
+        }
+        if(value instanceof Operator) {
+          return value.clause(table.dialect, col);
+        } else if(value instanceof Function) {
+          return `${col.SQL()} = ${table.escape(value(col, this.dialect.template))}`;
+        }
+        return operators.eq(value).clause(table.dialect, col);
       }
-      return acc.concat(operators.eq(value).clause(table.dialect, col));
+      return acc.concat(clause(value));
     }, []).concat(table.joins.reduce((acc, join) => {
       if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
         return acc;
@@ -183,7 +192,8 @@ class ColumnSet
         joined: _.get(options.joined, join.path || join.name),
         needed: _.get(options.needed, join.path || join.name),
         safe: options.safe && !join.readOnly,
-        brackets: _.isArray(subRecord)
+        brackets: _.isArray(subRecord),
+        default: ''
       });
       if(!where) {
         return acc;
