@@ -9,7 +9,8 @@ module.exports = class SQLiteDialect extends Dialect
     super({
       joinBracketsNotAllowed: true,
       singleTableUpdate: true,
-      singleTableDelete: true
+      singleTableDelete: true,
+      noIndexesInCreate: true
     });
   }
 

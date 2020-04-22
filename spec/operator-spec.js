@@ -119,4 +119,20 @@ describe('operator tests', () => {
 
   });
 
+  describe('between tests', () => {
+
+    const values = ['a', 'b'];
+
+    it('should produce a between clause', () => {
+      const op = operators.between;
+      expect(dialect.escape(op(...values))).toBe('between \'a\' and \'b\'');
+    });
+
+    it('should produce a not between clause', () => {
+      const op = operators.notBetween;
+      expect(dialect.escape(op(...values))).toBe('not between \'a\' and \'b\'');
+    });
+
+  });
+
 });

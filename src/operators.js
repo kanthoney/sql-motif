@@ -21,33 +21,36 @@ class NotEqualsOperator extends Operator
 
 class InOperator extends Operator
 {
-  constructor(value)
+  constructor(name, value)
   {
-    super('in', value);
+    super(name, value);
     if(!_.isArray(this.value)) {
       this.value = [this.value];
     }
   }
 
-  clause(dialect)
+  clause(dialect, rhs)
   {
+    if(rhs) {
+      return `${dialect.escape(rhs)} ${this.name} (${this.value.map(value => dialect.escape(value)).join(', ')})`;
+    }
     return `${this.name} (${this.value.map(value => dialect.escape(value)).join(', ')})`;
   }
 }
 
-class NotInOperator extends Operator
+class BetweenOperator extends Operator
 {
-  constructor(value)
+  constructor(name, value1, value2)
   {
-    super('not in', value);
-    if(!_.isArray(this.value)) {
-      this.value = [this.value];
-    }
+    super(name, [value1, value2])
   }
 
-  clause(dialect)
+  clause(dialect, rhs)
   {
-    return `${this.name} (${this.value.map(value => dialect.escape(value)).join(', ')})`;
+    if(rhs) {
+      return `${dialect.escape(rhs)} ${this.name} ${dialect.escape(this.value[0])} and ${dialect.escape(this.value[1])}`;
+    }
+    return `${this.name} ${dialect.escape(this.value[0])} and ${dialect.escape(this.value[1])}`;
   }
 }
 
@@ -57,8 +60,10 @@ module.exports.lt = value => new Operator('<', value);
 module.exports.gt = value => new Operator('>', value);
 module.exports.le = value => new Operator('<=', value);
 module.exports.ge = value => new Operator('>=', value);
-module.exports.in = value => new InOperator(value);
-module.exports.notIn = value => new NotInOperator(value);
+module.exports.in = value => new InOperator('in', value);
+module.exports.notIn = value => new InOperator('not in', value);
+module.exports.between = (value1, value2) => new BetweenOperator('between', value1, value2);
+module.exports.notBetween = (value1, value2) => new BetweenOperator('not between', value1, value2);
 module.exports.regExp = value => new Operator('regexp', value);
 module.exports.notRegExp = value => new Operator('not regexp', value);
 module.exports.like = value => new Operator('like', value);

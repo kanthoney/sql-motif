@@ -527,7 +527,10 @@ class Table
 
   createColumnsArray()
   {
-    return this.columns.fields(col => col.table === this).map(col => {
+    return this.columns.fields(col => col.table === this).reduce((acc, col) => {
+      if(col.calc) {
+        return acc;
+      }
       let s = `${col.sql.name} ${col.type}`;
       if(col.notNull) {
         s += ' not null';
@@ -535,8 +538,8 @@ class Table
       if(col.default !== undefined && !_.isFunction(col.default)) {
         s += ` default ${this.escape(col.default)}`;
       }
-      return s;
-    });
+      return acc.concat(s);
+    }, []);
   }
 
   createColumns()
@@ -562,6 +565,9 @@ class Table
 
   createIndexesArray()
   {
+    if(this.dialect.options.noIndexesInCreate) {
+      return [];
+    }
     return this.indexes.reduce((acc, index) => {
       let s = 'index';
       if(index.unique) {
