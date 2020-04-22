@@ -76,11 +76,26 @@ const join = orders.join({
   on: 'order_id'
 });
 
-// Search database for orders delivered to Terry Test from 2020-04-16
+// Search database for orders delivered to Terry Test from 2020-04-16.
+// SelectWhere is capitalized - sometimes keywords such as select or ignore get in the way of query building, so the lower case version of this function - selectWhere - omits the select.
 
-const result = await db.query(join.SelectWhere('*', { order_date: '2020-04-16', { delivery: { name: 'Terry Test' } } }));
+const result = await db.query(`${join.SelectWhere('*', { order_date: '2020-04-16', { delivery: { name: 'Terry Test' } } })} ${join.OrderBy(['order_id'])}`);
 
 // Collate the results and return as JSON.
 
-return JSON.stringify(join.collate(result));
+JSON.stringify(join.collate(result));
+
+// get new set of records from somewhere
+
+let records = await getRecords();
+
+// Fill in missing details and validate
+
+records = join.fill(records).validate()
+
+if(records.valid) {
+  const queries = join.InsertIgnore(records).concat(join.Update(records));
+  db.runQueries(queries); // run list of queries to insert/update records
+}
+
 ```
