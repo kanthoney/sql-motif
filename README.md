@@ -81,20 +81,20 @@ const join = orders.join({
 
 const result = await db.query(`${join.SelectWhere('*', { order_date: '2020-04-16', { delivery: { name: 'Terry Test' } } })} ${join.OrderBy(['order_id'])}`);
 
-// Collate the results and return as JSON.
+// Collate the results and return as JSON. Order lines will be placed in the 'lines' property of each record.
 
 JSON.stringify(join.collate(result));
 
 // get new set of records from somewhere
 
-let records = await getRecords();
+let records = getRecords();
 
 // Fill in missing details and validate
 
-records = join.fill(records).validate()
+records = join.fill(records).validate();
 
 if(records.valid) {
-  const queries = join.InsertIgnore(records).concat(join.Update(records));
+  const queries = records.InsertIgnore().concat(records.Update());
   db.runQueries(queries); // run list of queries to insert/update records
 }
 
