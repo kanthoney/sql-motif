@@ -245,6 +245,11 @@ class RecordSet
   {
     return this.toObject({ mapJoined: true, includeJoined: true });
   }
+
+  get length()
+  {
+    return this.records.length;
+  }
 };
 
 module.exports = RecordSet;

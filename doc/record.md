@@ -1,113 +1,36 @@
 # Record
 
-Table methods such as `where` and `set` take a `record` argument. The format of the `record` is described here.
+An object for manipulating a record. Has the following methods and properties:
 
-The record is given by an object where each key is the alias of a column (or the name if the column has no alias) and the value is the value of that column. If the [type](./types.md) of the column
-is a compound type, i.e. the type was given as an array of column specifications, then the value will itself be an object with the keys being the names of the subtypes.
+## methods
 
-## Example
+* `validate(context)`. Validates the record, setting the `valid` and `errors` properties. `context` is passed to ant functions specified in the [column specifications](./column-spec.md)
+that take a context. Returns this record.
 
-```
-const types = {
-  order_id: { type: 'char(36)', notNull: true },
-  account: 'char(8)',
-  addressLine: { type: 'char(40)', notNull: true, default: '' },
-  postalCode: { type: 'char(15)', notNull: true, default: '' },
-  countryCode: { type: 'char(2)', notNull: true, default: 'GB' },
-  address: {
-    type: [
-      { name: 'company', type: 'addressLine' },
-      { name: 'street', type: 'addressLine' },
-      { name: 'locality', type: 'addressLine' },
-      { name: 'city', type: 'addressLine' },
-      { name: 'region', type: 'addressLine' },
-      { name: 'postcode', type: 'postalCode' },
-      { name: 'country', type: 'countryCode' }
-    ]
-  },
-  contact: [
-    { name: 'contact', type: 'addressLine' },
-    { name: 'address', type: 'address' }
-  ]
-}
+* `validateAsync(context)`. Validates the record asynchronously, returning a promise that yields to this record.
 
-const orders = new Table({
-  name: 'order',
-  types,
-  columns: [
-    { name: 'company', type: 'account', primaryKey: true },
-    { name: 'order_id', type: 'order_id', primaryKey: true },
-    { name: 'customer', type: 'account' },
-    { name: 'delivery', type: 'contact' },
-    { name: 'billing', type: 'contact', alias: 'invoice' }
-  ]
-});
+* `fill(context)`. Fills in missing data from the `default` setting in the [column specification](./column-spec.md). `context` is passed to any column specification functions that take a context.
+Returns this record.
 
-/*
-records processed by the table will be expected to be in this format:
+* `fillAsync(context)`. Fills in missing data asynchronously, returns a promise yielding to this record.
 
-{
-  company: 'ACME001',
-  order_id: '8bd613e7-7fc8-11ea-86e2-0a631ffa2fae',
-  customer: 'TTY033',
-  delivery: {
-    contact: 'Terry Test',
-    address: {
-      company: '',
-      street: '8 Highfield Road',
-      locality: '',
-      city: 'Birmingham',
-      region: 'West Midlands',
-      postcode: 'B12 8NG',
-      country: 'GB'
-    }
-  },
-  invoice: { // invoice, not billing, because we specified an alias for this column in the table spec
-    contact: 'Terry Test',
-    address: {
-      company: '',
-      street: '8 Highfield Road',
-      locality: '',
-      city: 'Birmingham',
-      region: 'West Midlands',
-      postcode: 'B12 8NG',
-      country: 'GB'
-    }
-  },
-}
+* `Insert(options)`. Produces an `insert` statement for this record. `options` is a set of [options](./table-options.md) to pass to the table's `insert` method. Does not include subrecords.
 
-*/
-```
+* `Update(options)`. Produces an `update` statement for this record.
 
-The values of the record can be plain values such as strings or numbers, or one of the following special options:
+* `Delete(options)`. Produces a `delete` statement for this record.
 
-* A value of the `Operator` class. This allows you to use operators other than `=` in where clauses. For example:
+* `reduceSubtables(f, acc)`. Performs a reduction of each of the subtables connected to this record. `f` is called with the parameters `(acc, recordSet)` where `acc` is the result of the last call
+and `recordSet` is the [`RecordSet`](./record-set) containing the subrecords. Returns the result of the last call.
 
-```
-const { operators } = require('@kanthoney/sql-motif');
+* `reduceSubtablesAsync(f, acc)`. Preforms a reduction as above where `f` is a function that can return a promise.
 
-console.log(stock.where({ sku: operators.ge('ACME') })) // "stock"."sku" >= 'ACME'
-```
+* `toObject(options)`. Creates a plain object. `options` has the same format as in [`RecordSet`](./record-set.md).
 
-* A value of the Fn class. This allows you to create an SQL function. `sql-motif` comes with a function that allows you to create these. The first argument is the name of the SQL function
-and all the others are the values passed to it:
+* `toJSON()`. Creates a plain object with default options, as in [`RecordSet`](./record-set.md).
 
-```
-const { fn } = require('@kanthoney/sql-motif');
+## Properties
 
-console.log(stock.where({ qty: fn('greatest', 2, 3, 4) })); // "stock"."qty" = greatest(2, 3, 4)
-```
+* `valid`. `true` if the record has been validated and is valid, `false` if the record has been validated but is not valid and `undefined` if the record has not been validated.
 
-* A value of the `Verbatim` class is passed directly to the SQL query without being escaped or otherwise modified:
-
-```
-const { verbatim } = require('@kanthoney/sql-motif');
-
-console.log(stock.where({ sku: verbatim('unescaped') })); // "stock"."sku" = unescaped
-```
-
-* A function of the form `f(column, tag)`. The column is the column of the `where` or `set` clause, and the tag is a template string tag that will escape entries in template strings. For example;
-
-```
-console.log(stock.Set({ qty: (col, sql) => sql`${col} + 1` })); // set "stock"."qty" = "stock"."qty" + 1
-```
+* `errors`. An object containing any errors

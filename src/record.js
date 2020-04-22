@@ -329,11 +329,6 @@ class Record
     });
   }
 
-  insert(options)
-  {
-    return this.table.insert(this.data, options);
-  }
-
   Insert(options)
   {
     return this.table.Insert(this.data, options);
@@ -344,19 +339,9 @@ class Record
     return this.table.InsertIgnore(this.data, options);
   }
 
-  update(options)
-  {
-    return this.table.update(this.data, null, { joins: [], safe: true, ...options });
-  }
-
   Update(options)
   {
     return this.table.Update(this.data, null, { joins: [], safe: true, ...options });
-  }
-
-  delete(options)
-  {
-    return this.table.delete(this.data, { joins: [], safe: true, ...options });
   }
 
   Delete(options)

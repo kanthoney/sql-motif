@@ -72,6 +72,8 @@ stock.Select(); // select "stock"."sku", "stock"."description"
 
 * <a name="join"></a>`join(config)`. Produces a new table joined to a second table as specified in the [join `config`](./join-spec.md).
 
+* `extend(config)`. Creates a new table with, for example, extra columns specified in `config`.
+
 ### Column methods.
 
 * `column(alias)`. Finds the column with the given alias. A column object will be returned which will have the same fields as a [column specification](./column-spec).
@@ -84,6 +86,10 @@ stock.Select(); // select "stock"."sku", "stock"."description"
 * `select([selector, options])`. Produces a field list from the given [selector](./selector.md). Takes an optional [`options`](./table-options) argument.
 
 * `Select([selector, options])`. Produces a select clause, including the `select` keyword, with a field list from the given [selector](./selector.md).
+
+* `selectWhere(selector, where)`. Produces a simple `select` query (except for the `select` keyword) for the table for the specified columns and `where` specification.
+
+* `SelectWhere(selector, where)`. Produces a simple `select` statement including the `select` keyword.
 
 ### Set methods
 
@@ -98,7 +104,7 @@ stock.Select(); // select "stock"."sku", "stock"."description"
 ### Where methods
 
 * `where(record, [options])`. Produces a `where` clause for the given record, excluding the `where` keyword. If an array of records is provided, produces a set of clauses for each record
-separated by `or`. Takes an optional [`options`](./table-options) argument.
+separated by `or`. `record` is a [record](./table-record.md). Takes an optional [`options`](./table-options) argument.
 
 * `Where(record, [options])`. Produces a `where` clause for the given record or records, including the `where` keyword.
 
@@ -119,7 +125,8 @@ or any joined tables that are not read only is missing. Does not currently check
 
 * `insertColumns()` Produces a list of columns for an insert clause for the top level table not including joins.
 
-* `insertValues(record)` Produces a list of values for an insert statement from the given record. If `record` is an array produces a comma separated list of records.
+* `insertValues(record)` Produces a list of values for an insert statement from the given record. `record` is a [record](./table-record) or array of records.
+If `record` is an array produces a comma separated list of records.
 
 * `insert(record)`. Produces an `insert` statement for the record(s), excluding the `insert into` keywords.
 
@@ -130,7 +137,7 @@ or any joined tables that are not read only is missing. Does not currently check
 ### Update methods
 
 * `update(record, [old, options])`. Produces a full `update` query excluding the `update` keyword. If `old` is specified the key fields from `old` are used in the `where` clause, otherwise
-the key fields are taken from the `record`. Takes an optional [`options`](./table-options.md) argument.
+the key fields are taken from the `record`. `record` is a [record](./table-record.md). Takes an optional [`options`](./table-options.md) argument.
 
 * `Update(record, [old, options])`. Produces a full `update` query including the `update` keyword.
 
@@ -141,7 +148,7 @@ joined tables not marked as read only. Does not currently detect if the missing 
 
 ### Delete methods
 
-* `delete(record, [options])`. Produces a `delete` statement excluding the `delete` keyword. Takes an optional [`options`](./table-options) argument.
+* `delete(record, [options])`. Produces a `delete` statement excluding the `delete` keyword. `record` is a [record](./table-record.md). Takes an optional [`options`](./table-options) argument.
 
 * `Delete(record, [options])`. Produces a full `delete` statement including the `delete` keyword.
 
@@ -189,8 +196,7 @@ or can be omitted to use the default of `asc`.
 ### Validation
 
 * `validate(record, context)`. Validates a record or array of records, checking the value for each column against the `validate` entry in the [column specification](./column-spec.md).
-The function will return an object of the form `{ result, valid }`. `valid` is a boolean which is true if all records passed validation. `result` is an array of objects of the form
-`{ record, valid, errors }`. `record` is the original record, `valid` is true if the record is valid, and `errors` is an object with the same structure as `record` containing any errors.
+The function will return a validated [`RecordSet`](./record-set.md). You can use the `validationResult` method on the record set to turn it into something returnable.
 
 * `validateAsync(record, context)`. Validates a record or array of records, returning a promise resolving to a validation result object as in the previous method. Used if the `validate`
 function in any of the [column specifications](./column-spec.md) returns a promise.

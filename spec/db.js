@@ -157,8 +157,8 @@ module.exports = (name, dialect, db) => {
       expect((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count']).toBe(924);
       await db.query(validated.Delete());
       expect((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count']).toBe(0);
-      expect((await(db.query(tables.stock.SelectWhere('count'))))[0].count).toBe(20);
       expect((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count']).toBe(0);
+      expect((await(db.query(tables.stock.SelectWhere('count'))))[0].count).toBe(20);
       done();
     });
   });
