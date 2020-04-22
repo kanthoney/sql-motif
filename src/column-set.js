@@ -4,6 +4,7 @@ const _ = require('lodash');
 const TypeExpander = require('./type-expander');
 const Column = require('./column');
 const RecordSet = require('./recordset');
+const Record = require('./record');
 const Operator = require('./operator');
 const operators = require('./operators');
 const SafetyError = require('./safety-error');
@@ -123,7 +124,10 @@ class ColumnSet
   {
     const table = this.config.table;
     if(record instanceof RecordSet) {
-      return this.whereArray(record.toObject({ includeJoined: true }));
+      return this.whereArray(record.toObject({ includeJoined: true }), options);
+    }
+    if(record instanceof Record) {
+      return this.whereArray(record.toObject({ includeJoined: true }), options);
     }
     options = _.defaults(options || {}, { default: '', joined: {} });
     if(options.joins && options.joins !== '*') {

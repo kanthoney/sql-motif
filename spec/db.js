@@ -144,13 +144,13 @@ module.exports = (name, dialect, db) => {
         '"lines":[{"company":"AAD010","order_id":"444f4b5a-9aea-4f4e-9f72-439e1955b1e8","line_no":1,"sku":"RWM36EP","description":"Rake","qty":1,"price":12.8,' +
         '"stock":[{"company":"AAD010","sku":"RWM36EP","description":"Rake","cost":8.4}]}]}]'
       );
-      expect(joins.orders.collate(lines).toJSON().length).toBe(6);
+      expect(joins.orders.collate(lines).length).toBe(6);
       lines = await db.query(joins.orders.SelectWhere('*', { customer: operators.between('F', 'H') } ));
-      expect(joins.orders.collate(lines).toJSON().length).toBe(111);
+      expect(joins.orders.collate(lines).length).toBe(111);
       lines = await db.query(joins.orders.SelectWhere('*', { customer: [operators.between('F', 'H'), operators.between('R', 'S')], lines: { sku: ['BPI9ME', 'VJA51TJ'] } } ));
-      expect(joins.orders.collate(lines).toJSON().length).toBe(20);
+      expect(joins.orders.collate(lines).length).toBe(20);
       lines = await db.query(joins.orders.SelectWhere('*', { customer: operators.between('A', 'E'), lines: { sku: 'RWM36EP' } }));
-      expect(joins.orders.collate(lines).toJSON().length).toBe(16);
+      expect(joins.orders.collate(lines).length).toBe(16);
       const toDelete = joins.orders.toRecordSet(sample_orders.slice(0, 800));
       await db.query(toDelete.Delete());
       expect((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count']).toBe(698);

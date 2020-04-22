@@ -325,6 +325,9 @@ class Table
     if(record instanceof RecordSet) {
       return this.setArray(record.toObject({ includeJoined: true }));
     }
+    if(record instanceof Record) {
+      return this.setArray(record.toObject({ includeJoined: true }));
+    }
     options = options || {};
     if(options.joins && options.joins !== '*') {
       if(!_.isArray(options.joins)) {
