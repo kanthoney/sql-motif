@@ -31,6 +31,12 @@ class InOperator extends Operator
 
   clause(dialect, rhs)
   {
+    let value;
+    if(this.value instanceof Function) {
+      value = this.value(rhs, dialect.template);
+    } else {
+      value = this.value;
+    }
     if(rhs) {
       return `${dialect.escape(rhs)} ${this.name} (${this.value.map(value => dialect.escape(value)).join(', ')})`;
     }
@@ -47,6 +53,12 @@ class BetweenOperator extends Operator
 
   clause(dialect, rhs)
   {
+    let value;
+    if(this.value instanceof Function) {
+      value = this.value(rhs, dialect.template);
+    } else {
+      value = this.value;
+    }
     if(rhs) {
       return `${dialect.escape(rhs)} ${this.name} ${dialect.escape(this.value[0])} and ${dialect.escape(this.value[1])}`;
     }

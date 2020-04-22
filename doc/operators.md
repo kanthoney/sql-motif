@@ -48,6 +48,10 @@ The operators are:
 
 * `notContains` Produces a regular expression clause for values not containing the given string.
 
+* `between` Takes two values and produces a `between` clause.
+
+* `notBetween` Takes two values and produces a `not between` clause
+
 ## Values
 
 As well as regular values, you can pass a function to the operator. This will be called with the arguments `(col, tag)`, where `col` is the column of the `where` or `set`

@@ -30,7 +30,8 @@ The `motif` object has the following components:
 
 * [`Dialect`](./dialect) A class which can be subclassed to provide an alternative dialect.
 
-* `dialects` An object containing a few alternative dialects. Currently includes `default` and `mysql` (if the optional [mysql](https://www.npmjs.com/package/mysql) package is installed).
+* `dialects` An object containing a few alternative dialects. Currently includes `default`, `mysql` (if the optional [mysql](https://www.npmjs.com/package/mysql)
+package is installed), `sqlite` and `postgres`
 
 * `operators`. A set of [operators](./operators.md) for including in `where` queries.
 

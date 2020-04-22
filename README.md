@@ -37,10 +37,10 @@ const types = {
     { name: 'address', type: 'address' }
   ],
   sku: 'char(25)',
-  price: { type: 'decimal(10, 2)', notNull: true }
+  price: { type: 'decimal(10, 2)', notNull: true, validate: v => !Number.isNaN(parseFloat(v)) }
 };
 
-// import the library, specifying defaults.
+// import the library, specifying defaults if required.
 
 const motif = require('@kanthoney/sql-motif')({ types, dialect: 'mysql' });
 
@@ -51,7 +51,7 @@ const orders = new motif.Table({
   columns: [
     { name: 'order_id', type: 'id', notNull: true, primaryKey: true },
     { name: 'order_date', type: 'date' },
-    { name: 'delivery', type: 'contact' },
+    { name: 'delivery', type: 'contact' }, // expanded to delivery_name, delivery_address_company, delivery_address_street etc columns
     { name: 'invoice', type: 'contact' }
   ]
 });
@@ -79,13 +79,14 @@ const join = orders.join({
 // Search database for orders delivered to Terry Test from 2020-04-16.
 // SelectWhere is capitalized - sometimes keywords such as select or ignore get in the way of query building, so the lower case version of this function - selectWhere - omits the select.
 
-const result = await db.query(`${join.SelectWhere('*', { order_date: '2020-04-16', { delivery: { name: 'Terry Test' } } })} ${join.OrderBy(['order_id'])}`);
+let result = await db.query(`${join.SelectWhere('*', { order_date: '2020-04-16', { delivery: { name: 'Terry Test' } } })} ${join.OrderBy(['order_id'])}`);
 
-// Collate the results and return as JSON. Order lines will be placed in the 'lines' property of each record.
+// Collate the SQL results and return as JSON. Delivery and invoice contact details will be collected into the
+// delivery and invoice properties, and order lines will be placed in the 'lines' property of each record.
 
 JSON.stringify(join.collate(result));
 
-// get new set of records from somewhere
+// Get new set of records from somewhere
 
 let records = getRecords();
 
@@ -94,8 +95,9 @@ let records = getRecords();
 records = join.fill(records).validate();
 
 if(records.valid) {
+  // create queries to insert/update records, including subrecords
   const queries = records.InsertIgnore().concat(records.Update());
-  db.runQueries(queries); // run list of queries to insert/update records
+  db.runQueries(queries); // run all queries
 }
 
 ```
