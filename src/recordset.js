@@ -153,16 +153,75 @@ class RecordSet
   reduce(f, acc)
   {
     acc = this.records.reduce((acc, record) => {
-      return this.joins.reduce((acc, join) => {
-        const subRecord = _.get(record.data, join.path || join.name);
-        if(subRecord instanceof RecordSet) {
-          return subRecord.reduce(f, acc);
-        }
-        return acc;
-      }, f(acc, this.join, record.data));
+      return f(acc, record);
     }, acc);
     return acc;
   }
+
+  reduceAsync(f, acc)
+  {
+    const it = this.records[Symbol.iterator]();
+    const next = acc => {
+      const n = it.next();
+      if(n.done) {
+        return Promise.resolve(acc);
+      }
+      return Promise.resolve(acc).then(acc => f(acc, n.value)).then(next);
+    }
+    return next(acc);
+  }
+
+  Insert(options)
+  {
+    options = options || {};
+    return [].concat(this.join.table.Insert(this, options) || []).concat(this.reduce((acc, record) => {
+      return record.reduceSubtables((acc, recordSet) => {
+        if(recordSet.join.readOnly || (options.joins && options.joins !== '*' && !options.joins.includes(recordSet.join.name))) {
+          return acc;
+        }
+        return acc.concat(recordSet.Insert(options));
+      }, acc);
+    }, []));
+  }
+
+  InsertIgnore(options)
+  {
+    options = options || {};
+    return [].concat(this.join.table.InsertIgnore(this.records, options) || []).concat(this.reduce((acc, record) => {
+      return record.reduceSubtables((acc, recordSet) => {
+        if(recordSet.join.readOnly || (options.joins && options.joins !== '*' && !options.joins.includes(recordSet.join.name))) {
+          return acc;
+        }
+        return acc.concat(recordSet.InsertIgnore(options));
+      }, acc);
+    }, []));
+  }
+
+  Update(options)
+  {
+    options = options || {};
+    return this.reduce((acc, record) => {
+      return acc.concat(record.Update(options)).concat(record.reduceSubtables((acc, recordSet) => {
+        if(recordSet.join.readOnly || (options.joins && options.joins !== '*' && !options.joins.includes(recordSet.join.name))) {
+          return acc;
+        }
+        return acc.concat(recordSet.Update(options));
+      }, []));
+    }, []);
+  }
+
+  Delete(options)
+  {
+    options = options || {};
+    return this.reduce((acc, record) => {
+      return acc.concat(record.Delete(options)).concat(record.reduceSubtables((acc, recordSet) => {
+        if(recordSet.join.readOnly || (options.joins && options.joins !== '*' && !options.joins.includes(recordSet.join.name))) {
+          return acc;
+        }
+        return acc.concat(recordSet.Delete(options));
+      }, []));
+    }, []);
+  };
 
   get(path)
   {

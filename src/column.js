@@ -55,7 +55,7 @@ class Column
   SQL(as)
   {
     if(_.isString(this.calc)) {
-      return as?`${this.calc} as ${this.table.dialect.escpaeId(this.fullAlias)}`:this.calc;
+      return as?`${this.calc} as ${this.table.dialect.escapeId(this.fullAlias)}`:this.calc;
     } else if(_.isFunction(this.calc)) {
       return as?`${this.calc(this.table, this.table.dialect.template)} as ${this.table.dialect.escapeId(this.fullAlias)}`:this.calc(this.table, this.table.dialect.template);
     }

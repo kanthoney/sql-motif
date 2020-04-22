@@ -6,11 +6,19 @@ module.exports = class SQLiteDialect extends Dialect
 {
   constructor()
   {
-    super({ joinBracketsNotAllowed: true });
+    super({
+      joinBracketsNotAllowed: true,
+      singleTableUpdate: true,
+      singleTableDelete: true
+    });
   }
 
   insertIgnore(table, record)
   {
-    return `insert or ignore into ${table.insert(record)}`;
+    const insert = table.insert(record);
+    if(insert) {
+      return `insert or ignore into ${insert}`;
+    }
+    return '';
   }
 }

@@ -12,6 +12,10 @@ module.exports = class PostgreSQLDialect extends Dialect
 
   insertIgnore(table, record)
   {
-    return `insert into ${table.insert(record)} on conflict do nothing`;
+    const insert = table.insert(record);
+    if(insert) {
+      return `insert into ${insert} on conflict do nothing`;
+    }
+    return '';
   }
 }

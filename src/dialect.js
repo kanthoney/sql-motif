@@ -159,7 +159,11 @@ class Dialect
 
   insertIgnore(table, record)
   {
-    return `insert ignore into ${table.insert(record)}`;
+    const insert = table.insert(record);
+    if(insert) {
+      return `insert ignore into ${insert}`;
+    }
+    return '';
   }
 
 }

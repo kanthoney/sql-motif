@@ -6,6 +6,7 @@ const ColumnSet = require('./column-set');
 const Operator = require('./operator');
 const operators = require('./operators');
 const RecordSet = require('./recordset');
+const Record = require('./record');
 const _ = require('lodash');
 
 class Table
@@ -194,7 +195,7 @@ class Table
     }
     let clause = this.fullNameAs();
     let on = this.On();
-    if(on) {
+    if(on && options.includeOn) {
       clause = `${clause} ${on}`;
     }
     const joins = this.joins.reduce((acc, join) => {
@@ -219,7 +220,7 @@ class Table
         clause = 'inner join';
         break;
       }
-      return acc.concat(`${clause} ${join.table.from({ ...options, brackets: true })}`);
+      return acc.concat(`${clause} ${join.table.from({ ...options, brackets: true, includeOn: true })}`);
     }, []);
     if(joins.length > 0 && options.brackets && !this.dialect.options.joinBracketsNotAllowed) {
       return `(${[clause].concat(joins).join(' ')})`;
@@ -334,7 +335,7 @@ class Table
       if(col.calc) {
         return acc;
       }
-      const fullName = col.sql.fullName;
+      const fullName = this.dialect.options.singleTableUpdate?col.sql.name:col.sql.fullName;
       if(value instanceof Operator) {
         return `${value.clause(this.dialect), col}`;
       } else if(value instanceof Function) {
@@ -379,29 +380,43 @@ class Table
   insertValues(record)
   {
     if(record instanceof RecordSet) {
-      return this.insertValues(record.toObject({ includeJoined: true }));
+      return this.insertValues(record.toObject({ noSubrecords: true, mapJoined: true, includeJoined: true }));
+    }
+    if(record instanceof Record) {
+      return this.insertValues(record.data);
     }
     if(_.isArray(record)) {
       return record.map(record => this.insertValues(record)).join(', ');
     }
-    const values = this.columns.fields().map(col => {
-      const value = _.get(record, col.path || col.alias || col.name);
-      if(value === undefined) {
-        return 'default';
+    const values = this.columns.fields().reduce((acc, col) => {
+      if(col.calc) {
+        return acc;
       }
-      return this.dialect.escape(value);
-    });
+      const value = _.get(record, col.path);
+      if(value === undefined) {
+        return acc.concat('default');
+      }
+      return acc.concat(this.dialect.escape(value));
+    }, []);
     return `(${values.join(', ')})`;
   }
 
   insert(record)
   {
-    return `${this.fullName()} (${this.insertColumns()}) values ${this.insertValues(record)}`;
+    const values = this.insertValues(record);
+    if(values) {
+      return `${this.fullName()} (${this.insertColumns()}) values ${values}`;
+    }
+    return '';
   }
 
   Insert(record)
   {
-    return `insert into ${this.insert(record)}`;
+    const insert = this.insert(record);
+    if(insert) {
+      return `insert into ${insert}`;
+    }
+    return '';
   }
 
   InsertIgnore(record)
@@ -460,6 +475,9 @@ class Table
   update(record, old, options)
   {
     options = options || {};
+    if(this.dialect.options.singleTableUpdate) {
+      options.joins = [];
+    }
     if(old) {
       return `${this.from(options)} ${this.Set(record, options)} ${this.WhereKey(old, options)}`;
     }
@@ -484,6 +502,10 @@ class Table
   delete(record, options)
   {
     options = { selector: col => col.primaryKey, ...options };
+    if(this.dialect.options.singleTableDelete) {
+      options.joins = [];
+      return `${this.From(options)} ${this.WhereKey(record, options)}`;
+    }
     const tables = this.tables({ ...options, writeable: true }).map(table => table.as()).join(', ');
     return `${tables} ${this.From(options)} ${this.WhereKey(record, options)}`;
   }
@@ -764,22 +786,44 @@ class Table
 
   validate(record, context)
   {
-    return this.toRecordSet(record).validate(context);
+    if(_.isFunction(this.context)) {
+      return this.toRecordSet(record).validate(this.context({ ...context }));
+    }
+    return this.toRecordSet(record).validate({ ...this.context, ...context });
   }
 
   validateAsync(record, context)
   {
-    return this.toRecordSet(record).validateAsync(context);
+    return new Promise(resolve => {
+      if(_.isFunction(this.context)) {
+        resolve(this.context({ ...context }));
+      } else {
+        resolve({ ...this.context, ...context });
+      }
+    }).then(context => {
+      return this.toRecordSet(record).validateAsync(context);
+    });
   }
 
   fill(record, context)
   {
-    return this.toRecordSet(record).fill(context);
+    if(_.isFunction(this.context)) {
+      return this.toRecordSet(record).fill(this.context(context));
+    }
+    return this.toRecordSet(record).fill({ ...this.context, ...context });
   }
 
   fillAsync(record, context)
   {
-    return this.toRecordSet(record).fillAsync(context);
+    return new Promise(resolve => {
+      if(_.isFunction(this.context)) {
+        resolve(this.context({ ...context }));
+      } else {
+        resolve({ ...this.context, ...context });
+      }
+    }).then(context => {
+      return this.toRecordSet(record).fillAsync(context);
+    });
   }
 
   collate(lines)

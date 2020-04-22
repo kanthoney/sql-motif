@@ -34,7 +34,8 @@ module.exports = (name, dialect, db) => {
       { name: 'order_id', type: 'uuid', notNull: true, primaryKey: true },
       { name: 'order_date', type: 'date', notNull: true },
       { name: 'delivery', type: 'contact' },
-      { name: 'invoice', type: 'invoice' }
+      { name: 'invoice', type: 'contact' },
+      { name: 'count', calc: 'count(*)', alias: 'order_count', hidden: true }
     ]
   });
 
@@ -47,7 +48,8 @@ module.exports = (name, dialect, db) => {
       { name: 'sku', type: 'sku', notNull: true },
       { name: 'description', type: 'text' },
       { name: 'qty', type: 'qty', notNull: true },
-      { name: 'price', type: 'price', notNull: true }
+      { name: 'price', type: 'price', notNull: true },
+      { name: 'count', calc: 'count(*)', hidden: true }
     ],
     references: [{
       table: tables.orders,
@@ -68,23 +70,29 @@ module.exports = (name, dialect, db) => {
       on: ['company', 'sku']
     }),
     on: ['company', 'order_id']
-  }).extend({
-    columns: [
-      { name: 'count', hidden: true, calc: (col, sql) => sql`count(distinct ${col})` }
-    ]
   });
 
   describe(`Database tests for ${name}`, () => {
 
-    it("should create tables", async done => {
+    it("should create tables and insert then delete order records", async done => {
       await Promise.all(Object.keys(tables).map(k => db.query(tables[k].Create())));
       expect(await db.query(joins.orders.SelectWhere())).toEqual([]);
-      expect(await db.query(`${joins.orders.SelectWhere(['@orders', 'count'])} ${joins.orders.GroupBy()}`));
       const sample_stock = require('./sample-stock.json');
-      expect(await(db.query(tables.stock.InsertIgnore(sample_stock)))).toEqual([]);
+      expect(await(db.query(tables.stock.Insert(sample_stock)))).toEqual([]);
       const sample_orders = require('./sample-orders.json');
       const validated = joins.orders.validate(sample_orders);
       expect(validated.valid).toBe(true);
+      await db.query(validated.InsertIgnore());
+      await db.query(validated.Update());
+      expect((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count']).toBe(1498);
+      expect((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count']).toBe(2036);
+      const toDelete = joins.orders.toRecordSet(sample_orders.slice(0, 800));
+      await db.query(toDelete.Delete());
+      expect((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count']).toBe(698);
+      expect((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count']).toBe(924);
+      await db.query(validated.Delete());
+      expect((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count']).toBe(0);
+      expect((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count']).toBe(0);
       done();
     });
   });

@@ -7,6 +7,7 @@ class Record
   constructor(recordSet, data)
   {
     this.recordSet = recordSet;
+    this.table = this.recordSet.join.table;
     this.data = data;
     this.valid = true;
     this.errors = {};
@@ -15,7 +16,7 @@ class Record
   hashKey()
   {
     if(this.hash === undefined) {
-      const hash = this.recordSet.join.table.columns.fields().reduce((acc, col) => {
+      const hash = this.table.columns.fields().reduce((acc, col) => {
         const path = col.path;
         if(col.primaryKey || _.has(this.recordSet.joined, path)) {
           let value = _.get(this.data, path);
@@ -58,7 +59,7 @@ class Record
     this.valid = true;
     this.errors = {};
     const RecordSet = require('./recordset');
-    this.recordSet.join.table.columns.values(this.data, null, true).forEach(({ col, value }) => {
+    this.table.columns.values(this.data, null, true).forEach(({ col, value }) => {
       if(col.calc) {
         return;
       }
@@ -124,7 +125,7 @@ class Record
       }
       return;
     });
-    this.recordSet.join.table.joins.forEach(join => {
+    this.table.joins.forEach(join => {
       const path = join.path || join.name;
       const subRecord = _.get(this.data, path);
       if(subRecord instanceof RecordSet) {
@@ -142,7 +143,7 @@ class Record
     const RecordSet = require('./recordset');
     this.valid = true;
     this.errors = {};
-    return Promise.all(this.recordSet.join.table.columns.values(this.data, null, true).reduce((acc, { col, value }) => {
+    return Promise.all(this.table.columns.values(this.data, null, true).reduce((acc, { col, value }) => {
       if(col.calc) {
         return acc;
       }
@@ -201,12 +202,12 @@ class Record
         return acc.concat(validate(col.validate));
       }
       return acc.concat({ path, value });
-    }, []).concat(this.recordSet.join.table.joins.reduce((acc, join) => {
+    }, []).concat(this.table.joins.reduce((acc, join) => {
       return acc.concat(new Promise(resolve => {
-        if(_.isFunction(join.context)) {
-          resolve(join.context({ ...context }));
+        if(_.isFunction(join.table.config.context)) {
+          resolve(join.table.config.context({ ...context }));
         } else {
-          resolve({ ...context, ...join.context });
+          resolve({ ...context, ...join.table.config.context });
         }
       }).then(context => {
         const path = join.path || join.name;
@@ -235,7 +236,7 @@ class Record
   validationResult()
   {
     const RecordSet = require('./recordset');
-    return this.recordSet.join.table.joins.reduce((acc, join) => {
+    return this.table.joins.reduce((acc, join) => {
       const subRecords = _.get(this.data, join.path || join.name);
       if(subRecords instanceof RecordSet) {
         const result = subRecords.validationResult();
@@ -252,7 +253,7 @@ class Record
   fill(context)
   {
     const RecordSet = require('./recordset');
-    this.recordSet.join.table.columns.fields().forEach(col => {
+    this.table.columns.fields().forEach(col => {
       const path = col.path;
       let value = _.get(this.data, path);
       if(value === undefined) {
@@ -270,15 +271,15 @@ class Record
         });
       }
     });
-    this.recordSet.join.table.joins.forEach(join => {
+    this.table.joins.forEach(join => {
       const path = join.path || join.name;
       const subRecord = _.get(this.data, path);
       if(subRecord instanceof RecordSet) {
         Object.assign(subRecord.joined, _.get(this.recordSet.joined, path));
-        if(_.isFunction(join.context)) {
-          subRecord.fill(join.context({ ...context }));
+        if(_.isFunction(join.table.config.context)) {
+          subRecord.fill(join.table.config.context({ ...context }));
         }
-        subRecord.fill({ ...context, ...join.context });
+        subRecord.fill({ ...context, ...join.table.config.context });
       }
     });
     return this;
@@ -287,7 +288,7 @@ class Record
   fillAsync(context)
   {
     const RecordSet = require('./recordset');
-    return Promise.all(this.recordSet.join.table.columns.fields().map(col => {
+    return Promise.all(this.table.columns.fields().map(col => {
       const path = col.path;
       let value = _.get(this.data, path);
       if(_.isNil(_.get(this.recordSet.joined, path)) && col.default !== undefined && (value === undefined || (col.notNull && value === null))) {
@@ -304,22 +305,22 @@ class Record
         });
       }
     })).then(() => {
-      return Promise.all(this.recordSet.join.table.joins.map(join => {
+      return Promise.all(this.table.joins.map(join => {
         return new Promise(resolve => {
-          if(_.isFunction(join.context)) {
-            resolve(join.context({ ...context }));
+          if(_.isFunction(join.table.config.context)) {
+            resolve(join.table.config.context({ ...context }));
           } else {
-            resolve({ ...context, ...join.context });
+            resolve({ ...context, ...join.table.config.context });
           }
         }).then(context => {
           const path = join.path || join.name;
           const subRecord = _.get(this.data, path);
           if(subRecord instanceof RecordSet) {
             Object.assign(subRecord.joined, _.get(this.recordSet.joined, path));
-            if(_.isFunction(join.context)) {
-              return subRecord.fillAsync(join.context({ ...context }));
+            if(_.isFunction(join.table.config.context)) {
+              return subRecord.fillAsync(join.table.config.context({ ...context }));
             }
-            return subRecord.fillAsync({ ...context, ...join.context });
+            return subRecord.fillAsync({ ...context, ...join.table.config.context });
           }
         });
       }));
@@ -328,11 +329,77 @@ class Record
     });
   }
 
+  insert(options)
+  {
+    return this.table.insert(this.data, options);
+  }
+
+  Insert(options)
+  {
+    return this.table.Insert(this.data, options);
+  }
+
+  InsertIgnore(options)
+  {
+    return this.table.InsertIgnore(this.data, options);
+  }
+
+  update(options)
+  {
+    return this.table.update(this.data, null, { joins: [], safe: true, ...options });
+  }
+
+  Update(options)
+  {
+    return this.table.Update(this.data, null, { joins: [], safe: true, ...options });
+  }
+
+  delete(options)
+  {
+    return this.table.delete(this.data, { joins: [], safe: true, ...options });
+  }
+
+  Delete(options)
+  {
+    return this.table.Delete(this.data, { joins: [], safe: true, ...options });
+  }
+
+  reduceSubtables(f, acc)
+  {
+    return this.table.joins.reduce((acc, join) => {
+      const recordSet = _.get(this.data, join.path || join.name);
+      if(recordSet !== undefined) {
+        return f(acc, recordSet);
+      }
+      return acc;
+    }, acc);
+  }
+
+  reduceSubtablesAsync(f, acc)
+  {
+    const it = this.table.joins[Symbol.iterator]();
+    const next = acc => {
+      const n = it.next();
+      if(n.done) {
+        return Promise.resolve(acc);
+      }
+      const join = n.value;
+      return Promise.resolve(acc).then(acc => {
+        const recordSet = _.get(this.data, join.path || join.name);
+        if(recordSet !== undefined) {
+          return next(f(acc, _.get(this.data, join.path || join.name)));
+        }
+        return next(acc);
+      });
+    }
+    return next(acc);
+  }
+
   toObject(options)
   {
     const RecordSet = require('./recordset');
     options = options || {};
-    const acc = this.recordSet.join.table.columns.fields('*', true).reduce((acc, col) => {
+    const acc = this.table.columns.fields('*', true).reduce((acc, col) => {
       let value = _.get(this.data, col.path);
       if(value === undefined && options.mapJoined) {
         value = _.get(this.recordSet.joined, col.path);
@@ -343,7 +410,7 @@ class Record
       return acc;
     }, {});
     if(!options.noSubRecords) {
-      return this.recordSet.join.table.joins.reduce((acc, join) => {
+      return this.table.joins.reduce((acc, join) => {
         const recordSet = _.get(this.data, join.path || join.name);
         if(recordSet instanceof RecordSet) {
           _.set(acc, join.path || join.name, recordSet.toObject(options));
