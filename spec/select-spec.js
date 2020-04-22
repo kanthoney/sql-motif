@@ -128,6 +128,25 @@ describe('select tests', () => {
 
     });
 
+    describe("inventory2 tests", () => {
+
+      const j = joins.inventory2;
+
+      it('Should produce a list of all fields', () => {
+        expect(j.select()).toBe(
+          '"stock"."company", "stock"."sku", "stock"."description", "s1"."warehouse"."company" as "warehouse_company", "s1"."warehouse"."name" as "warehouse_name", ' +
+          '"s1"."warehouse"."description" as "warehouse_description", "s1"."warehouse"."address_company" as "warehouse_address_company", "s1"."warehouse"."address_street" as ' +
+          '"warehouse_address_street", "s1"."warehouse"."address_locality" as "warehouse_address_locality", "s1"."warehouse"."address_city" as "warehouse_address_city", ' +
+          '"s1"."warehouse"."address_region" as "warehouse_address_region", "s1"."warehouse"."address_postalCode" as "warehouse_address_postalCode", ' +
+          '"s1"."warehouse"."address_country" as "warehouse_address_country", "warehouse_bins"."company" as "warehouse_bins_company", "warehouse_bins"."warehouse_name" as ' +
+          '"warehouse_bins_warehouse_name", "warehouse_bins"."bin" as "warehouse_bins_bin", "inventory"."company" as "warehouse_bins_inventory_company", ' +
+          '"inventory"."sku" as "warehouse_bins_inventory_sku", "inventory"."warehouse_name" as "warehouse_bins_inventory_warehouse_name", "inventory"."bin" as "warehouse_bins_inventory_bin", ' +
+          '"inventory"."time" as "warehouse_bins_inventory_time", "inventory"."qty" as "warehouse_bins_inventory_qty", "inventory"."cost" as "warehouse_bins_inventory_cost"'
+        );
+      });
+
+    });
+
   });
 
 });

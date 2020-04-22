@@ -297,7 +297,7 @@ class Table
         if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
           return acc;
         }
-        return acc.concat(join.table.columns.fields(selector));
+        return acc.concat(join.table.selectArray(selector, options));
       }, [])
     );
   }
