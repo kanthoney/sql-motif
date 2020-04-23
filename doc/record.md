@@ -14,6 +14,9 @@ Returns this record.
 
 * `fillAsync(context)`. Fills in missing data asynchronously, returns a promise yielding to this record.
 
+* `scope(values)`. This is used to enforce values on records. For example, if the user is logged in with company account of `LON001`, running `scope({ company: 'LON001' })` will ensure the record's
+`company` field is set to that account.
+
 * `Insert(options)`. Produces an `insert` statement for this record. `options` is a set of [options](./table-options.md) to pass to the table's `insert` method. Does not include subrecords.
 
 * `insert(options)`. Produces an `insert` statement for this record, excluding the `insert` keyword. `options` is a set of [options](./table-options.md) to pass to the table's `insert` method.

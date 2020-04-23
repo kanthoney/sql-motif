@@ -70,10 +70,16 @@ class RecordSet
       return this.addRecord(record.records);
     }
     if(record instanceof Record) {
-      return this.addRecord(record.data);
+      this.records.push(record);
+      const hash = record.hashKey();
+      if(hash) {
+        this.recordMap[hash] = record;
+      }
+      return this;
     }
     if(_.isArray(record)) {
-      return record.forEach(record => this.addRecord(record));
+      record.forEach(record => this.addRecord(record));
+      return this;
     }
     const { recordData, joined } = this.join.table.columns.fields().reduce((acc, col) => {
       const path = col.path;
@@ -90,10 +96,7 @@ class RecordSet
       }
       return acc;
     }, { recordData: {}, joined: {} });
-    const r = new Record(this, recordData);
-    const hash = r.hashKey();
-    this.records.push(r);
-    this.recordMap[hash] = r;
+    let r = new Record(this, recordData);
     this.join.table.joins.forEach(join => {
       const value = _.get(record, join.path || join.name);
       if(value !== undefined) {
@@ -105,7 +108,7 @@ class RecordSet
         recordSet.addRecord(value);
       }
     });
-    return this;
+    return this.addRecord(r);
   }
 
   validate(context)
@@ -142,7 +145,13 @@ class RecordSet
   fill(context)
   {
     this.records.forEach(record => {
+      const oldHash = record.hashKey();
       record.fill(context);
+      const hash = record.hashKey();
+      if(hash !== oldHash) {
+        delete this.recordMap[oldHash];
+        this.recordMap[hash] = record;
+      }
     });
     return this;
   }
@@ -150,10 +159,23 @@ class RecordSet
   fillAsync(context)
   {
     return Promise.all(this.records.map(record => {
-      return record.fillAsync(context);
+      const oldHash = record.hashKey();
+      return record.fillAsync(context).then(record => {
+        const hash = record.hashKey();
+        if(hash !== oldHash) {
+          delete this.recordMap[oldHash];
+          this.recordMap[hash] = record;
+        }
+        return record;
+      });
     })).then(() => {
       return this;
     });
+  }
+
+  scope(scope)
+  {
+    return this.forEach(record => record.scope(scope));
   }
 
   reduce(f, acc)

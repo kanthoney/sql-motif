@@ -371,7 +371,7 @@ class Table
       return this.insertValues(record.toObject({ noSubrecords: true, mapJoined: true, includeJoined: true }));
     }
     if(record instanceof Record) {
-      return this.insertValues(record.data);
+      return record.insertValues();
     }
     if(_.isArray(record)) {
       return record.map(record => this.insertValues(record)).join(', ');
@@ -382,7 +382,7 @@ class Table
       }
       const value = _.get(record, col.path);
       if(value === undefined) {
-        return acc.concat(this.dialect.options.defaultValue || 'default');
+        return acc.concat(this.dialect.options.insertDefault || 'default');
       }
       return acc.concat(this.dialect.escape(value));
     }, []);

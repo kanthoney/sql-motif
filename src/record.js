@@ -11,11 +11,12 @@ class Record
     this.data = data;
     this.valid = true;
     this.errors = {};
+    this.dirty = true;
   }
 
   hashKey()
   {
-    if(this.hash === undefined) {
+    if(this.hash === undefined || this.dirty) {
       let empty = true;
       const hash = this.table.columns.fields().reduce((acc, col) => {
         const path = col.path;
@@ -68,7 +69,7 @@ class Record
     this.valid = true;
     this.errors = {};
     const RecordSet = require('./recordset');
-    this.table.columns.validate(this, context);
+    this.table.columns.validateRecord(this, context);
     this.table.joins.forEach(join => {
       const path = join.path || join.name;
       const subRecord = _.get(this.data, path);
@@ -141,6 +142,7 @@ class Record
 
   fill(context)
   {
+    this.dirty = true;
     this.table.columns.fill(this, context);
     const RecordSet = require('./recordset');
     this.table.joins.forEach(join => {
@@ -160,6 +162,7 @@ class Record
   fillAsync(context)
   {
     const RecordSet = require('./recordset');
+    this.dirty = true;
     return this.table.columns.fillAsync(record, context).then(() => {
       return Promise.all(this.table.joins.map(join => {
         return new Promise(resolve => {
@@ -185,6 +188,19 @@ class Record
     });
   }
 
+  scope(scope)
+  {
+    this.dirty = true;
+    this.table.columns.scope(this.scope);
+    this.table.joins.forEach(join => {
+      const recordSet = _.get(this.data, join.path || join.name);
+      const subScope = Object.assign({}, _.get(this.recordSet.joined, join.path || join.name), _.get(scope, join.path || join.name));
+      if(recordSet) {
+        recordSet.scope(subScope);
+      }
+    });
+  }
+
   Insert(options)
   {
     return this.table.Insert(this.data, options);
@@ -202,7 +218,8 @@ class Record
 
   insertValues(options)
   {
-    return this.table.insertValues(this.data, options);
+    const values = this.table.columns.insertValues(this);
+    return `(${values.join(', ')})`;
   }
 
   InsertIgnore(options)

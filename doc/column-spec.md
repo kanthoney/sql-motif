@@ -15,6 +15,9 @@
  * `default`. The default value if none is given. If a plain value, this is included in `create` statements. Can also be a function for use with the `table.fill(context)` method. The
  function is called with `(col, context)` arguments, where `col` is the column and `context` is the user-defined object passed to the table's `fill` method.
 
+ * `context`. An object or function to create or modify the context passed to the `validate` or `fill` table methods. If an object will be used as defaults in case the context is not
+ supplied. If a function will be called with the arguments `(value, context)` where `value` is the current value and `context` is the current context. The function should return the new context.
+
  * `tags`. A space separated list of tags. Used by the table's select methods to select groups of fields without having to specify all of them.
 
  * `validate`. This is used to validate the field when `table.validate(context)` is called. It can be a string, a regular expression, a function or an array of validators.
@@ -22,4 +25,4 @@
  `validate` function. If the value is valid the function must return `true`. If the validation fails, the function can return `false` to use the default error message, or throw an error
  or return a string to provide a custom error.
 
- * `validationError`. A default error message to return if the validation fails. If not specified will use a standard error message
+ * `validationError`. A default error message to return if the validation fails. If not specified will use a standard error message.

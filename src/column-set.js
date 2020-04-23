@@ -117,7 +117,7 @@ class ColumnSet
     }, []);
   }
 
-  validate(record, context)
+  validateRecord(record, context)
   {
     return this.columns.reduce((acc, col) => {
       if(col instanceof ColumnSet) {
@@ -127,7 +127,7 @@ class ColumnSet
         } else {
           context = { ...context, ...col.context };
         }
-        let result = col.validate(record, context);
+        let result = col.validateRecord(record, context);
         if(!result.valid) {
           acc.valid = false;
         }
@@ -145,6 +145,9 @@ class ColumnSet
         acc.valid = false;
         return acc;
       }
+      if(value === undefined) {
+        value = joinedValue;
+      }
       if(col.notNull && _.isNil(value)) {
         if(!_.has(acc.errors, path)) {
           _.set(acc.errors, path, col.validationError || 'Field must not be null');
@@ -153,6 +156,11 @@ class ColumnSet
         return acc;
       } else if(!col.notNull && _.isNil(value)) {
         return acc;
+      }
+      if(_.isFunction(col.context)) {
+        context = col.context(value, context);
+      } else if(col.context) {
+        context = { ...col.context, ...context };
       }
       if(col.validate) {
         const validate = v => {
@@ -231,45 +239,52 @@ class ColumnSet
       if(!col.notNull && value === null) {
         return null;
       }
+      if(_.isFunction(col.context)) {
+        context = col.context(value, context);
+      } else if(col.context) {
+        context = { ...col.context, ...context };
+      }
       if(col.validate) {
-        const validate = async v => {
-          if(_.isString(v)) {
-            if(`${value}` !== v) {
-              return { path, error: col.validationError || 'Field is not valid' };
-            }
-            return null;
-          }
-          if(_.isRegExp(v)) {
-            if(!v.test(value)) {
-              return { path, error: col.validationError || `Field did not conform to regular expression '${v.toString()}'` }
-            }
-            return null;
-          }
-          if(_.isFunction(v)) {
-            try {
-              const result = await v(value, col, context);
-              if(result === true) {
-                return null;
+        return Promise.resolve(context).then(context => {
+          const validate = async v => {
+            if(_.isString(v)) {
+              if(`${value}` !== v) {
+                return { path, error: col.validationError || 'Field is not valid' };
               }
-              return { path, error: result || col.validationError || 'Field failed function validation' };
-            } catch(error) {
-              return { path, error: (error instanceof Error?error.message:error) || col.validationError || 'Field failed function validation' };
+              return null;
             }
-          }
-          if(_.isArray(v)) {
-            return (await Promise.all(v, validate)).reduce((acc, result) => {
-              if(!acc.error) {
+            if(_.isRegExp(v)) {
+              if(!v.test(value)) {
+                return { path, error: col.validationError || `Field did not conform to regular expression '${v.toString()}'` }
+              }
+              return null;
+            }
+            if(_.isFunction(v)) {
+              try {
+                const result = await v(value, col, context);
+                if(result === true) {
+                  return null;
+                }
+                return { path, error: result || col.validationError || 'Field failed function validation' };
+              } catch(error) {
+                return { path, error: (error instanceof Error?error.message:error) || col.validationError || 'Field failed function validation' };
+              }
+            }
+            if(_.isArray(v)) {
+              return (await Promise.all(v, validate)).reduce((acc, result) => {
+                if(!acc.error) {
+                  return acc;
+                }
+                if(!result.error) {
+                  delete acc.error;
+                }
                 return acc;
-              }
-              if(!result.error) {
-                delete acc.error;
-              }
-              return acc;
-            }, { path, error: col.validationError || 'Field did not match any validator' });
+              }, { path, error: col.validationError || 'Field did not match any validator' });
+            }
+            return null;
           }
-          return null;
-        }
-        return validate(col.validate);
+          return validate(col.validate);
+        });
       }
       return { path, value };
     }));
@@ -291,6 +306,12 @@ class ColumnSet
       let value = _.get(record.data, path);
       if(value === undefined) {
         value = _.get(record.recordSet.joined, path);
+        _.set(record.data, path, value);
+      }
+      if(_.isFunction(col.context)) {
+        context = col.context(value, context);
+      } else if(col.context) {
+        context = { ...col.context, ...context };
       }
       if(col.default !== undefined && (value === undefined || (col.notNull && value === null))) {
         if(_.isFunction(col.default)) {
@@ -320,18 +341,66 @@ class ColumnSet
       const path = col.path;
       let value = _.get(record.data, path);
       if(_.isNil(_.get(record.recordSet.joined, path)) && col.default !== undefined && (value === undefined || (col.notNull && value === null))) {
-        if(_.isFunction(col.default)) {
-          return col.default(col, context).then(value => {
-            _.set(record.data, path, value);
-          });
+        if(_.isFunction(col.context)) {
+          context = col.context(value, context);
+        } else if(col.context) {
+          context = { ...col.context, ...context };
         }
-        value = col.default;
-        _.set(record.data, path, value);
-        col.joinedTo.forEach(path => {
-          _.set(record.recordSet.joined, path, value);
+        return Promise.resolve(context).then(context => {
+          if(_.isFunction(col.default)) {
+            return col.default(col, context).then(value => {
+              _.set(record.data, path, value);
+            });
+          }
+          value = col.default;
+          _.set(record.data, path, value);
+          col.joinedTo.forEach(path => {
+            _.set(record.recordSet.joined, path, value);
+          });
         });
       }
     }));
+  }
+
+  scope(record, scope)
+  {
+    return this.fields().forEach(col => {
+      if(col instanceof ColumnSet) {
+        return col.scope(record, scope);
+      }
+      if(col.calc) {
+        return;
+      }
+      let value = _.get(scope, col.path);
+      if(value !== undefined) {
+        _.set(record.data, col.path, data);
+        col.joinedTo.forEach(path => {
+          _.set(record.recordSet.joined, col.path, value);
+        });
+      }
+    });
+  }
+
+  insertValues(record)
+  {
+    const dialect = record.table.dialect;
+    return this.fields().reduce((acc, col) => {
+      if(col instanceof ColumnSet) {
+        return acc.concat(col.insertValues(record));
+      }
+      if(col.calc) {
+        return acc;
+      }
+      const path = col.path;
+      let value = _.get(record.data, path);
+      if(value === undefined) {
+        value = _.get(record.recordSet.joined, path);
+      }
+      if(value === undefined) {
+        return acc.concat(dialect.options.insertDefault || 'default');
+      }
+      return acc.concat(dialect.escape(value));
+    }, []);
   }
 
   setArray(record, options)

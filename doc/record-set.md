@@ -45,6 +45,9 @@ parameter of the `reduce` call for the first record. Returns the result of the f
 
 * `slice([begin [,end]])`. Creates a record set containing a slice of records from this one.
 
+* `scope(values)`. This will force the values specified in `values` to be applied to each record is the set. For example, if the user is logged in with a company account of `LON001` then
+`scope({ company: 'LON001' })` will ensure the records' `company` fields are all set to `LON001`.
+
 * `Insert(options)`. Creates a set of `insert` statements to insert the records, including (by default) any subrecords where the corresponding [join](./join-spec.md) is not set as read-only.
 `options` is a set of [options](./table-options.md) to pass to the table's `insert` methods.
 
