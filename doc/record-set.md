@@ -35,16 +35,31 @@ specification.
 * `reduce(f, acc)`. Calls function `f` for each record of the set in turn with the arguments `(acc, record)`. The `acc` parameter is the result of the previous call, or the `acc`
 parameter of the `reduce` call for the first record. Returns the result of the final call. `record` is a [`Record`](./record.md) object.
 
-* `reduceAsync(f, acc)`. Performs a reduction as above, but for functions that return a promise.
+* `map(f)`. Calls `f(record)` for each record in the record set, returning an array of results.
+
+* `filter(f)`. Creates a new `RecordSet` including only those records for which `f(record)` is truthy.
+
+* `forEach(f)`. Calls `f(record)` for each record in the set.
+
+* `reduceAsync(f, acc)`. Performs a reduction as above, but for functions that return a promise. The calls are made sequentially.
+
+* `slice([begin [,end]])`. Creates a record set containing a slice of records from this one.
 
 * `Insert(options)`. Creates a set of `insert` statements to insert the records, including (by default) any subrecords where the corresponding [join](./join-spec.md) is not set as read-only.
 `options` is a set of [options](./table-options.md) to pass to the table's `insert` methods.
+
+* `insert(options)`. Creates a set of `insert` statements to insert the records, excluding the `insert` keyword, including (by default) any subrecords where the corresponding
+[join](./join-spec.md) is not set as read-only. `options` is a set of [options](./table-options.md) to pass to the table's `insert` methods.
 
 * `InsertIgnore(options)`. Creates a set of `insert ignore` statements.
 
 * `Update(options)`. Creates a set of `update` statements to update any non-read-only records and subrecords.
 
+* `Update(options)`. Creates a set of `update` statements, excluding the `update` keyword, to update any non-read-only records and subrecords.
+
 * `Delete(options)`. Creates a set of `delete` statements to delete the records including (by default) any non-read-only subrecords.
+
+* `delete(options)`. Creates a set of `delete` statements, excluding the `delete` keyword, to delete the records including (by default) any non-read-only subrecords.
 
 * `toObject(options)`. Creates a plain object. `options` can have the following settings:
 

@@ -16,20 +16,29 @@ class Record
   hashKey()
   {
     if(this.hash === undefined) {
+      let empty = true;
       const hash = this.table.columns.fields().reduce((acc, col) => {
         const path = col.path;
+        let value = _.get(this.data, path);
+        if(!_.isNil(value)) {
+          empty = false;
+        }
         if(col.primaryKey || _.has(this.recordSet.joined, path)) {
-          let value = _.get(this.data, path);
-          if(value !== undefined) {
-            _.set(acc, path, value);
+          if(_.isNil(value)) {
+            value = _.get(this.recordSet.joined, path);
+          }
+          if(value === undefined) {
+            return acc.concat(null);
+          } else {
+            return acc.concat(value);
           }
         }
         return acc;
-      }, {});
-      if(Object.keys(hash).reduce((acc, k) => acc || !_.isNil(hash[k]), false)) {
-        this.hash = JSON.stringify(hash);
-      } else {
+      }, []);
+      if(empty) {
         this.hash = null;
+      } else {
+        this.hash = JSON.stringify(hash);
       }
     }
     return this.hash;
@@ -59,72 +68,7 @@ class Record
     this.valid = true;
     this.errors = {};
     const RecordSet = require('./recordset');
-    this.table.columns.values(this.data, null, true).forEach(({ col, value }) => {
-      if(col.calc) {
-        return;
-      }
-      const path = col.path;
-      const joinedValue = _.get(this.recordSet.joined, path);
-      if(!_.isNil(joinedValue) && !_.isNil(value) && joinedValue !== value) {
-        _.set(acc.errors, path, `join mismatch. Parent: '${joinedValue}', child: '${value}'`);
-        this.valid = false;
-        return;
-      }
-      if(col.notNull && _.isNil(value)) {
-        if(!_.has(this.errors, path)) {
-          _.set(this.errors, path, col.validationError || 'Field must not be null');
-          this.valid = false;
-        }
-        return;
-      } else if(!col.notNull && _.isNil(value)) {
-        return;
-      }
-      if(col.validate) {
-        const validate = v => {
-          if(_.isString(v)) {
-            if(`${value}` !== v) {
-              return { path, error: col.validationError || 'Field is not valid' };
-            }
-            return null;
-          }
-          if(_.isRegExp(v)) {
-            if(!v.test(value)) {
-              return { path, error: col.validationError || `Field did not conform to regular expression '${v.toString()}'` }
-            }
-            return null;
-          }
-          if(_.isFunction(v)) {
-            try {
-              const result = v(value, col, context);
-              if(result === true) {
-                return null;
-              }
-              return { path, error: result || col.validationError || 'Field failed function validation' }
-            } catch(error) {
-              return { path, error: (error instanceof Error?error.message:error) || col.validationError || 'Field failed function validation' };
-            }
-          }
-          if(_.isArray(v)) {
-            return v.reduce((acc, v) => {
-              if(_.isNil(acc)) {
-                return acc;
-              }
-              const result = validate(v);
-              if(_.isNil(result)) {
-                return null;
-              }
-              return acc;
-            }, { path, error: col.validationError || 'Field did not match any validator' });
-          }
-        }
-        const result = validate(col.validate);
-        if(result) {
-          this.valid = false;
-          _.set(this.errors, path, result.error);
-        }
-      }
-      return;
-    });
+    this.table.columns.validate(this, context);
     this.table.joins.forEach(join => {
       const path = join.path || join.name;
       const subRecord = _.get(this.data, path);
@@ -143,92 +87,37 @@ class Record
     const RecordSet = require('./recordset');
     this.valid = true;
     this.errors = {};
-    return Promise.all(this.table.columns.values(this.data, null, true).reduce((acc, { col, value }) => {
-      if(col.calc) {
-        return acc;
-      }
-      const path = col.path;
-      let joinedValue = _.get(this.recordSet.joined, path);
-      if(!_.isNil(joinedValue) && !_.isNil(value) && joinedValue !== value) {
-        return acc.concat({ path, error: `join mismatch. Parent: '${joinedValue}', child: '${value}'` });
-      }
-      if(value === undefined) {
-        value = joinedValue;
-      }
-      if(col.notNull && _.isNil(value)) {
-        return acc.concat({ path, error: col.validationError || 'Field must not be null' });
-      }
-      if(!col.notNull && value === null) {
-        return acc;
-      }
-      if(col.validate) {
-        const validate = async v => {
-          if(_.isString(v)) {
-            if(`${value}` !== v) {
-              return { path, error: col.validationError || 'Field is not valid' };
-            }
-            return null;
+    return this.table.columns.validateAsync(this, context).then(results => {
+      return Promise.all(results.concat(this.table.joins.reduce((acc, join) => {
+        return acc.concat(new Promise(resolve => {
+          if(_.isFunction(join.table.config.context)) {
+            resolve(join.table.config.context({ ...context }));
+          } else {
+            resolve({ ...context, ...join.table.config.context });
           }
-          if(_.isRegExp(v)) {
-            if(!v.test(value)) {
-              return { path, error: col.validationError || `Field did not conform to regular expression '${v.toString()}'` }
-            }
-            return null;
+        }).then(context => {
+          const path = join.path || join.name;
+          const recordSet = _.get(this.data, path);
+          if(recordSet instanceof RecordSet) {
+            return recordSet.validateAsync(context);
           }
-          if(_.isFunction(v)) {
-            try {
-              const result = await v(value, col, context);
-              if(result === true) {
-                return null;
-              }
-              return { path, error: result || col.validationError || 'Field failed function validation' };
-            } catch(error) {
-              return { path, error: (error instanceof Error?error.message:error) || col.validationError || 'Field failed function validation' };
-            }
-          }
-          if(_.isArray(v)) {
-            return (await Promise.all(v, validate)).reduce((acc, result) => {
-              if(!acc.error) {
-                return acc;
-              }
-              if(!result.error) {
-                delete acc.error;
-              }
-              return acc;
-            }, { path, error: col.validationError || 'Field did not match any validator' });
-          }
-          return null;
-        }
-        return acc.concat(validate(col.validate));
-      }
-      return acc.concat({ path, value });
-    }, []).concat(this.table.joins.reduce((acc, join) => {
-      return acc.concat(new Promise(resolve => {
-        if(_.isFunction(join.table.config.context)) {
-          resolve(join.table.config.context({ ...context }));
-        } else {
-          resolve({ ...context, ...join.table.config.context });
-        }
-      }).then(context => {
-        const path = join.path || join.name;
-        const recordSet = _.get(this.data, path);
-        if(recordSet instanceof RecordSet) {
-          return recordSet.validateAsync(context);
-        }
-      }));
-    }, []))).then(result => {
-      result.forEach(result => {
+        }));
+      }, [])));
+    }).then(result => {
+      const process = result => {
         if(result instanceof RecordSet) {
           if(!result.valid) {
             this.valid = false;
           }
           return;
-        }
-        if(result && result.error) {
+        } else if(_.isArray(result)) {
+          return result.forEach(process);
+        } else if(result && result.error) {
           this.valid = false;
           _.set(this.errors, result.path, result.error);
         }
-      });
+      };
+      process(result);
       return this;
     });
   }
@@ -252,25 +141,8 @@ class Record
 
   fill(context)
   {
+    this.table.columns.fill(this, context);
     const RecordSet = require('./recordset');
-    this.table.columns.fields().forEach(col => {
-      const path = col.path;
-      let value = _.get(this.data, path);
-      if(value === undefined) {
-        value = _.get(this.recordSet.joined, path);
-      }
-      if(col.default !== undefined && (value === undefined || (col.notNull && value === null))) {
-        if(_.isFunction(col.default)) {
-          value = col.default(col, context);
-        } else {
-          value = col.default;
-        }
-        _.set(this.data, path, value);
-        col.joinedTo.forEach(path => {
-          _.set(this.recordSet.joined, path, value);
-        });
-      }
-    });
     this.table.joins.forEach(join => {
       const path = join.path || join.name;
       const subRecord = _.get(this.data, path);
@@ -288,23 +160,7 @@ class Record
   fillAsync(context)
   {
     const RecordSet = require('./recordset');
-    return Promise.all(this.table.columns.fields().map(col => {
-      const path = col.path;
-      let value = _.get(this.data, path);
-      if(_.isNil(_.get(this.recordSet.joined, path)) && col.default !== undefined && (value === undefined || (col.notNull && value === null))) {
-        if(_.isFunction(col.default)) {
-          return col.default(col, context).then(value => {
-            _.set(record.data, path, value);
-          });
-        } else {
-          value = col.default;
-        }
-        _.set(this.data, path, value);
-        col.joinedTo.forEach(path => {
-          _.set(this.recordSet.joined, path, value);
-        });
-      }
-    })).then(() => {
+    return this.table.columns.fillAsync(record, context).then(() => {
       return Promise.all(this.table.joins.map(join => {
         return new Promise(resolve => {
           if(_.isFunction(join.table.config.context)) {
@@ -334,6 +190,21 @@ class Record
     return this.table.Insert(this.data, options);
   }
 
+  insert(options)
+  {
+    return this.table.insert(this.data, options);
+  }
+
+  insertColumns(options)
+  {
+    return this.table.insertColumns(this.data, options);
+  }
+
+  insertValues(options)
+  {
+    return this.table.insertValues(this.data, options);
+  }
+
   InsertIgnore(options)
   {
     return this.table.InsertIgnore(this.data, options);
@@ -344,9 +215,19 @@ class Record
     return this.table.Update(this.data, null, { joins: [], safe: true, ...options });
   }
 
+  update(options)
+  {
+    return this.table.update(this.data, null, { joins: [], safe: true, ...options });
+  }
+
   Delete(options)
   {
     return this.table.Delete(this.data, { joins: [], safe: true, ...options });
+  }
+
+  delete(options)
+  {
+    return this.table.delete(this.data, { joins: [], safe: true, ...options });
   }
 
   reduceSubtables(f, acc)
@@ -372,12 +253,29 @@ class Record
       return Promise.resolve(acc).then(acc => {
         const recordSet = _.get(this.data, join.path || join.name);
         if(recordSet !== undefined) {
-          return next(f(acc, _.get(this.data, join.path || join.name)));
+          return next(f(acc, join, _.get(this.data, join.path || join.name)));
         }
         return next(acc);
       });
     }
     return next(acc);
+  }
+
+  forEachSubtable(f)
+  {
+    return this.table.joins.forEach(join => {
+      const subRecord = _.get(this.data, join.path || join.name);
+      if(subRecord) {
+        f(join, subRecord);
+      }
+    });
+  }
+
+  mapSubtables(f)
+  {
+    return this.reduceSubtables((acc, join, recordSet) => {
+      return acc.concat(f(join, recordSet));
+    }, []);
   }
 
   toObject(options)

@@ -10,7 +10,8 @@ module.exports = class SQLiteDialect extends Dialect
       joinBracketsNotAllowed: true,
       singleTableUpdate: true,
       singleTableDelete: true,
-      noIndexesInCreate: true
+      noIndexesInCreate: true,
+      insertDefault: 'null'
     });
   }
 

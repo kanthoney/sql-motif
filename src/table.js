@@ -322,31 +322,8 @@ class Table
 
   setArray(record, options)
   {
-    if(record instanceof RecordSet) {
-      return this.setArray(record.toObject({ includeJoined: true }));
-    }
-    if(record instanceof Record) {
-      return this.setArray(record.toObject({ includeJoined: true }));
-    }
     options = options || {};
-    if(options.joins && options.joins !== '*') {
-      if(!_.isArray(options.joins)) {
-        options.joins = [options.joins];
-      }
-    }
-    return this.columns.values(record, options).map(({ col, value }) => {
-      if(col.calc) {
-        return acc;
-      }
-      const fullName = this.dialect.options.singleTableUpdate?col.sql.name:col.sql.fullName;
-      if(value instanceof Operator) {
-        return `${value.clause(this.dialect), col}`;
-      } else if(value instanceof Function) {
-        return `${fullName} = ${this.escape(value(col, this.dialect.template))}`;
-      } else {
-        return `${fullName} = ${this.escape(value)}`;
-      }
-    }).concat(this.joins.reduce((acc, join) => {
+    return this.columns.setArray(record, options).concat(this.joins.reduce((acc, join) => {
       if(join.readOnly || (options.joins && options.joins !== '*' && !options.joins.includes(join.name))) {
         return acc;
       }
@@ -367,12 +344,20 @@ class Table
 
   Set(record, options)
   {
-    return `set ${this.set(record, options)}`;
+    const clause = this.set(record, options);
+    if(clause) {
+      return `set ${clause}`;
+    }
+    return '';
   }
 
   SetNonKey(record, options)
   {
-    return `set ${this.setNonKey(record, options)}`;
+    const clause = this.setNonKey(record, options);
+    if(clause) {
+      return `set ${clause}`;
+    }
+    return '';
   }
 
   insertColumns()
@@ -397,7 +382,7 @@ class Table
       }
       const value = _.get(record, col.path);
       if(value === undefined) {
-        return acc.concat('default');
+        return acc.concat(this.dialect.options.defaultValue || 'default');
       }
       return acc.concat(this.dialect.escape(value));
     }, []);
@@ -427,10 +412,31 @@ class Table
     return this.dialect.insertIgnore(this, record);
   }
 
+  whereArray(record, options)
+  {
+    return this.columns.whereArray(record, options).concat(this.joins.reduce((acc, join) => {
+      if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
+        return acc;
+      }
+      const subRecord = _.get(record, join.path || join.name);
+      const where = join.table.where(subRecord || {}, {
+        ...options,
+        joined: _.get(options.joined, join.path || join.name),
+        safe: options.safe && !join.readOnly,
+        brackets: _.isArray(subRecord),
+        default: ''
+      });
+      if(!where) {
+        return acc;
+      }
+      return acc.concat(where);
+    }, []));
+  }
+
   where(record, options)
   {
     options = { default: '', ...options };
-    const clauses = this.columns.whereArray(record, options);
+    const clauses = this.whereArray(record, options);
     if(clauses.length === 0) {
       return options.default;
     }
@@ -482,9 +488,17 @@ class Table
       options.joins = [];
     }
     if(old) {
-      return `${this.from(options)} ${this.Set(record, options)} ${this.WhereKey(old, options)}`;
+      const setClause = this.Set(record, options);
+      if(setClause) {
+        return `${this.from(options)} ${setClause} ${this.WhereKey(old, options)}`;
+      }
+      return '';
     }
-    return `${this.from(options)} ${this.SetNonKey(record, options)} ${this.WhereKey(record, options)}`;
+    const setClause = this.SetNonKey(record, options);
+    if(setClause) {
+      return `${this.from(options)} ${setClause} ${this.WhereKey(record, options)}`;
+    }
+    return '';
   }
 
   Update(record, old, options)

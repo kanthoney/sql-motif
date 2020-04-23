@@ -66,12 +66,18 @@ class RecordSet
 
   addRecord(record)
   {
+    if(record instanceof RecordSet) {
+      return this.addRecord(record.records);
+    }
+    if(record instanceof Record) {
+      return this.addRecord(record.data);
+    }
     if(_.isArray(record)) {
       return record.forEach(record => this.addRecord(record));
     }
-    const { recordData, joined } = this.join.table.columns.values(record, null, true).reduce((acc, field) => {
-      let { col, value } = field;
+    const { recordData, joined } = this.join.table.columns.fields().reduce((acc, col) => {
       const path = col.path;
+      let value = _.get(record, path);
       if(value === undefined) {
         value = _.get(this.joined, path);
       }
@@ -152,10 +158,40 @@ class RecordSet
 
   reduce(f, acc)
   {
-    acc = this.records.reduce((acc, record) => {
-      return f(acc, record);
-    }, acc);
-    return acc;
+    return this.records.reduce(f, acc);
+  }
+
+  forEach(f)
+  {
+    return this.records.forEach(f);
+  }
+
+  map(f)
+  {
+    return this.records.map(f);
+  }
+
+  filter(f)
+  {
+    return this.reduce((acc, record) => {
+      if(f(record)) {
+        acc.records.push(record);
+        const hash = record.hashKey();
+        acc.recordMap[hash] = record;
+      }
+      return acc;
+    }, new RecordSet(this.join, this.joined));
+  }
+
+  slice(...args)
+  {
+    const recordSet = new RecordSet(this.join, this.joined);
+    this.records.slice(...args).forEach(record => {
+      recordSet.records.push(record);
+      const hash = record.hashKey();
+      recordSet.recordMap[hash] = record;
+    });
+    return recordSet;
   }
 
   reduceAsync(f, acc)
@@ -184,6 +220,29 @@ class RecordSet
     }, []));
   }
 
+  insert(options)
+  {
+    options = options || {};
+    return [].concat(this.join.table.insert(this, options) || []).concat(this.reduce((acc, record) => {
+      return record.reduceSubtables((acc, recordSet) => {
+        if(recordSet.join.readOnly || (options.joins && options.joins !== '*' && !options.joins.includes(recordSet.join.name))) {
+          return acc;
+        }
+        return acc.concat(recordSet.insert(options));
+      }, acc);
+    }, []));
+  }
+
+  insertColumns(options)
+  {
+    return this.join.table.insertColumns(options);
+  }
+
+  insertValues(options)
+  {
+    return this.map(record => record.insertValues(options));
+  }
+
   InsertIgnore(options)
   {
     options = options || {};
@@ -210,6 +269,19 @@ class RecordSet
     }, []);
   }
 
+  update(options)
+  {
+    options = options || {};
+    return this.reduce((acc, record) => {
+      return acc.concat(record.update(options)).concat(record.reduceSubtables((acc, recordSet) => {
+        if(recordSet.join.readOnly || (options.joins && options.joins !== '*' && !options.joins.includes(recordSet.join.name))) {
+          return acc;
+        }
+        return acc.concat(recordSet.update(options));
+      }, []));
+    }, []);
+  }
+
   Delete(options)
   {
     options = options || {};
@@ -219,6 +291,19 @@ class RecordSet
           return acc;
         }
         return acc.concat(recordSet.Delete(options));
+      }, []));
+    }, []);
+  };
+
+  delete(options)
+  {
+    options = options || {};
+    return this.reduce((acc, record) => {
+      return acc.concat(record.delete(options)).concat(record.reduceSubtables((acc, recordSet) => {
+        if(recordSet.join.readOnly || (options.joins && options.joins !== '*' && !options.joins.includes(recordSet.join.name))) {
+          return acc;
+        }
+        return acc.concat(recordSet.delete(options));
       }, []));
     }, []);
   };
