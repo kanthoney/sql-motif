@@ -58,7 +58,7 @@ module.exports = (name, dialect, db) => {
       { name: 'price', type: 'price', notNull: true },
       { name: 'count', calc: 'count(*)', hidden: true }
     ],
-    context: { line_no: 1 },
+    context: value => ({ line_no: value.reduce((acc, record) => Math.max((record.get('line_no') || 0) + 1, acc), 1) }),
     references: [{
       table: tables.orders,
       columns: ['company', 'order_id']
@@ -89,16 +89,18 @@ module.exports = (name, dialect, db) => {
       expect(await(db.query(tables.stock.Insert(sample_stock)))).toEqual([]);
       expect((await(db.query(tables.stock.SelectWhere('count'))))[0].count).toBe(20);
       const sample_orders = require('./sample-orders.json');
-      //let validated = joins.orders.validate(sample_orders);
-      //expect(validated.valid).toBe(false);
-      let validated = joins.orders.fill(sample_orders).validate();
-      expect(validated.valid).toBe(true);
-      await db.query(validated.InsertIgnore());
-      await db.query(validated.Update());
+      let records = joins.orders.validate(sample_orders);
+      expect(records.valid).toBe(false);
+      records = records.fill(sample_orders);
+      records = records.validate();
+      expect(records.valid).toBe(true);
+      await db.query(records.InsertIgnore());
+      await db.query(records.Update());
       expect((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count']).toBe(1413);
       expect((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count']).toBe(1938);
-      const big_orders = validated.filter(record => record.toJSON().lines.length > 3);
-      const order_id = big_orders.toJSON()[0].order_id;
+      const big_orders = records.filter(record => record.get('lines').length > 3);
+      expect(big_orders.valid).toBe(true);
+      const order_id = big_orders.get('[0].order_id');
       let lines = await db.query(joins.orders.SelectWhere('*', { order_id }));
       expect(JSON.stringify(joins.orders.collate(lines))).toBe(
         `[{"company":"AAD010","order_id":"${order_id}","order_date":"2020-04-23","customer":"BFV46","delivery":{"name":"Mrs Maureen Francis",` +
@@ -119,11 +121,11 @@ module.exports = (name, dialect, db) => {
       expect(joins.orders.collate(lines).length).toBe(16);
       lines = await db.query(joins.orders.SelectWhere('*', { customer: operators.between('A', 'E'), lines: { sku: 'WFN86XT' } }));
       expect(joins.orders.collate(lines).length).toBe(14);
-      const toDelete = validated.slice(0, 800);
+      const toDelete = records.slice(0, 800);
       await db.query(toDelete.Delete());
       expect((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count']).toBe(613);
       expect((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count']).toBe(868);
-      await db.query(validated.Delete());
+      await db.query(records.Delete());
       expect((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count']).toBe(0);
       expect((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count']).toBe(0);
       expect((await(db.query(tables.stock.SelectWhere('count'))))[0].count).toBe(20);

@@ -195,14 +195,21 @@ class RecordSet
 
   filter(f)
   {
+    const recordSet = new RecordSet(this.join, this.joined);
+    if(this.valid !== undefined) {
+      recordSet.valid = true;
+    }
     return this.reduce((acc, record) => {
       if(f(record)) {
         acc.records.push(record);
         const hash = record.hashKey();
         acc.recordMap[hash] = record;
+        if(record.valid === false) {
+          acc.valid = false;
+        }
       }
       return acc;
-    }, new RecordSet(this.join, this.joined));
+    }, recordSet);
   }
 
   slice(...args)
@@ -357,6 +364,7 @@ class RecordSet
   {
     return this.records.length;
   }
+
 };
 
 module.exports = RecordSet;

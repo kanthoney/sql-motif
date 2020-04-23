@@ -297,8 +297,8 @@ class ColumnSet
         if(_.isFunction(col.context)) {
           let value = _.get(record.data, col.config.path);
           context = col.context(value, context);
-        } else {
-          context = { ...context, ...col.context };
+        } else if(col.context) {
+          context = { ...col.context, ...context };
         }
         return col.fill(record, context);
       }
