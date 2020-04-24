@@ -90,19 +90,32 @@ class RecordSet
       if(value !== undefined) {
         _.set(acc.recordData, path, value);
         acc.joined = col.joinedTo.reduce((acc, path) => {
-          _.set(acc, path, value);
+          const calcPath = (left, right) => {
+            if(left.length === 0) {
+              return right;
+            }
+            if(right.length === 0 || left[0] !== right[0]) {
+              return null;
+            }
+            return calcPath(left.slice(1), right.slice(1));
+          }
+          const relPath = calcPath(this.join.table.config.path, path);
+          if(relPath) {
+            _.set(acc, relPath, value);
+          }
           return acc;
         }, acc.joined);
       }
       return acc;
-    }, { recordData: {}, joined: {} });
+    }, { recordData: {}, joined: { ...this.joined } });
     let r = new Record(this, recordData);
+    r.joined = joined;
     this.join.table.joins.forEach(join => {
       const value = _.get(record, join.path || join.name);
       if(value !== undefined) {
         let recordSet = _.get(r.data, join.path || join.name);
         if(recordSet === undefined) {
-          recordSet = new RecordSet(join, Object.assign({}, _.get(joined, join.table.config.path), _.get(this.joined, join.path || join.name)));
+          recordSet = new RecordSet(join, Object.assign({}, _.get(r.joined, join.path || join.name)));
           _.set(r.data, join.path || join.name, recordSet);
         }
         recordSet.addRecord(value);

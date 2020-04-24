@@ -13,7 +13,7 @@ module.exports = {
   country: { type: 'char(2)', notNull: true, default: 'GB', validate: ['GB', 'IE', 'US', 'DE', 'FR'], validationError: 'Invalid country code' },
   address: { type: [
     { name: 'company', type: 'addressLine' },
-    { name: 'street', type: 'addressLine', validate: (s, col, context) => (context && context.allowEmptyStreets)?true:s === ''?'Street must not be empty':true },
+    { name: 'street', type: 'addressLine', validate: (s, context) => (context && context.allowEmptyStreets)?true:s === ''?'Street must not be empty':true },
     { name: 'locality', type: 'addressLine' },
     { name: 'city', type: 'addressLine' },
     { name: 'region', type: 'addressLine' },

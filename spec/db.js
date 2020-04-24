@@ -51,7 +51,7 @@ module.exports = (name, dialect, db) => {
     columns: [
       { name: 'company', type: 'account', nouNull: true, primaryKey: true },
       { name: 'order_id', type: 'uuid', notNull: true, primaryKey: true },
-      { name: 'line_no', type: 'int', notNull: true, primaryKey: true, default: (col, context) => context.line_no++ },
+      { name: 'line_no', type: 'int', notNull: true, primaryKey: true, default: context => context.line_no++ },
       { name: 'sku', type: 'sku', notNull: true },
       { name: 'description', type: 'text' },
       { name: 'qty', type: 'qty', notNull: true },

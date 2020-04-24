@@ -12,6 +12,7 @@ class Record
     this.valid = true;
     this.errors = {};
     this.dirty = true;
+    this.joined = {};
   }
 
   hashKey()
@@ -95,15 +96,15 @@ class Record
     this.errors = {};
     return this.table.columns.validateAsync(this, context).then(results => {
       return Promise.all(results.concat(this.table.joins.reduce((acc, join) => {
+        const path = join.path || join.name;
+        const recordSet = _.get(this.data, path);
         return acc.concat(new Promise(resolve => {
           if(_.isFunction(join.table.config.context)) {
-            resolve(join.table.config.context({ ...context }));
+            resolve(join.table.config.context(recordSet, { ...context }));
           } else {
             resolve({ ...join.table.config.context, ...context });
           }
         }).then(context => {
-          const path = join.path || join.name;
-          const recordSet = _.get(this.data, path);
           if(recordSet instanceof RecordSet) {
             return recordSet.validateAsync(context);
           }
@@ -148,19 +149,20 @@ class Record
   fill(context)
   {
     this.dirty = true;
+    Object.assign(this.joined, this.recordSet.joined);
     this.table.columns.fill(this, context);
     const RecordSet = require('./recordset');
     this.table.joins.forEach(join => {
       const path = join.path || join.name;
-      const subRecord = _.get(this.data, path);
-      if(subRecord instanceof RecordSet) {
-        Object.assign(subRecord.joined, _.get(this.recordSet.joined, path));
+      const recordSet = _.get(this.data, path);
+      if(recordSet instanceof RecordSet) {
+        Object.assign(recordSet.joined, _.get(this.joined, path));
         if(_.isFunction(join.table.config.context)) {
-          context = join.table.config.context(subRecord, { ...context });
+          context = join.table.config.context(recordSet, { ...context });
         } else if(join.table.config.context) {
           context = { ...join.table.config.context, ...context };
         }
-        subRecord.fill(context);
+        recordSet.fill(context);
       }
     });
     return this;
@@ -170,24 +172,25 @@ class Record
   {
     const RecordSet = require('./recordset');
     this.dirty = true;
-    return this.table.columns.fillAsync(record, context).then(() => {
+    Object.assign(this.joined, this.recordSet.joined);
+    return this.table.columns.fillAsync(this, context).then(() => {
       return Promise.all(this.table.joins.map(join => {
+        const path = join.path || join.name;
+        const recordSet = _.get(this.data, path);
         return new Promise(resolve => {
           if(_.isFunction(join.table.config.context)) {
-            context = join.table.config.context({ ...context });
+            context = join.table.config.context(recordSet, { ...context });
           } else if(join.table.config.context) {
             context = { ...join.table.config.context,  ...context };
           }
           resolve(context);
         }).then(context => {
-          const path = join.path || join.name;
-          const subRecord = _.get(this.data, path);
-          if(subRecord instanceof RecordSet) {
-            Object.assign(subRecord.joined, _.get(this.recordSet.joined, path));
+          if(recordSet instanceof RecordSet) {
+            Object.assign(recordSet.joined, _.get(this.joined, path));
             if(_.isFunction(join.table.config.context)) {
-              return subRecord.fillAsync(join.table.config.context(subRecord, { ...context }));
+              return recordSet.fillAsync(join.table.config.context(recordSet, { ...context }));
             }
-            return subRecord.fillAsync({ ...join.table.config.context, ...context });
+            return recordSet.fillAsync({ ...join.table.config.context, ...context });
           }
         });
       }));

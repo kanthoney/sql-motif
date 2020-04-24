@@ -157,12 +157,12 @@ class ColumnSet
       } else if(!col.notNull && _.isNil(value)) {
         return acc;
       }
-      if(_.isFunction(col.context)) {
-        context = col.context(value, context);
-      } else if(col.context) {
-        context = { ...col.context, ...context };
-      }
       if(col.validate) {
+        if(_.isFunction(col.context)) {
+          context = col.context(value, context);
+        } else if(col.context) {
+          context = { ...col.context, ...context };
+        }
         const validate = v => {
           if(_.isString(v)) {
             if(`${value}` !== v) {
@@ -178,7 +178,7 @@ class ColumnSet
           }
           if(_.isFunction(v)) {
             try {
-              const result = v(value, col, context);
+              const result = v(value, context, col);
               if(result === true) {
                 return null;
               }
@@ -239,12 +239,12 @@ class ColumnSet
       if(!col.notNull && value === null) {
         return null;
       }
-      if(_.isFunction(col.context)) {
-        context = col.context(value, context);
-      } else if(col.context) {
-        context = { ...col.context, ...context };
-      }
       if(col.validate) {
+        if(_.isFunction(col.context)) {
+          context = col.context(value, context);
+        } else if(col.context) {
+          context = { ...col.context, ...context };
+        }
         return Promise.resolve(context).then(context => {
           const validate = async v => {
             if(_.isString(v)) {
@@ -261,7 +261,7 @@ class ColumnSet
             }
             if(_.isFunction(v)) {
               try {
-                const result = await v(value, col, context);
+                const result = await v(value, context, col);
                 if(result === true) {
                   return null;
                 }
@@ -308,20 +308,20 @@ class ColumnSet
         value = _.get(record.recordSet.joined, path);
         _.set(record.data, path, value);
       }
-      if(_.isFunction(col.context)) {
-        context = col.context(value, context);
-      } else if(col.context) {
-        context = { ...col.context, ...context };
-      }
       if(col.default !== undefined && (value === undefined || (col.notNull && value === null))) {
+        if(_.isFunction(col.context)) {
+          context = col.context(value, context);
+        } else if(col.context) {
+          context = { ...col.context, ...context };
+        }
         if(_.isFunction(col.default)) {
-          value = col.default(col, context);
+          value = col.default(context, col);
         } else {
           value = col.default;
         }
         _.set(record.data, path, value);
         col.joinedTo.forEach(path => {
-          _.set(record.recordSet.joined, path, value);
+          _.set(record.joined, path, value);
         });
       }
     });
@@ -340,24 +340,38 @@ class ColumnSet
       }
       const path = col.path;
       let value = _.get(record.data, path);
-      if(_.isNil(_.get(record.recordSet.joined, path)) && col.default !== undefined && (value === undefined || (col.notNull && value === null))) {
-        if(_.isFunction(col.context)) {
-          context = col.context(value, context);
-        } else if(col.context) {
-          context = { ...col.context, ...context };
-        }
-        return Promise.resolve(context).then(context => {
-          if(_.isFunction(col.default)) {
-            return col.default(col, context).then(value => {
-              _.set(record.data, path, value);
-            });
-          }
-          value = col.default;
+      const joinedValue = _.get(record.recordSet.joined, path);
+      if(value === undefined || (col.notNull && value === null)) {
+        if(!_.isNil(joinedValue)) {
+          value = joinedValue;
           _.set(record.data, path, value);
           col.joinedTo.forEach(path => {
-            _.set(record.recordSet.joined, path, value);
+            _.set(record.joined, path, value);
           });
-        });
+        } else {
+          if(_.isFunction(col.context)) {
+            context = col.context(value, context);
+          } else if(col.context) {
+            context = { ...col.context, ...context };
+          }
+          return Promise.resolve(context).then(context => {
+            if(_.isFunction(col.default)) {
+              return new Promise(resolve => {
+                resolve(col.default(context, col));
+              }).then(value => {
+                _.set(record.data, path, value);
+                col.joinedTo.forEach(path => {
+                  _.set(record.joined, path, value);
+                });
+              });
+            }
+            value = col.default;
+            _.set(record.data, path, value);
+            col.joinedTo.forEach(path => {
+              _.set(record.joined, path, value);
+            });
+          });
+        }
       }
     }));
   }
