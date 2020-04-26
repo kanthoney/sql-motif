@@ -1,9 +1,9 @@
 'use strict';
 
-const DB = require('./postgres/db');
-const dialects = require('../src/dialects');
-
 try {
+  const DB = require('./postgres/db');
+  const dialects = require('../src/dialects');
+
   const config = require('./dev/pg.json');
   const db = new DB(config);
   describe("Postgres tests", () => {
