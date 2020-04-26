@@ -2,4 +2,6 @@
 
 const DB = require('./sqlite/db');
 const dialects = require('../src/dialects');
-require('./db')('sqlite', dialects.sqlite, new DB);
+describe("sqlite tests", () => {
+  require('./db')('sqlite', dialects.sqlite, new DB);
+});

@@ -2,6 +2,7 @@
 
 const types = require('./types');
 const uuid = require('uuid');
+const moment = require('moment');
 
 module.exports = (name, dialect, db) => {
 
@@ -24,7 +25,7 @@ module.exports = (name, dialect, db) => {
       { name: 'company', type: 'account', notNull: true },
       { name: 'sku', type: 'sku', notNull: true },
       { name: 'description', type: 'text' },
-      { name: 'cost', type: 'price' },
+      { name: 'cost', type: 'price', format: parseFloat },
       { name: 'count', calc: 'count(*)', hidden: true }
     ],
     primaryKey: ['company', 'sku']
@@ -34,12 +35,12 @@ module.exports = (name, dialect, db) => {
     name: 'orders',
     columns: [
       { name: 'company', type: 'account', notNull: true, primaryKey: true },
-      { name: 'order_id', type: 'uuid', notNull: true, primaryKey: true, default: () => uuid.v4() },
-      { name: 'order_date', type: 'date', notNull: true },
+      { name: 'order_id', type: 'id', notNull: true, primaryKey: true, default: () => uuid.v4() },
+      { name: 'order_date', type: 'date', notNull: true, format: val => moment(val).format('YYYY-MM-DD') },
       { name: 'customer', type: 'account', notNull: true },
       { name: 'delivery', type: 'contact' },
       { name: 'invoice', type: 'contact' },
-      { name: 'count', calc: 'count(*)', alias: 'order_count', hidden: true }
+      { name: 'count', calc: 'count(*)', alias: 'order_count', hidden: true, format: parseInt }
     ],
     indexes: {
       columns: ['company', 'customer']
@@ -50,18 +51,19 @@ module.exports = (name, dialect, db) => {
     name: 'order_lines',
     columns: [
       { name: 'company', type: 'account', nouNull: true, primaryKey: true },
-      { name: 'order_id', type: 'uuid', notNull: true, primaryKey: true },
+      { name: 'order_id', type: 'id', notNull: true, primaryKey: true },
       { name: 'line_no', type: 'int', notNull: true, primaryKey: true, default: context => context.line_no++ },
       { name: 'sku', type: 'sku', notNull: true },
       { name: 'description', type: 'text' },
       { name: 'qty', type: 'qty', notNull: true },
-      { name: 'price', type: 'price', notNull: true },
+      { name: 'price', type: 'price', notNull: true, format: parseFloat },
       { name: 'count', calc: 'count(*)', hidden: true }
     ],
     context: value => ({ line_no: value.reduce((acc, record) => Math.max((record.get('line_no') || 0) + 1, acc), 1) }),
     references: [{
       table: tables.orders,
-      columns: ['company', 'order_id']
+      columns: ['company', 'order_id'],
+      onDelete: 'cascade'
     },
     {
       table: tables.stock,
@@ -83,11 +85,12 @@ module.exports = (name, dialect, db) => {
   describe(`Database tests for ${name}`, () => {
 
     it("should create tables and insert records, perform basic tests then delete order records", async done => {
-      await Promise.all(Object.keys(tables).map(k => db.query(tables[k].Create())));
+      await db.query(Object.keys(tables).reverse().map(k => tables[k].DropIfExists()));
+      await db.query(Object.keys(tables).map(k => tables[k].Create()));
       expect(await db.query(joins.orders.SelectWhere())).toEqual([]);
       const sample_stock = require('./sample-stock.json');
       expect(await(db.query(tables.stock.Insert(sample_stock)))).toEqual([]);
-      expect((await(db.query(tables.stock.SelectWhere('count'))))[0].count).toBe(20);
+      expect(parseInt((await(db.query(tables.stock.SelectWhere('count'))))[0].count)).toBe(20);
       const sample_orders = require('./sample-orders.json');
       let records = joins.orders.validate(sample_orders);
       expect(records.valid).toBe(false);
@@ -96,12 +99,12 @@ module.exports = (name, dialect, db) => {
       expect(records.valid).toBe(true);
       await db.query(records.InsertIgnore());
       await db.query(records.Update());
-      expect((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count']).toBe(1413);
-      expect((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count']).toBe(1938);
+      expect(parseInt((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count'])).toBe(1413);
+      expect(parseInt((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count'])).toBe(1938);
       const big_orders = records.filter(record => record.get('lines').length > 3);
       expect(big_orders.valid).toBe(true);
       const order_id = big_orders.get('[0].order_id');
-      let lines = await db.query(joins.orders.SelectWhere('*', { order_id }));
+      let lines = await db.query(`${joins.orders.SelectWhere('*', { order_id })} ${joins.orders.OrderBy('lines_line_no')}`);
       expect(JSON.stringify(joins.orders.collate(lines))).toBe(
         `[{"company":"AAD010","order_id":"${order_id}","order_date":"2020-04-23","customer":"BFV46","delivery":{"name":"Mrs Maureen Francis",` +
         `"address":{"company":"Kingsbury Ltd","street":"22 Longmoor Road","locality":"Bedbury Business Park","city":"Birmingham","region":"","postalCode":"B1 6LD","country":"GB"}},` +
@@ -123,14 +126,14 @@ module.exports = (name, dialect, db) => {
       expect(joins.orders.collate(lines).length).toBe(14);
       const toDelete = records.slice(0, 800);
       await db.query(toDelete.Delete());
-      expect((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count']).toBe(613);
-      expect((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count']).toBe(868);
+      expect(parseInt((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count'])).toBe(613);
+      expect(parseInt((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count'])).toBe(868);
       await db.query(records.Delete());
-      expect((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count']).toBe(0);
-      expect((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count']).toBe(0);
-      expect((await(db.query(tables.stock.SelectWhere('count'))))[0].count).toBe(20);
+      expect(parseInt((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count'])).toBe(0);
+      expect(parseInt((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count'])).toBe(0);
+      expect(parseInt((await(db.query(tables.stock.SelectWhere('count'))))[0].count)).toBe(20);
       done();
-    });
+    }, 360000);
   });
 
 }

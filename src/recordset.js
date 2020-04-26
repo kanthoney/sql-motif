@@ -35,7 +35,11 @@ class RecordSet
         value = _.get(this.joined, col.path);
       }
       if(value !== undefined) {
-        _.set(acc.recordData, col.path, value);
+        if(_.isFunction(col.format)) {
+          _.set(acc.recordData, col.path, col.format(value));
+        } else {
+          _.set(acc.recordData, col.path, value);
+        }
       }
       acc.joined = col.joinedTo.reduce((acc, path) => {
         _.set(acc, path, value);

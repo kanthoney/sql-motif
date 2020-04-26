@@ -722,6 +722,21 @@ class Table
     return `create temporary table if not exists ${this.create()}`;
   }
 
+  drop()
+  {
+    return this.fullName();
+  }
+
+  Drop()
+  {
+    return `drop table ${this.drop()}`;
+  }
+
+  DropIfExists()
+  {
+    return `drop table if exists ${this.drop()}`;
+  }
+
   groupBy(fields)
   {
     fields = [].concat(_.isNil(fields)?[]:fields);
@@ -746,6 +761,9 @@ class Table
   {
     if(!fields) {
       fields = this.config.primaryKey;
+    }
+    if(!_.isArray(fields)) {
+      fields = [fields];
     }
     return fields.reduce((acc, field) => {
       let dir = 'asc';
