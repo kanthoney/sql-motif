@@ -8,7 +8,6 @@ module.exports = class PostgreSQLDialect extends Dialect
   constructor()
   {
     super({
-      joinBracketsNotAllowed: true,
       singleTableUpdate: true,
       singleTableDelete: true,
       noIndexesInCreate: true

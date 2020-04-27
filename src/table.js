@@ -194,10 +194,6 @@ class Table
       }
     }
     let clause = this.fullNameAs();
-    let on = this.On();
-    if(on && options.includeOn) {
-      clause = `${clause} ${on}`;
-    }
     const joins = this.joins.reduce((acc, join) => {
       if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
         return acc;
@@ -222,10 +218,16 @@ class Table
       }
       return acc.concat(`${clause} ${join.table.from({ ...options, brackets: true, includeOn: true })}`);
     }, []);
-    if(joins.length > 0 && options.brackets && !this.dialect.options.joinBracketsNotAllowed) {
-      return `(${[clause].concat(joins).join(' ')})`;
+    if(joins.length > 0 && options.brackets) {
+      clause = `(${[clause].concat(joins).join(' ')})`;
+    } else {
+      clause = [clause].concat(joins).join(' ');
     }
-    return [clause].concat(joins).join(' ');
+    let on = this.On();
+    if(on && options.includeOn) {
+      clause = `${clause} ${on}`;
+    }
+    return clause;
   }
 
   From(options)
