@@ -31,6 +31,9 @@ class RecordSet
       if(!_.isNil(value)) {
         empty = false;
       }
+      if(col.calc) {
+        console.log(col);
+      }
       if(value === undefined) {
         value = _.get(this.joined, col.path);
       }

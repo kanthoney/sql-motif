@@ -26,7 +26,7 @@ module.exports = (name, dialect, db) => {
       { name: 'sku', type: 'sku', notNull: true },
       { name: 'description', type: 'text' },
       { name: 'cost', type: 'price', format: parseFloat },
-      { name: 'count', calc: 'count(*)', hidden: true }
+      { name: 'count', calc: 'count(*)', hidden: true, format: parseInt }
     ],
     primaryKey: ['company', 'sku']
   });
@@ -57,7 +57,7 @@ module.exports = (name, dialect, db) => {
       { name: 'description', type: 'text' },
       { name: 'qty', type: 'qty', notNull: true },
       { name: 'price', type: 'price', notNull: true, format: parseFloat },
-      { name: 'count', calc: 'count(*)', hidden: true }
+      { name: 'count', calc: 'count(*)', hidden: true, format: parseInt }
     ],
     context: value => ({ line_no: value.reduce((acc, record) => Math.max((record.get('line_no') || 0) + 1, acc), 1) }),
     references: [{
@@ -89,7 +89,7 @@ module.exports = (name, dialect, db) => {
       await db.query(Object.keys(tables).map(k => tables[k].Create()));
       expect(await db.query(joins.orders.SelectWhere())).toEqual([]);
       const sample_stock = require('./sample-stock.json');
-      expect(await(db.query(tables.stock.Insert(sample_stock)))).toEqual([]);
+      await(db.query(tables.stock.Insert(sample_stock)));
       expect(parseInt((await(db.query(tables.stock.SelectWhere('count'))))[0].count)).toBe(20);
       const sample_orders = require('./sample-orders.json');
       let records = joins.orders.validate(sample_orders);
