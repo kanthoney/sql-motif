@@ -59,7 +59,6 @@ module.exports = (name, dialect, db) => {
       { name: 'price', type: 'price', notNull: true, format: parseFloat },
       { name: 'count', calc: 'count(*)', hidden: true, format: parseInt }
     ],
-    context: value => ({ line_no: value.reduce((acc, record) => Math.max((record.get('line_no') || 0) + 1, acc), 1) }),
     references: [{
       table: tables.orders,
       columns: ['company', 'order_id'],
@@ -79,6 +78,7 @@ module.exports = (name, dialect, db) => {
       readOnly: true,
       on: ['company', 'sku']
     }),
+    context: value => ({ line_no: value.reduce((acc, record) => Math.max((record.get('line_no') || 0) + 1, acc), 1) }),
     on: ['company', 'order_id']
   });
 

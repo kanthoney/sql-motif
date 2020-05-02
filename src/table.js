@@ -829,44 +829,22 @@ class Table
 
   validate(record, context)
   {
-    if(_.isFunction(this.config.context)) {
-      return this.toRecordSet(record).validate(this.config.context({ ...context }));
-    }
-    return this.toRecordSet(record).validate({ ...this.config.context, ...context });
+    return this.toRecordSet(record).validate(context);
   }
 
   validateAsync(record, context)
   {
-    return new Promise(resolve => {
-      if(_.isFunction(this.config.context)) {
-        resolve(this.config.context({ ...context }));
-      } else {
-        resolve({ ...this.config.context, ...context });
-      }
-    }).then(context => {
-      return this.toRecordSet(record).validateAsync(context);
-    });
+    return this.toRecordSet(record).validateAsync(context);
   }
 
   fill(record, context)
   {
-    if(_.isFunction(this.config.context)) {
-      return this.toRecordSet(record).fill(this.config.context(context));
-    }
-    return this.toRecordSet(record).fill({ ...this.config.context, ...context });
+    return this.toRecordSet(record).fill(context);
   }
 
   fillAsync(record, context)
   {
-    return new Promise(resolve => {
-      if(_.isFunction(this.config.context)) {
-        resolve(this.config.context({ ...context }));
-      } else {
-        resolve({ ...this.config.context, ...context });
-      }
-    }).then(context => {
-      return this.toRecordSet(record).fillAsync(context);
-    });
+    return this.toRecordSet(record).fillAsync(context);
   }
 
   collate(lines)

@@ -134,6 +134,7 @@ class RecordSet
   validate(context)
   {
     this.valid = true;
+    const table = this.join.table;
     return this.records.reduce((acc, record) => {
       if(!record.validate(context).valid) {
         acc.valid = false;

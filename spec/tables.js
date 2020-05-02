@@ -28,7 +28,6 @@ module.exports.order_lines = new Table({
     { name: 'qty', type: 'qty', notNull: true },
     { name: 'price', type: 'price', notNull: true }
   ],
-  context: { line_no: 1 },
   indexes: [
     {
       name: 'stock_idx',
