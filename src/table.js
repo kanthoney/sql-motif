@@ -829,19 +829,19 @@ class Table
 
   validate(record, context)
   {
-    if(_.isFunction(this.context)) {
-      return this.toRecordSet(record).validate(this.context({ ...context }));
+    if(_.isFunction(this.config.context)) {
+      return this.toRecordSet(record).validate(this.config.context({ ...context }));
     }
-    return this.toRecordSet(record).validate({ ...this.context, ...context });
+    return this.toRecordSet(record).validate({ ...this.config.context, ...context });
   }
 
   validateAsync(record, context)
   {
     return new Promise(resolve => {
-      if(_.isFunction(this.context)) {
-        resolve(this.context({ ...context }));
+      if(_.isFunction(this.config.context)) {
+        resolve(this.config.context({ ...context }));
       } else {
-        resolve({ ...this.context, ...context });
+        resolve({ ...this.config.context, ...context });
       }
     }).then(context => {
       return this.toRecordSet(record).validateAsync(context);
@@ -850,19 +850,19 @@ class Table
 
   fill(record, context)
   {
-    if(_.isFunction(this.context)) {
-      return this.toRecordSet(record).fill(this.context(context));
+    if(_.isFunction(this.config.context)) {
+      return this.toRecordSet(record).fill(this.config.context(context));
     }
-    return this.toRecordSet(record).fill({ ...this.context, ...context });
+    return this.toRecordSet(record).fill({ ...this.config.context, ...context });
   }
 
   fillAsync(record, context)
   {
     return new Promise(resolve => {
-      if(_.isFunction(this.context)) {
-        resolve(this.context({ ...context }));
+      if(_.isFunction(this.config.context)) {
+        resolve(this.config.context({ ...context }));
       } else {
-        resolve({ ...this.context, ...context });
+        resolve({ ...this.config.context, ...context });
       }
     }).then(context => {
       return this.toRecordSet(record).fillAsync(context);
