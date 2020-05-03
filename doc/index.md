@@ -60,11 +60,11 @@ const { Identifier } = require('@kanthoney/sql-motif');
 orders.where({ order_date: Identifier('delivery_date') }); // "orders"."order_date" = "delivery_date";
 ```
 
-* `DateTime`. Used to specify that the value should be interpreted as a DateTime, not just a date.
+* `DateOnly`. Used to specify that the value should be interpreted as a date only, not a date time.
 
 ```
-const { dialects, DateTime } = require('@kanthoney/sql-motif');
+const { dialects, DateOnly } = require('@kanthoney/sql-motif');
 
-dialects.default.escape(new Date); // '2020-04-16'
-dialects.default.escape(DateTime(new Date)); // '2020-04-16 16:58:17'
+dialects.default.escape(new Date); // '2020-04-16 16:58:17'
+dialects.default.escape(DateOnly(new Date)); // '2020-04-16'
 ```

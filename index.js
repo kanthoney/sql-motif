@@ -1,7 +1,7 @@
 'use strict';
 
 const Verbatim = require('./src/verbatim');
-const DateTime = require('./src/datetime');
+const DateOnly = require('./src/dateonly');
 const Fn = require('./src/function');
 const Identifier = require('./src/identifier');
 const Table = require('./src/table');
@@ -16,7 +16,7 @@ module.exports = defaults => {
     Dialect: require('./src/dialect'),
     dialects: require('./src/dialects'),
     Verbatim: Verbatim,
-    DateTime: DateTime,
+    DateTime: DateOnly,
     Fn: Fn,
     Identifier: Identifier,
     Operator: require('./src/operator'),
@@ -27,7 +27,7 @@ module.exports.Table = Table;
 module.exports.Dialect = require('./src/dialect');
 module.exports.dialects = require('./src/dialects');
 module.exports.Verbatim = Verbatim;
-module.exports.DateTime = DateTime;
+module.exports.DateOnly = DateOnly;
 module.exports.Fn = Fn;
 module.exports.Identifier = Identifier;
 module.exports.Operator = require('./src/operator');

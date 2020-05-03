@@ -101,6 +101,7 @@ class Dialect
   escape(s)
   {
     const DateTime = require('./datetime');
+    const DateOnly = require('./dateonly');
     const Fn = require('./function');
     const Identifier = require('./identifier');
     const Column = require('./column');
@@ -119,10 +120,13 @@ class Dialect
       return this.escapeBuffer(s);
     }
     if(s instanceof Date || moment.isMoment(s)) {
-      return this.escape(this.formatDate(s));
+      return this.escape(this.formatDateTime(s));
     }
     if(s instanceof DateTime) {
       return this.escape(this.formatDateTime(s.value));
+    }
+    if(s instanceof DateOnly) {
+      return this.escape(this.formatDate(s.value));
     }
     if(s instanceof Fn) {
       return s.clause(this);
