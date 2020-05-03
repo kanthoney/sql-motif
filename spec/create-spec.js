@@ -45,7 +45,7 @@ describe('create tests', () => {
         'create table "inventory" ("company" varchar(12) not null, "sku" varchar(25) not null, "warehouse_name" varchar(35) not null default \'\', ' +
         '"bin" varchar(8) not null, "time" datetime not null, "qty" int not null, "cost" decimal(10, 2) not null, unique index("company", "warehouse_name", "bin"), ' +
         'primary key("company", "sku", "warehouse_name", "time", "bin"), foreign key ("company", "sku") references "stock" ("company", "sku") on update cascade on delete cascade, ' +
-        'foreign key ("company", "warehouse_name") references "warehouse" ("warehouse"."company", "warehouse"."name"))'
+        'foreign key ("company", "warehouse_name") references "warehouse" ("company", "name"))'
       );
     });
 

@@ -659,7 +659,7 @@ class Table
           }
           rightCol = rightCol.sql.name;
         } else {
-          rightCol = `${tableName}.${this.escapeId(cols[1])}`;
+          rightCol = this.escapeId(cols[1]);
         }
         return acc.concat({ left: leftCol, right: rightCol });
       }, []);
