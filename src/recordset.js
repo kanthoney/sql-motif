@@ -131,23 +131,28 @@ class RecordSet
     return this.addRecord(r);
   }
 
-  validate(context)
+  validate(context, selector)
   {
     this.valid = true;
     const table = this.join.table;
     return this.records.reduce((acc, record) => {
-      if(!record.validate(context).valid) {
+      if(!record.validate(context, selector).valid) {
         acc.valid = false;
       }
       return acc;
     }, this);
   }
 
-  validateAsync(context)
+  validateKey(context)
+  {
+    return this.validate(context, col => col.primaryKey);
+  }
+
+  validateAsync(context, selector)
   {
     this.valid = true;
     return Promise.all(this.records.map(record => {
-      return record.validateAsync(context);
+      return record.validateAsync(context, selector);
     })).then(records => {
       records.forEach(record => {
         if(!record.valid) {
@@ -158,16 +163,21 @@ class RecordSet
     });
   }
 
+  validateKeyAsync(context)
+  {
+    return this.validateAsync(context, col => col.primaryKey);
+  }
+
   validationResult()
   {
     return { results: this.records.map(record => record.validationResult()), valid: this.valid };
   }
 
-  fill(context)
+  fill(context, selector)
   {
     this.records.forEach(record => {
       const oldHash = record.hashKey();
-      record.fill(context);
+      record.fill(context, selector);
       const hash = record.hashKey();
       if(hash !== oldHash) {
         delete this.recordMap[oldHash];
@@ -177,11 +187,11 @@ class RecordSet
     return this;
   }
 
-  fillAsync(context)
+  fillAsync(context, selector)
   {
     return Promise.all(this.records.map(record => {
       const oldHash = record.hashKey();
-      return record.fillAsync(context).then(record => {
+      return record.fillAsync(context, selector).then(record => {
         const hash = record.hashKey();
         if(hash !== oldHash) {
           delete this.recordMap[oldHash];

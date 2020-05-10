@@ -4,15 +4,19 @@ An object for manipulating a record. Has the following methods and properties:
 
 ## methods
 
-* `validate(context)`. Validates the record, setting the `valid` and `errors` properties. `context` is passed to ant functions specified in the [column specifications](./column-spec.md)
-that take a context. Returns this record.
+* `validate([context], [selector])`. Validates the record, setting the `valid` and `errors` properties. `context` is passed to ant functions specified in the [column specifications](./column-spec.md)
+that take a context. `selector` is an optional [selector](./selector.md) if you only want to validate certain columns. Returns this record.
 
-* `validateAsync(context)`. Validates the record asynchronously, returning a promise that yields to this record.
+* `validateKey([context])`. Validates the primary key fields of the record.
 
-* `fill(context)`. Fills in missing data from the `default` setting in the [column specification](./column-spec.md). `context` is passed to any column specification functions that take a context.
-Returns this record.
+* `validateAsync([context], [selector])`. Validates the record asynchronously, returning a promise that yields to this record.
 
-* `fillAsync(context)`. Fills in missing data asynchronously, returns a promise yielding to this record.
+* `validateKeyAsync([context])`. Validates the primary key fields of the record asynchronously.
+
+* `fill([context], [selector])`. Fills in missing data from the `default` setting in the [column specification](./column-spec.md). `context` is passed to any column specification functions that
+take a context. `selector` is an optional [selector](./selector.md) if you only want to fill certain columns. Returns this record.
+
+* `fillAsync([context], [selector])`. Fills in missing data asynchronously, returns a promise yielding to this record.
 
 * `scope(values)`. This is used to enforce values on records. For example, if the user is logged in with company account of `LON001`, running `scope({ company: 'LON001' })` will ensure the record's
 `company` field is set to that account.

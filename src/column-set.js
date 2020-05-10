@@ -117,7 +117,7 @@ class ColumnSet
     }, []);
   }
 
-  validateRecord(record, context)
+  validateRecord(record, context, selector)
   {
     return this.columns.reduce((acc, col) => {
       if(col instanceof ColumnSet) {
@@ -127,11 +127,19 @@ class ColumnSet
         } else {
           context = { ...context, ...col.context };
         }
-        let result = col.validateRecord(record, context);
+        let result;
+        if(col.passesSelection(selector)) {
+          result = col.validateRecord(record, context);
+        } else {
+          result = col.validateRecord(record, context, selector);
+        }
         if(!result.valid) {
           acc.valid = false;
         }
         Object.assign(acc, result.errors);
+        return acc;
+      }
+      if(!col.passesSelection(selector)) {
         return acc;
       }
       if(col.calc) {
@@ -210,7 +218,7 @@ class ColumnSet
     }, record);
   }
 
-  validateAsync(record, context)
+  validateAsync(record, context, selector)
   {
     return Promise.all(this.columns.map(col => {
       if(col instanceof ColumnSet) {
@@ -219,7 +227,14 @@ class ColumnSet
         } else {
           context = { ...context, ...col.context };
         }
-        return Promise.resolve(context).then(context => col.validateAsync(record, context));
+        if(col.passesSelection(selector)) {
+          return Promise.resolve(context).then(context => col.validateAsync(record, context));
+        } else {
+          return Promise.resolve(context).then(context => col.validateAsync(record, context, selector));
+        }
+      }
+      if(!col.passesSelection(selector)) {
+        return null;
       }
       let value = _.get(record.data, col.path);
       if(col.calc) {
@@ -290,7 +305,7 @@ class ColumnSet
     }));
   }
 
-  fill(record, context)
+  fill(record, context, selector)
   {
     this.columns.forEach(col => {
       if(col instanceof ColumnSet) {
@@ -300,7 +315,14 @@ class ColumnSet
         } else if(col.context) {
           context = { ...col.context, ...context };
         }
-        return col.fill(record, context);
+        if(col.passesSelection(selector)) {
+          return col.fill(record, context);
+        } else {
+          return col.fill(record, context, selector);
+        }
+      }
+      if(!col.passesSelection(selector)) {
+        return;
       }
       const path = col.path;
       let value = _.get(record.data, path);
@@ -327,7 +349,7 @@ class ColumnSet
     });
   }
 
-  fillAsync(record, context)
+  fillAsync(record, context, selector)
   {
     return Promise.all(this.columns.map(col => {
       if(col instanceof ColumnSet) {
@@ -336,7 +358,11 @@ class ColumnSet
         } else {
           context = { ...context, ...col.context };
         }
-        return Promise.resolve(context).then(context => col.fillAsync(record, context));
+        if(col.passesSelection(selector)) {
+          return Promise.resolve(context).then(context => col.fillAsync(record, context));
+        } else {
+          return Promise.resolve(context).then(context => col.fillAsync(record, context, selector));
+        }
       }
       const path = col.path;
       let value = _.get(record.data, path);

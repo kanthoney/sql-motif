@@ -167,6 +167,45 @@ describe("validate tests", () => {
         );
       });
 
+      it("should pass key validation despite invalid country", () => {
+        const record = {
+          company: 'ACE010',
+          order_id: '23283525-8093-11ea-943b-06980bf53d08',
+          customer: 'NEF202',
+          order_date: '2020-04-16',
+          delivery: {
+            name: 'Terry Test',
+            address: {
+              company: '',
+              street: '18 Mansfield Drive',
+              locality: '',
+              city: 'Huddersfield',
+              region: '',
+              postalCode: 'HD18 9TT',
+              country: 'AU'
+            }
+          },
+          invoice: {
+            name: 'Belinda Berger',
+            address: {
+              company: '',
+              street: '40 Netfield Close',
+              locality: '',
+              city: 'Manchester',
+              region: '',
+              postalCode: 'M1 4JF',
+              country: 'GB'
+            }
+          }
+        };
+        expect(JSON.stringify(t.validateKey(record).validationResult())).toBe(
+          '{"results":[{"record":{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","order_date":"2020-04-16","customer":"NEF202",' +
+          '"delivery":{"name":"Terry Test","address":{"company":"","street":"18 Mansfield Drive","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"AU"}},' +
+          '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}}},' +
+          '"valid":true,"errors":{}}],"valid":true}'
+        );
+      });
+
     });
 
     describe("Order lines tests", () => {

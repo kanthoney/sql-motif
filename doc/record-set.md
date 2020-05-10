@@ -8,10 +8,14 @@ A `RecordSet` is an object returned by the `table.toRecordSet`, `table.fill`, `t
 
 * `addRecord(record)`. Adds a record to the record set.
 
-* `validate(context)`. Validates the record set, setting the `valid` property and the `errors` and `valid` properties on each record. Returns the modified record set. `context` is passed
-to any functions in the [column specification](./column=spec).
+* `validate([context] [,selector])`. Validates the record set, setting the `valid` property and the `errors` and `valid` properties on each record. Returns the modified record set. `context` is passed
+to any functions in the [column specification](./column=spec). `selector` is an optional [selector](./selector.md) if you only want to validate certain columns.
 
-* `validateAsync(context)`. Validates the record set, returning a promise. Used if any [column specifications](./column-spec.md) have a `validate` setting which is a function that returns a promise.
+* `validateKey([context])`. Validates the primary key fields of the record set.
+
+* `validateAsync([context] [, selector])`. Validates the record set, returning a promise. Used if any [column specifications](./column-spec.md) have a `validate` setting which is a function that returns a promise.
+
+* `validateKeyAsync([context])`. Validates the primary key fields of the record set asynchronously.
 
 * `validationResult()`. Converts a validated record set to a plain object with the following format:
 
@@ -27,10 +31,10 @@ Each result in the array of results has the following format:
 
 The `errors` field is an object with the same format as the record filled in with any errors.
 
-* `fill(context)`. Fills in any missing fields in the records from the `default` setting in the [column specifications](/column-spec.md). `context` is passed to any functions in the column
-specification.
+* `fill([context] [, selector])`. Fills in any missing fields in the records from the `default` setting in the [column specifications](/column-spec.md). `context` is passed to any functions
+in the column specification. `selector` is an optional [selector](./selector.md) to only fill in the specified columns.
 
-* `fillAsync(context)`. Fills in missing fields from the records. Used if the [column specification](./column-spec.md) functions return a promise.
+* `fillAsync([context] [,selector])`. Fills in missing fields from the records. Used if the [column specification](./column-spec.md) functions return a promise.
 
 * `reduce(f, acc)`. Calls function `f` for each record of the set in turn with the arguments `(acc, record)`. The `acc` parameter is the result of the previous call, or the `acc`
 parameter of the `reduce` call for the first record. Returns the result of the final call. `record` is a [`Record`](./record.md) object.
