@@ -322,6 +322,32 @@ class Table
     return `select ${this.selectWhere(selector, where, options)}`;
   }
 
+  selectWhereKey(selector, where, options)
+  {
+    if(where) {
+      return `${this.select(selector)} ${this.From(options)} ${this.WhereKey(where, options)}`;
+    }
+    return `${this.select(selector)} ${this.From(options)}`;
+  }
+
+  SelectWhereKey(selector, where, options)
+  {
+    return `select ${this.selectWhereKey(selector, where, options)}`;
+  }
+
+  selectWhereMainKey(selector, where, options)
+  {
+    if(where) {
+      return `${this.select(selector)} ${this.From(options)} ${this.WhereKey(where, { ...options, joins: [] })}`;
+    }
+    return `${this.select(selector)} ${this.From(options)}`;
+  }
+
+  SelectWhereMainKey(selector, where, options)
+  {
+    return `select ${this.selectWhereMainKey(selector, where, options)}`;
+  }
+
   setArray(record, options)
   {
     options = options || {};

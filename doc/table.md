@@ -91,6 +91,15 @@ stock.Select(); // select "stock"."sku", "stock"."description"
 
 * `SelectWhere(selector, where)`. Produces a simple `select` statement including the `select` keyword.
 
+* `selectWhereKey(selector, where)`. Produces a simple `select` query (except for the `select` keyword) for the table for the specified columns and the key part of the `where` specification.
+
+* `SelectWhereKey(selector, where)`. Produces a simple `select` statement including the `select` keyword for the key part of the `where` specification.
+
+* `selectWhereMainKey(selector, where)`. Produces a simple `select` query (except for the `select` keyword) for the table for the specified columns and the key part for the main table
+(i.e. excluding joins) of the `where` specification.
+
+* `SelectWhereMainKey(selector, where)`. Produces a simple `select` statement including the `select` keyword for the key part for the main table of the `where` specification.
+
 ### Set methods
 
 * `set(record, [options])`. Returns a `set` clause for the given record, excluding the `set` keyword. Takes an optional [`options`](./table-options.md) argument.
