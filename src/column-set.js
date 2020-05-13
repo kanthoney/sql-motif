@@ -117,8 +117,9 @@ class ColumnSet
     }, []);
   }
 
-  validateRecord(record, context, selector)
+  validateRecord(record, options = {})
   {
+    let { context, selector, ignoreMissing, ignoreMissingNonKey } = options;
     return this.columns.reduce((acc, col) => {
       if(col instanceof ColumnSet) {
         if(_.isFunction(col.context)) {
@@ -129,9 +130,9 @@ class ColumnSet
         }
         let result;
         if(col.passesSelection(selector)) {
-          result = col.validateRecord(record, context);
+          result = col.validateRecord(record, { ...options, context, selector: '*' });
         } else {
-          result = col.validateRecord(record, context, selector);
+          result = col.validateRecord(record, options);
         }
         if(!result.valid) {
           acc.valid = false;
@@ -156,7 +157,7 @@ class ColumnSet
       if(value === undefined) {
         value = joinedValue;
       }
-      if(col.notNull && _.isNil(value)) {
+      if(col.notNull && _.isNil(value) && !(value === undefined && (ignoreMissing || (!col.primaryKey && ignoreMissingNonKey)))) {
         if(!_.has(acc.errors, path)) {
           _.set(acc.errors, path, col.validationError || 'Field must not be null');
           acc.valid = false;
@@ -218,8 +219,9 @@ class ColumnSet
     }, record);
   }
 
-  validateAsync(record, context, selector)
+  validateAsync(record, options = {})
   {
+    let { context, selector, ignoreMissing, ignoreMissingNonKey } = options;
     return Promise.all(this.columns.map(col => {
       if(col instanceof ColumnSet) {
         if(_.isFunction(col.context)) {
@@ -228,9 +230,9 @@ class ColumnSet
           context = { ...context, ...col.context };
         }
         if(col.passesSelection(selector)) {
-          return Promise.resolve(context).then(context => col.validateAsync(record, context));
+          return Promise.resolve(context).then(context => col.validateAsync(record, { ...options, context, selector: '*' }));
         } else {
-          return Promise.resolve(context).then(context => col.validateAsync(record, context, selector));
+          return Promise.resolve(context).then(context => col.validateAsync(record, options));
         }
       }
       if(!col.passesSelection(selector)) {
@@ -248,7 +250,7 @@ class ColumnSet
       if(value === undefined) {
         value = joinedValue;
       }
-      if(col.notNull && _.isNil(value)) {
+      if(col.notNull && _.isNil(value) && !(value === undefined && (ignoreMissing || (!col.primaryKey && ignoreMissingNonKey)))) {
         return { path, error: col.validationError || 'Field must not be null' };
       }
       if(!col.notNull && value === null) {
@@ -305,8 +307,9 @@ class ColumnSet
     }));
   }
 
-  fill(record, context, selector)
+  fill(record, options = {})
   {
+    let { context, selector } = options;
     this.columns.forEach(col => {
       if(col instanceof ColumnSet) {
         if(_.isFunction(col.context)) {
@@ -316,9 +319,9 @@ class ColumnSet
           context = { ...col.context, ...context };
         }
         if(col.passesSelection(selector)) {
-          return col.fill(record, context);
+          return col.fill(record, { ...options, context, selector: '*' });
         } else {
-          return col.fill(record, context, selector);
+          return col.fill(record, options);
         }
       }
       if(!col.passesSelection(selector)) {
@@ -349,8 +352,9 @@ class ColumnSet
     });
   }
 
-  fillAsync(record, context, selector)
+  fillAsync(record, options = {})
   {
+    let { context, selector } = options;
     return Promise.all(this.columns.map(col => {
       if(col instanceof ColumnSet) {
         if(_.isFunction(col.context)) {
@@ -359,9 +363,9 @@ class ColumnSet
           context = { ...context, ...col.context };
         }
         if(col.passesSelection(selector)) {
-          return Promise.resolve(context).then(context => col.fillAsync(record, context));
+          return Promise.resolve(context).then(context => col.fillAsync(record, { ...options, context, selector: '*' }));
         } else {
-          return Promise.resolve(context).then(context => col.fillAsync(record, context, selector));
+          return Promise.resolve(context).then(context => col.fillAsync(record, options));
         }
       }
       const path = col.path;

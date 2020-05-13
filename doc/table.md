@@ -204,20 +204,19 @@ or can be omitted to use the default of `asc`.
 
 ### Validation
 
-* `validate(record, [context], [selector])`. Validates a record or array of records, checking the value for each column against the `validate` entry in the [column specification](./column-spec.md).
-`context` will be passed to any functions in the `validate` entries. `selector` is an optional [selector](./selector.md) to only validate the spoecified columns.
-The function will return a validated [`RecordSet`](./record-set.md). You can use the `validationResult` method on the record set to turn it into something returnable.
+* `validate(record, [options])`. Validates a record or array of records, checking the value for each column against the `validate` entry in the [column specification](./column-spec.md).
+`options` is an object containing [validation options](./validation-options.md). The function will return a validated [`RecordSet`](./record-set.md). You can use the `validationResult`
+method on the record set to turn it into something returnable.
 
-* `validateAsync(record, [context], [selector])`. Validates a record or array of records, returning a promise resolving to a validation result object as in the previous method. Used if the `validate`
+* `validateAsync(record, [options])`. Validates a record or array of records, returning a promise resolving to a validation result object as in the previous method. Used if the `validate`
 function in any of the [column specifications](./column-spec.md) returns a promise.
 
 ### Filling
 
-* `fill(record, [context], [selector])`. Used to fill missing values in a record or array of records, using the `default` field of the [column specification](./column-spec.md). `context`
-is a user-defined object passed to any `default`s that are functions. `selector` is an optional [selector](./selector.md) that can be used to specify which columns are to be filled.
-Returns a record set.
+* `fill(record, [options])`. Used to fill missing values in a record or array of records, using the `default` field of the [column specification](./column-spec.md).
+`options` is an optional object contining [fill options](./fill-options.md). Returns a record set.
 
-* `fillAsync(record, [context], [selector])`. Fills in a record or array of records returning a promise. Used if any `default` functions return a promise.
+* `fillAsync(record, [options])`. Fills in a record or array of records returning a promise. Used if any `default` functions return a promise.
 
 ### SQL result collation
 

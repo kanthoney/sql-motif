@@ -853,34 +853,34 @@ class Table
     return r;
   }
 
-  validate(record, context, selector)
+  validate(record, options)
   {
-    return this.toRecordSet(record).validate(context, selector);
+    return this.toRecordSet(record).validate(options);
   }
 
-  validateKey(record, context)
+  validateKey(record, options)
   {
-    return this.validate(record, context, col => col.primaryKey);
+    return this.validate(record, { ...options, selector: col => col.primaryKey });
   }
 
-  validateAsync(record, context, selector)
+  validateAsync(record, options)
   {
-    return this.toRecordSet(record).validateAsync(context, selector);
+    return this.toRecordSet(record).validateAsync(options);
   }
 
   validateKeyAsync(record, context)
   {
-    return this.validateAsync(record, context, col => col.primaryKey);
+    return this.validateAsync(record, { ...options, selector: col => col.primaryKey });
   }
 
-  fill(record, context, selector)
+  fill(record, options)
   {
-    return this.toRecordSet(record).fill(context, selector);
+    return this.toRecordSet(record).fill(options);
   }
 
-  fillAsync(record, context, selector)
+  fillAsync(record, options)
   {
-    return this.toRecordSet(record).fillAsync(context, selector);
+    return this.toRecordSet(record).fillAsync(options);
   }
 
   collate(lines)

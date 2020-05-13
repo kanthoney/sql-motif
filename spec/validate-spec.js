@@ -661,14 +661,14 @@ describe("validate tests", () => {
             }
           ]
         };
-        expect(JSON.stringify(j.validate(record, { allowEmptyStreets: true }).validationResult())).toBe(
+        expect(JSON.stringify(j.validate(record, { context: { allowEmptyStreets: true } }).validationResult())).toBe(
           '{"results":[{"record":{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","order_date":"2020-04-16","customer":"NEF202",' +
           '"delivery":{"name":"Terry Test","address":{"company":"","street":"","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +
           '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}},' +
           '"lines":[{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","line_no":1,"sku":"AAJ191","description":"Hammer","qty":5,"price":"8.32"},' +
           '{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","line_no":2,"sku":"AA8708","description":"Saw","qty":8,"price":"13.54"}]},"valid":true,"errors":{}}],"valid":true}'
         );
-        j.validateAsync(record, { allowEmptyStreets: true }).then(result => {
+        j.validateAsync(record, { context: { allowEmptyStreets: true } }).then(result => {
           expect(JSON.stringify(result.validationResult())).toBe(
             '{"results":[{"record":{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","order_date":"2020-04-16","customer":"NEF202",' +
             '"delivery":{"name":"Terry Test","address":{"company":"","street":"","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +

@@ -65,8 +65,9 @@ class Record
     return value;
   }
 
-  validate(context, selector)
+  validate(options = {})
   {
+    let { context, selector, ignoreMissing, ignoreMissingNonKey } = options;
     this.valid = true;
     this.errors = {};
     if(this.table.config.context) {
@@ -77,7 +78,7 @@ class Record
       }
     }
     const RecordSet = require('./recordset');
-    this.table.columns.validateRecord(this, context, selector);
+    this.table.columns.validateRecord(this, options);
     this.table.joins.forEach(join => {
       const path = join.path || join.name;
       const subRecord = _.get(this.data, path);
@@ -89,7 +90,7 @@ class Record
             context = { ...join.context, ...context };
           }
         }
-        subRecord.validate(context, selector);
+        subRecord.validate({ ...options, context });
         if(!subRecord.valid) {
           this.valid = false;
         }
@@ -98,13 +99,14 @@ class Record
     return this;
   }
 
-  validateKey(context)
+  validateKey(options)
   {
-    return this.validate(context, col => col.primaryKey);
+    return this.validate({ ...options, selector: col => col.primaryKey });
   }
 
-  validateAsync(context, selector)
+  validateAsync(options = {})
   {
+    let { context, selector, ignoreMissing, ignoreMissingNonKey } = options;
     const RecordSet = require('./recordset');
     this.valid = true;
     this.errors = {};
@@ -118,7 +120,7 @@ class Record
       }
       return context;
     }).then(context => {
-      return this.table.columns.validateAsync(this, context, selector).then(results => {
+      return this.table.columns.validateAsync(this, { ...options, context }).then(results => {
         return Promise.all(results.concat(this.table.joins.reduce((acc, join) => {
           const path = join.path || join.name;
           const recordSet = _.get(this.data, path);
@@ -133,7 +135,7 @@ class Record
             resolve(context);
           }).then(context => {
             if(recordSet instanceof RecordSet) {
-              return recordSet.validateAsync(context, selector);
+              return recordSet.validateAsync({ ...options, context });
             }
           }));
         }, [])));
@@ -157,9 +159,9 @@ class Record
     });
   }
 
-  validateKeyAsync(context)
+  validateKeyAsync(options)
   {
-    return this.validateAsync(context, col => primaryKey);
+    return this.validateAsync({ ...options, selector: col => primaryKey});
   }
 
   validationResult()
@@ -179,8 +181,9 @@ class Record
     }, { record: this.toObject({ mapJoined: true, includeJoined: true, noSubRecords: true }), valid: this.valid, errors: this.errors });
   }
 
-  fill(context, selector)
+  fill(options = {})
   {
+    let { context, selector } = options;
     this.dirty = true;
     Object.assign(this.joined, this.recordSet.joined);
     if(this.table.config.context) {
@@ -190,9 +193,12 @@ class Record
         context = { ...this.table.config.context, ...context };
       }
     }
-    this.table.columns.fill(this, context, selector);
+    this.table.columns.fill(this, options);
     const RecordSet = require('./recordset');
     this.table.joins.forEach(join => {
+      if(join.readOnly || (options.joins && options.joins !== '*' && !includes(options.joins(join.name)))) {
+        return;
+      }
       const path = join.path || join.name;
       const recordSet = _.get(this.data, path);
       if(recordSet instanceof RecordSet) {
@@ -204,14 +210,15 @@ class Record
             context = { ...join.context, ...context };
           }
         }
-        recordSet.fill(context, selector);
+        recordSet.fill({ ...options, context });
       }
     });
     return this;
   }
 
-  fillAsync(context, selector)
+  fillAsync(options = {})
   {
+    let { context, selector } = options;
     const RecordSet = require('./recordset');
     this.dirty = true;
     Object.assign(this.joined, this.recordSet.joined);
@@ -224,7 +231,7 @@ class Record
       }
       return context;
     }).then(context => {
-      return this.table.columns.fillAsync(this, context, selector).then(() => {
+      return this.table.columns.fillAsync(this, options).then(() => {
         return Promise.all(this.table.joins.map(join => {
           const path = join.path || join.name;
           const recordSet = _.get(this.data, path);
@@ -240,7 +247,10 @@ class Record
           }).then(context => {
             if(recordSet instanceof RecordSet) {
               Object.assign(recordSet.joined, _.get(this.joined, path));
-              return recordSet.fillAsync(context, selector);
+              if(join.readOnly || (options.joins && options.joins !== '*' && !includes(options.joins(join.name)))) {
+                return recordSet;
+              }
+              return recordSet.fillAsync({ ...options, context });
             }
           });
         }));

@@ -131,28 +131,28 @@ class RecordSet
     return this.addRecord(r);
   }
 
-  validate(context, selector)
+  validate(options = {})
   {
     this.valid = true;
     const table = this.join.table;
     return this.records.reduce((acc, record) => {
-      if(!record.validate(context, selector).valid) {
+      if(!record.validate(options).valid) {
         acc.valid = false;
       }
       return acc;
     }, this);
   }
 
-  validateKey(context)
+  validateKey(options)
   {
-    return this.validate(context, col => col.primaryKey);
+    return this.validate({ ...options, selector: col => col.primaryKey });
   }
 
-  validateAsync(context, selector)
+  validateAsync(options = {})
   {
     this.valid = true;
     return Promise.all(this.records.map(record => {
-      return record.validateAsync(context, selector);
+      return record.validateAsync(options);
     })).then(records => {
       records.forEach(record => {
         if(!record.valid) {
@@ -163,9 +163,9 @@ class RecordSet
     });
   }
 
-  validateKeyAsync(context)
+  validateKeyAsync(options)
   {
-    return this.validateAsync(context, col => col.primaryKey);
+    return this.validateAsync({ ...options, selector: col => col.primaryKey});
   }
 
   validationResult()
@@ -173,11 +173,11 @@ class RecordSet
     return { results: this.records.map(record => record.validationResult()), valid: this.valid };
   }
 
-  fill(context, selector)
+  fill(options = {})
   {
     this.records.forEach(record => {
       const oldHash = record.hashKey();
-      record.fill(context, selector);
+      record.fill(options);
       const hash = record.hashKey();
       if(hash !== oldHash) {
         delete this.recordMap[oldHash];
@@ -187,11 +187,11 @@ class RecordSet
     return this;
   }
 
-  fillAsync(context, selector)
+  fillAsync(options = {})
   {
     return Promise.all(this.records.map(record => {
       const oldHash = record.hashKey();
-      return record.fillAsync(context, selector).then(record => {
+      return record.fillAsync(options).then(record => {
         const hash = record.hashKey();
         if(hash !== oldHash) {
           delete this.recordMap[oldHash];
