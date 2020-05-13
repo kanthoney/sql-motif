@@ -157,7 +157,10 @@ class ColumnSet
       if(value === undefined) {
         value = joinedValue;
       }
-      if(col.notNull && _.isNil(value) && !(value === undefined && (ignoreMissing || (!col.primaryKey && ignoreMissingNonKey)))) {
+      if(col.notNull && _.isNil(value)) {
+        if(value === undefined && (ignoreMissing || (!col.primaryKey && ignoreMissingNonKey))) {
+          return acc;
+        }
         if(!_.has(acc.errors, path)) {
           _.set(acc.errors, path, col.validationError || 'Field must not be null');
           acc.valid = false;
@@ -250,7 +253,10 @@ class ColumnSet
       if(value === undefined) {
         value = joinedValue;
       }
-      if(col.notNull && _.isNil(value) && !(value === undefined && (ignoreMissing || (!col.primaryKey && ignoreMissingNonKey)))) {
+      if(col.notNull && _.isNil(value)) {
+        if(value === undefined && (ignoreMissing || (!col.primaryKey && ignoreMissingNonKey))) {
+          return null;
+        }
         return { path, error: col.validationError || 'Field must not be null' };
       }
       if(!col.notNull && value === null) {
