@@ -20,7 +20,9 @@ module.exports = defaults => {
     Fn: Fn,
     Identifier: Identifier,
     Operator: require('./src/operator'),
-    operators: require('./src/operators')
+    operators: require('./src/operators'),
+    Record: require('./src/record'),
+    RecordSet: require('./src/record-set')
   };
 }
 module.exports.Table = Table;
@@ -32,3 +34,5 @@ module.exports.Fn = Fn;
 module.exports.Identifier = Identifier;
 module.exports.Operator = require('./src/operator');
 module.exports.operators = require('./src/operators');
+module.exports.Record = require('./src/record');
+module.exports.RecordSet = require('./src/record-set');
