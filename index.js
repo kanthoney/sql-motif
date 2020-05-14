@@ -22,7 +22,7 @@ module.exports = defaults => {
     Operator: require('./src/operator'),
     operators: require('./src/operators'),
     Record: require('./src/record'),
-    RecordSet: require('./src/record-set')
+    RecordSet: require('./src/recordset')
   };
 }
 module.exports.Table = Table;
@@ -35,4 +35,4 @@ module.exports.Identifier = Identifier;
 module.exports.Operator = require('./src/operator');
 module.exports.operators = require('./src/operators');
 module.exports.Record = require('./src/record');
-module.exports.RecordSet = require('./src/record-set');
+module.exports.RecordSet = require('./src/recordset');
