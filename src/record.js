@@ -271,6 +271,7 @@ class Record
         recordSet.scope(subScope);
       }
     });
+    return this;
   }
 
   Insert(options)

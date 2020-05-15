@@ -206,7 +206,8 @@ class RecordSet
 
   scope(scope)
   {
-    return this.forEach(record => record.scope(scope));
+    this.forEach(record => record.scope(scope));
+    return this;
   }
 
   reduce(f, acc)
