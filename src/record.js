@@ -59,7 +59,7 @@ class Record
         return value.get(path);
       } else {
         value = value[path[0]];
-        path = path.slice[1];
+        path = path.slice(1);
       }
     }
     return value;
