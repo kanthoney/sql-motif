@@ -431,6 +431,37 @@ class ColumnSet
     });
   }
 
+  key(record)
+  {
+    return this.fields().reduce((acc, col) => {
+      if(col instanceof ColumnSet) {
+        Object.assign(acc, col.key(record));
+      } else if(col.primaryKey) {
+        _.set(acc, col.path, _.get(record.data, col.path));
+      }
+      return acc;
+    }, {});
+  }
+
+  keyScope(record, scope)
+  {
+    return this.fields().reduce((acc, col) => {
+      if(col instanceof ColumnSet) {
+        Object.assign(acc, col.keyScope(record, scope));
+      } else if(col.primaryKey) {
+        let value = _.get(scope, col.path);
+        if(value === undefined) {
+          value = _.get(record.data, col.path);
+        }
+        _.set(acc, col.path, value);
+        col.joinedTo.forEach(path => {
+          _.set(scope, path, value);
+        });
+      }
+      return acc;
+    }, {});
+  }
+
   insertValues(record)
   {
     const dialect = record.table.dialect;

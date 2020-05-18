@@ -52,6 +52,10 @@ parameter of the `reduce` call for the first record. Returns the result of the f
 * `scope(values)`. This will force the values specified in `values` to be applied to each record is the set. For example, if the user is logged in with a company account of `LON001` then
 `scope({ company: 'LON001' })` will ensure the records' `company` fields are all set to `LON001`.
 
+* `key` Creates an array of objects containing the key fields of each record.
+
+* `keyScope(scope)` Creates an array on objects containing the key fields of each record, overriding any values to those in the `scope` object.
+
 * `Insert(options)`. Creates a set of `insert` statements to insert the records, including (by default) any subrecords where the corresponding [join](./join-spec.md) is not set as read-only.
 `options` is a set of [options](./table-options.md) to pass to the table's `insert` methods.
 
@@ -62,7 +66,12 @@ parameter of the `reduce` call for the first record. Returns the result of the f
 
 * `Update(options)`. Creates a set of `update` statements to update any non-read-only records and subrecords.
 
-* `Update(options)`. Creates a set of `update` statements, excluding the `update` keyword, to update any non-read-only records and subrecords.
+* `update(options)`. Creates a set of `update` statements, excluding the `update` keyword, to update any non-read-only records and subrecords.
+
+* `UpdateKey(key, options)`. Creates a set of `update` statements to update any non-read-only records and subrecords. `key` contains key fields that are different from the records.
+
+* `updateKey(key, options)`. Creates a set of `update` statements, excluding the `update` keyword, to update any non-read-only records and subrecords. `key` contains key fields
+that are different from the records.
 
 * `Delete(options)`. Creates a set of `delete` statements to delete the records including (by default) any non-read-only subrecords.
 

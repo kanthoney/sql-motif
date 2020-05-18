@@ -118,7 +118,9 @@ class Table
         const rightCol = this.column(right);
         if(leftCol && rightCol) {
           leftCol.joinCol = rightCol;
-          rightCol.joinedTo.push(leftCol.table.config.path.concat(leftCol.path));
+          const relPath = leftCol.table.config.path.slice(rightCol.table.config.path.length);
+          rightCol.joinedTo.push(relPath.concat(leftCol.path));
+          rightCol.joinedToFull.push(leftCol.table.config.path.concat(leftCol.path));
           return acc.concat({ left: leftCol, right: rightCol });
         } else {
           console.warn(

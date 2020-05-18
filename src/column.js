@@ -19,6 +19,7 @@ class Column
       as: this.fullAlias?this.table.dialect.escapeId(this.fullAlias):fullName
     }
     this.joinedTo = [];
+    this.joinedToFull = [];
   }
 
   passesSelection(selector)

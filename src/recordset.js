@@ -44,7 +44,7 @@ class RecordSet
           _.set(acc.recordData, col.path, value);
         }
       }
-      acc.joined = col.joinedTo.reduce((acc, path) => {
+      acc.joined = col.joinedToFull.reduce((acc, path) => {
         _.set(acc, path, value);
         return acc;
       }, acc.joined);
@@ -97,19 +97,7 @@ class RecordSet
       if(value !== undefined) {
         _.set(acc.recordData, path, value);
         acc.joined = col.joinedTo.reduce((acc, path) => {
-          const calcPath = (left, right) => {
-            if(left.length === 0) {
-              return right;
-            }
-            if(right.length === 0 || left[0] !== right[0]) {
-              return null;
-            }
-            return calcPath(left.slice(1), right.slice(1));
-          }
-          const relPath = calcPath(this.join.table.config.path, path);
-          if(relPath) {
-            _.set(acc, relPath, value);
-          }
+          _.set(acc, path, value);
           return acc;
         }, acc.joined);
       }
@@ -208,6 +196,16 @@ class RecordSet
   {
     this.forEach(record => record.scope(scope));
     return this;
+  }
+
+  key()
+  {
+    return this.map(record => record.key());
+  }
+
+  keyScope(scope)
+  {
+    return this.map(record => record.keyScope(scope));
   }
 
   reduce(f, acc)
@@ -339,6 +337,32 @@ class RecordSet
           return acc;
         }
         return acc.concat(recordSet.update(options));
+      }, []));
+    }, []);
+  }
+
+  UpdateKey(key, options)
+  {
+    options = options || {};
+    return this.reduce((acc, record) => {
+      return acc.concat(record.UpdateKey(key, options)).concat(record.reduceSubtables((acc, recordSet) => {
+        if(recordSet.join.readOnly || (options.joins && options.joins !== '*' && !options.joins.includes(recordSet.join.name))) {
+          return acc;
+        }
+        return acc.concat(recordSet.UpdateKey(_.get(key, recordSet.join.name) || {}, options));
+      }, []));
+    }, []);
+  }
+
+  updateKey(key, options)
+  {
+    options = options || {};
+    return this.reduce((acc, record) => {
+      return acc.concat(record.updateKey(key, options)).concat(record.reduceSubtables((acc, recordSet) => {
+        if(recordSet.join.readOnly || (options.joins && options.joins !== '*' && !options.joins.includes(recordSet.join.name))) {
+          return acc;
+        }
+        return acc.concat(recordSet.updateKey(_.get(key, recordSet.join.name) || {}, options));
       }, []));
     }, []);
   }

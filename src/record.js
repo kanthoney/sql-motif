@@ -274,6 +274,16 @@ class Record
     return this;
   }
 
+  key()
+  {
+    return this.table.columns.key(this);
+  }
+
+  keyScope(scope)
+  {
+    return this.table.columns.keyScope(this, scope);
+  }
+
   Insert(options)
   {
     return this.table.Insert(this.data, options);
@@ -308,6 +318,16 @@ class Record
   update(options)
   {
     return this.table.update(this.data, null, { joins: [], safe: true, ...options });
+  }
+
+  UpdateKey(key, options)
+  {
+    return this.table.Update(this.data, this.keyScope(key), { joins: [], safe: true, ...options });
+  }
+
+  updateKey(key, options)
+  {
+    return this.table.update(this.data, this.keyScope(key), { joins: [], safe: true, ...options });
   }
 
   Delete(options)

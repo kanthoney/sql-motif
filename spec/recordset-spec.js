@@ -617,6 +617,49 @@ describe("record set tests", () => {
         );
       });
 
+      it('should create update statements', () => {
+        const r = new RecordSet(j);
+        r.addSQLResult(lines);
+        expect(JSON.stringify(r.UpdateKey({ company: 'ACE002' }))).toBe(
+          '["update \\"stock\\" set \\"stock\\".\\"company\\" = \'ANA191\', \\"stock\\".\\"sku\\" = \'DX676\', \\"stock\\".\\"description\\" = \'Hammer\' where \\"stock\\".\\"company\\" = \'ACE002\' ' +
+          'and \\"stock\\".\\"sku\\" = \'DX676\'","update \\"s1\\".\\"warehouse\\" set \\"s1\\".\\"warehouse\\".\\"company\\" = \'ANA191\', \\"s1\\".\\"warehouse\\".\\"name\\" = \'Chesterfield\', ' +
+          '\\"s1\\".\\"warehouse\\".\\"description\\" = \'grotty\', \\"s1\\".\\"warehouse\\".\\"address_company\\" = \'Tools 4 U Ltd\', \\"s1\\".\\"warehouse\\".\\"address_street\\" = \'29 Sudbury Lane\', ' +
+          '\\"s1\\".\\"warehouse\\".\\"address_locality\\" = \'\', \\"s1\\".\\"warehouse\\".\\"address_city\\" = \'Chesterfield\', \\"s1\\".\\"warehouse\\".\\"address_region\\" = \'Derbyshire\', ' +
+          '\\"s1\\".\\"warehouse\\".\\"address_postalCode\\" = \'S40 9DS\', \\"s1\\".\\"warehouse\\".\\"address_country\\" = \'GB\' where \\"s1\\".\\"warehouse\\".\\"company\\" = \'ACE002\' and ' +
+          '\\"s1\\".\\"warehouse\\".\\"name\\" = \'Chesterfield\'","update \\"warehouse_bins\\" set \\"warehouse_bins\\".\\"company\\" = \'ANA191\', \\"warehouse_bins\\".\\"warehouse_name\\" = \'Chesterfield\', ' +
+          '\\"warehouse_bins\\".\\"bin\\" = \'FA76D2\' where \\"warehouse_bins\\".\\"company\\" = \'ACE002\' and \\"warehouse_bins\\".\\"warehouse_name\\" = \'Chesterfield\' and ' +
+          '\\"warehouse_bins\\".\\"bin\\" = \'FA76D2\'","update \\"inventory\\" set \\"inventory\\".\\"company\\" = \'ANA191\', \\"inventory\\".\\"sku\\" = \'DX676\', ' +
+          '\\"inventory\\".\\"warehouse_name\\" = \'Chesterfield\', \\"inventory\\".\\"bin\\" = \'FA76D2\', \\"inventory\\".\\"time\\" = \'2019-06-14 09:12:54\', \\"inventory\\".\\"qty\\" = 5, ' +
+          '\\"inventory\\".\\"cost\\" = 98.34 where \\"inventory\\".\\"company\\" = \'ACE002\' and \\"inventory\\".\\"sku\\" = \'DX676\' and \\"inventory\\".\\"warehouse_name\\" = \'Chesterfield\' and ' +
+          '\\"inventory\\".\\"bin\\" = \'FA76D2\' and \\"inventory\\".\\"time\\" = \'2019-06-14 09:12:54\'","update \\"inventory\\" set \\"inventory\\".\\"company\\" = \'ANA191\', ' +
+          '\\"inventory\\".\\"sku\\" = \'DX676\', \\"inventory\\".\\"warehouse_name\\" = \'Chesterfield\', \\"inventory\\".\\"bin\\" = \'FA76D2\', \\"inventory\\".\\"time\\" = \'2019-07-16 13:16:29\', ' +
+          '\\"inventory\\".\\"qty\\" = 40, \\"inventory\\".\\"cost\\" = 95.32 where \\"inventory\\".\\"company\\" = \'ACE002\' and \\"inventory\\".\\"sku\\" = \'DX676\' and ' +
+          '\\"inventory\\".\\"warehouse_name\\" = \'Chesterfield\' and \\"inventory\\".\\"bin\\" = \'FA76D2\' and \\"inventory\\".\\"time\\" = \'2019-07-16 13:16:29\'","update \\"warehouse_bins\\" ' +
+          'set \\"warehouse_bins\\".\\"company\\" = \'ANA191\', \\"warehouse_bins\\".\\"warehouse_name\\" = \'Chesterfield\', \\"warehouse_bins\\".\\"bin\\" = \'GA15A3\' where ' +
+          '\\"warehouse_bins\\".\\"company\\" = \'ACE002\' and \\"warehouse_bins\\".\\"warehouse_name\\" = \'Chesterfield\' and \\"warehouse_bins\\".\\"bin\\" = \'GA15A3\'",' +
+          '"update \\"inventory\\" set \\"inventory\\".\\"company\\" = \'ANA191\', \\"inventory\\".\\"sku\\" = \'DX676\', \\"inventory\\".\\"warehouse_name\\" = \'Chesterfield\', ' +
+          '\\"inventory\\".\\"bin\\" = \'GA15A3\', \\"inventory\\".\\"time\\" = \'2019-04-30 11:32:19\', \\"inventory\\".\\"qty\\" = 20, \\"inventory\\".\\"cost\\" = 96.41 where ' +
+          '\\"inventory\\".\\"company\\" = \'ACE002\' and \\"inventory\\".\\"sku\\" = \'DX676\' and \\"inventory\\".\\"warehouse_name\\" = \'Chesterfield\' and \\"inventory\\".\\"bin\\" = \'GA15A3\' and ' +
+          '\\"inventory\\".\\"time\\" = \'2019-04-30 11:32:19\'","update \\"s1\\".\\"warehouse\\" set \\"s1\\".\\"warehouse\\".\\"company\\" = \'ANA191\', \\"s1\\".\\"warehouse\\".\\"name\\" = \'Wolverhampton\', ' +
+          '\\"s1\\".\\"warehouse\\".\\"description\\" = \'even grottier\', \\"s1\\".\\"warehouse\\".\\"address_company\\" = \'Hammer Time Ltd\', \\"s1\\".\\"warehouse\\".\\"address_street\\" = \'45 Strawberry St\', ' +
+          '\\"s1\\".\\"warehouse\\".\\"address_locality\\" = \'\', \\"s1\\".\\"warehouse\\".\\"address_city\\" = \'Wolverhampton\', \\"s1\\".\\"warehouse\\".\\"address_region\\" = \'West Midlands\', ' +
+          '\\"s1\\".\\"warehouse\\".\\"address_postalCode\\" = \'WV17 9JK\', \\"s1\\".\\"warehouse\\".\\"address_country\\" = \'GB\' where \\"s1\\".\\"warehouse\\".\\"company\\" = \'ACE002\' and ' +
+          '\\"s1\\".\\"warehouse\\".\\"name\\" = \'Wolverhampton\'","update \\"warehouse_bins\\" set \\"warehouse_bins\\".\\"company\\" = \'ANA191\', \\"warehouse_bins\\".\\"warehouse_name\\" = \'Wolverhampton\', ' +
+          '\\"warehouse_bins\\".\\"bin\\" = \'J16X\' where \\"warehouse_bins\\".\\"company\\" = \'ACE002\' and \\"warehouse_bins\\".\\"warehouse_name\\" = \'Wolverhampton\' and ' +
+          '\\"warehouse_bins\\".\\"bin\\" = \'J16X\'","update \\"inventory\\" set \\"inventory\\".\\"company\\" = \'ANA191\', \\"inventory\\".\\"sku\\" = \'DX676\', ' +
+          '\\"inventory\\".\\"warehouse_name\\" = \'Wolverhampton\', \\"inventory\\".\\"bin\\" = \'J16X\', \\"inventory\\".\\"time\\" = \'2020-02-12 08:55:19\', \\"inventory\\".\\"qty\\" = 200, ' +
+          '\\"inventory\\".\\"cost\\" = 84.96 where \\"inventory\\".\\"company\\" = \'ACE002\' and \\"inventory\\".\\"sku\\" = \'DX676\' and \\"inventory\\".\\"warehouse_name\\" = \'Wolverhampton\' and ' +
+          '\\"inventory\\".\\"bin\\" = \'J16X\' and \\"inventory\\".\\"time\\" = \'2020-02-12 08:55:19\'","update \\"stock\\" set \\"stock\\".\\"company\\" = \'ANA191\', \\"stock\\".\\"sku\\" = \'DX678\', ' +
+          '\\"stock\\".\\"description\\" = \'Chisel\' where \\"stock\\".\\"company\\" = \'ACE002\' and \\"stock\\".\\"sku\\" = \'DX678\'","update \\"s1\\".\\"warehouse\\" set ' +
+          '\\"s1\\".\\"warehouse\\".\\"company\\" = \'ANA191\', \\"s1\\".\\"warehouse\\".\\"name\\" = \'Telford\', \\"s1\\".\\"warehouse\\".\\"description\\" = \'quite nice but small\', ' +
+          '\\"s1\\".\\"warehouse\\".\\"address_company\\" = \'Chisels Unlimited Ltd\', \\"s1\\".\\"warehouse\\".\\"address_street\\" = \'16 Shrewsbury St\', ' +
+          '\\"s1\\".\\"warehouse\\".\\"address_locality\\" = \'Victoria Business Park\', \\"s1\\".\\"warehouse\\".\\"address_city\\" = \'Telford\', \\"s1\\".\\"warehouse\\".\\"address_region\\" = \'Shropshire\', ' +
+          '\\"s1\\".\\"warehouse\\".\\"address_postalCode\\" = \'TF2 8XD\', \\"s1\\".\\"warehouse\\".\\"address_country\\" = \'GB\' where \\"s1\\".\\"warehouse\\".\\"company\\" = \'ACE002\' and ' +
+          '\\"s1\\".\\"warehouse\\".\\"name\\" = \'Telford\'","update \\"warehouse_bins\\" set \\"warehouse_bins\\".\\"company\\" = \'ANA191\', \\"warehouse_bins\\".\\"warehouse_name\\" = \'Telford\', ' +
+          '\\"warehouse_bins\\".\\"bin\\" = \'H78D\' where \\"warehouse_bins\\".\\"company\\" = \'ACE002\' and \\"warehouse_bins\\".\\"warehouse_name\\" = \'Telford\' and \\"warehouse_bins\\".\\"bin\\" = \'H78D\'"]'
+        );
+      });
+
     });
 
   });
