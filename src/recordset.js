@@ -56,13 +56,18 @@ class RecordSet
       record = this.recordMap[hash];
     }
     this.join.table.joins.forEach(join => {
-      empty = false;
       let recordSet = _.get(record.data, join.path || join.name);
       if(recordSet === undefined) {
         recordSet = new RecordSet(join, Object.assign({}, _.get(joined, join.table.config.path), _.get(this.joined, join.path || join.name)));
+        recordSet.addSQLResult(line);
+        if(recordSet.length > 0) {
+          empty = false;
+        }
         _.set(record.data, join.path || join.name, recordSet);
+      } else {
+        recordSet.addSQLResult(line);
+        empty = false;
       }
-      recordSet.addSQLResult(line);
     });
     if(!empty && this.recordMap[hash] === undefined) {
         this.records.push(record);

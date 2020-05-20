@@ -318,111 +318,111 @@ describe("record set tests", () => {
     describe('inventory tests', () => {
 
       const j = joins.inventory;
-      const lines = [
-        {
-          company: 'HJ8009',
-          sku: 'JFX192',
-          description: 'gadget',
-          warehouse_company: 'HJ9009',
-          warehouse_name: 'mercury',
-          warehouse_description: '',
-          warehouse_address_company: 'H&J Ltd',
-          warehouse_address_street: '16 Hatfield court',
-          warehouse_address_locality: 'Chester Industrial Estate',
-          warehouse_address_city: 'Manchester',
-          warehouse_address_region: '',
-          warehouse_address_postalCode: 'M8 9EF',
-          warehouse_address_country: 'GB',
-          bin_company: 'HJ8009',
-          bin_warehouse_name: 'mercury',
-          bin_bin: 'A15D2',
-          inventory_company: 'HJ8009',
-          inventory_sku: 'JFX192',
-          inventory_warehouse: 'mercury',
-          inventory_bin: 'A15D2',
-          inventory_time: '2020-04-13 12:45:31',
-          inventory_qty: 7,
-          inventory_cost: 6.32
-        },
-        {
-          company: 'HJ8009',
-          sku: 'JFX192',
-          description: 'gadget',
-          warehouse_company: 'HJ9009',
-          warehouse_name: 'mercury',
-          warehouse_description: '',
-          warehouse_address_company: 'H&J Ltd',
-          warehouse_address_street: '16 Hatfield court',
-          warehouse_address_locality: 'Chester Industrial Estate',
-          warehouse_address_city: 'Manchester',
-          warehouse_address_region: '',
-          warehouse_address_postalCode: 'M8 9EF',
-          warehouse_address_country: 'GB',
-          bin_company: 'HJ8009',
-          bin_warehouse_name: 'mercury',
-          bin_bin: 'A15D2',
-          inventory_company: 'HJ8009',
-          inventory_sku: 'JFX192',
-          inventory_warehouse: 'mercury',
-          inventory_bin: 'A15D2',
-          inventory_time: '2019-10-20 15:09:12',
-          inventory_qty: 800,
-          inventory_cost: 6.32
-        },
-        {
-          company: 'HJ8009',
-          sku: 'JFX192',
-          description: 'gadget',
-          warehouse_company: 'HJ9009',
-          warehouse_name: 'mercury',
-          warehouse_description: '',
-          warehouse_address_company: 'H&J Ltd',
-          warehouse_address_street: '16 Hatfield court',
-          warehouse_address_locality: 'Chester Industrial Estate',
-          warehouse_address_city: 'Manchester',
-          warehouse_address_region: '',
-          warehouse_address_postalCode: 'M8 9EF',
-          warehouse_address_country: 'GB',
-          bin_company: 'HJ8009',
-          bin_warehouse_name: 'mercury',
-          bin_bin: 'A15D2',
-          inventory_company: 'HJ8009',
-          inventory_sku: 'JFX192',
-          inventory_warehouse: 'mercury',
-          inventory_bin: 'A15D2',
-          inventory_time: '2019-03-09 08:15:42',
-          inventory_qty: 7,
-          inventory_cost: 6.32
-        },
-        {
-          company: 'HJ8009',
-          sku: 'JFX192',
-          description: 'gadget',
-          warehouse_company: 'HJ9009',
-          warehouse_name: 'mercury',
-          warehouse_description: '',
-          warehouse_address_company: 'H&J Ltd',
-          warehouse_address_street: '16 Hatfield court',
-          warehouse_address_locality: 'Chester Industrial Estate',
-          warehouse_address_city: 'Manchester',
-          warehouse_address_region: '',
-          warehouse_address_postalCode: 'M8 9EF',
-          warehouse_address_country: 'GB',
-          bin_company: 'HJ8009',
-          bin_warehouse_name: 'mercury',
-          bin_bin: 'B09A6',
-          inventory_company: 'HJ8009',
-          inventory_sku: 'JFX192',
-          inventory_warehouse: 'mercury',
-          inventory_bin: 'B09A6',
-          inventory_time: '2017-06-14 11:21:09',
-          inventory_qty: 600,
-          inventory_cost: 5.14
-        }
-      ];
 
       it('should collate inventory lines', () => {
         const r = new RecordSet(j);
+        const lines = [
+          {
+            company: 'HJ8009',
+            sku: 'JFX192',
+            description: 'gadget',
+            warehouse_company: 'HJ9009',
+            warehouse_name: 'mercury',
+            warehouse_description: '',
+            warehouse_address_company: 'H&J Ltd',
+            warehouse_address_street: '16 Hatfield court',
+            warehouse_address_locality: 'Chester Industrial Estate',
+            warehouse_address_city: 'Manchester',
+            warehouse_address_region: '',
+            warehouse_address_postalCode: 'M8 9EF',
+            warehouse_address_country: 'GB',
+            bin_company: 'HJ8009',
+            bin_warehouse_name: 'mercury',
+            bin_bin: 'A15D2',
+            inventory_company: 'HJ8009',
+            inventory_sku: 'JFX192',
+            inventory_warehouse: 'mercury',
+            inventory_bin: 'A15D2',
+            inventory_time: '2020-04-13 12:45:31',
+            inventory_qty: 7,
+            inventory_cost: 6.32
+          },
+          {
+            company: 'HJ8009',
+            sku: 'JFX192',
+            description: 'gadget',
+            warehouse_company: 'HJ9009',
+            warehouse_name: 'mercury',
+            warehouse_description: '',
+            warehouse_address_company: 'H&J Ltd',
+            warehouse_address_street: '16 Hatfield court',
+            warehouse_address_locality: 'Chester Industrial Estate',
+            warehouse_address_city: 'Manchester',
+            warehouse_address_region: '',
+            warehouse_address_postalCode: 'M8 9EF',
+            warehouse_address_country: 'GB',
+            bin_company: 'HJ8009',
+            bin_warehouse_name: 'mercury',
+            bin_bin: 'A15D2',
+            inventory_company: 'HJ8009',
+            inventory_sku: 'JFX192',
+            inventory_warehouse: 'mercury',
+            inventory_bin: 'A15D2',
+            inventory_time: '2019-10-20 15:09:12',
+            inventory_qty: 800,
+            inventory_cost: 6.32
+          },
+          {
+            company: 'HJ8009',
+            sku: 'JFX192',
+            description: 'gadget',
+            warehouse_company: 'HJ9009',
+            warehouse_name: 'mercury',
+            warehouse_description: '',
+            warehouse_address_company: 'H&J Ltd',
+            warehouse_address_street: '16 Hatfield court',
+            warehouse_address_locality: 'Chester Industrial Estate',
+            warehouse_address_city: 'Manchester',
+            warehouse_address_region: '',
+            warehouse_address_postalCode: 'M8 9EF',
+            warehouse_address_country: 'GB',
+            bin_company: 'HJ8009',
+            bin_warehouse_name: 'mercury',
+            bin_bin: 'A15D2',
+            inventory_company: 'HJ8009',
+            inventory_sku: 'JFX192',
+            inventory_warehouse: 'mercury',
+            inventory_bin: 'A15D2',
+            inventory_time: '2019-03-09 08:15:42',
+            inventory_qty: 7,
+            inventory_cost: 6.32
+          },
+          {
+            company: 'HJ8009',
+            sku: 'JFX192',
+            description: 'gadget',
+            warehouse_company: 'HJ9009',
+            warehouse_name: 'mercury',
+            warehouse_description: '',
+            warehouse_address_company: 'H&J Ltd',
+            warehouse_address_street: '16 Hatfield court',
+            warehouse_address_locality: 'Chester Industrial Estate',
+            warehouse_address_city: 'Manchester',
+            warehouse_address_region: '',
+            warehouse_address_postalCode: 'M8 9EF',
+            warehouse_address_country: 'GB',
+            bin_company: 'HJ8009',
+            bin_warehouse_name: 'mercury',
+            bin_bin: 'B09A6',
+            inventory_company: 'HJ8009',
+            inventory_sku: 'JFX192',
+            inventory_warehouse: 'mercury',
+            inventory_bin: 'B09A6',
+            inventory_time: '2017-06-14 11:21:09',
+            inventory_qty: 600,
+            inventory_cost: 5.14
+          }
+        ];
         r.addSQLResult(lines);
         expect(JSON.stringify(r)).toBe(
           '[{"company":"HJ8009","sku":"JFX192","description":"gadget","warehouse":[{"company":"HJ9009","name":"mercury","description":"","address":{"company":"H&J Ltd",' +
@@ -431,6 +431,42 @@ describe("record set tests", () => {
           '"inventory":[{"company":"HJ8009","sku":"JFX192","bin":"A15D2","time":"2020-04-13 12:45:31","qty":7,"cost":6.32},{"company":"HJ8009","sku":"JFX192","bin":"A15D2",' +
           '"time":"2019-10-20 15:09:12","qty":800,"cost":6.32},{"company":"HJ8009","sku":"JFX192","bin":"A15D2","time":"2019-03-09 08:15:42","qty":7,"cost":6.32},' +
           '{"company":"HJ8009","sku":"JFX192","bin":"B09A6","time":"2017-06-14 11:21:09","qty":600,"cost":5.14}]}]'
+        );
+      });
+
+      it('should collate inventory lines with null fields', () => {
+        const r = new RecordSet(j);
+        const lines = [
+          {
+            company: 'HJ8009',
+            sku: 'JFX192',
+            description: 'gadget',
+            warehouse_company: 'HJ9009',
+            warehouse_name: 'mercury',
+            warehouse_description: '',
+            warehouse_address_company: 'H&J Ltd',
+            warehouse_address_street: '16 Hatfield court',
+            warehouse_address_locality: 'Chester Industrial Estate',
+            warehouse_address_city: 'Manchester',
+            warehouse_address_region: '',
+            warehouse_address_postalCode: 'M8 9EF',
+            warehouse_address_country: 'GB',
+            bin_company: null,
+            bin_warehouse_name: null,
+            bin_bin: null,
+            inventory_company: null,
+            inventory_sku: null,
+            inventory_warehouse: null,
+            inventory_bin: null,
+            inventory_time: null,
+            inventory_qty: null,
+            inventory_cost: null
+          }
+        ];
+        r.addSQLResult(lines);
+        expect(JSON.stringify(r)).toBe(
+          '[{"company":"HJ8009","sku":"JFX192","description":"gadget","warehouse":[{"company":"HJ9009","name":"mercury","description":"","address":{"company":"H&J Ltd",' +
+          '"street":"16 Hatfield court","locality":"Chester Industrial Estate","city":"Manchester","region":"","postalCode":"M8 9EF","country":"GB"}}],"bin":[],"inventory":[]}]'
         );
       });
 
@@ -615,6 +651,37 @@ describe("record set tests", () => {
           '"region":"Shropshire","postalCode":"TF2 8XD","country":"GB"},"bins":[{"company":"ANA191","warehouse_name":"Telford","bin":"H78D","inventory":[]}]}]},' +
           '"valid":true,"errors":{}}],"valid":true}'
         );
+      });
+
+      it('should collate lines with null fields', () => {
+        const lines = [
+          {
+            company: 'ANA191',
+            sku: 'DX676',
+            description: 'Hammer',
+            warehouse_company: null,
+            warehouse_name: null,
+            warehouse_description: null,
+            warehouse_address_company: null,
+            warehouse_address_street: null,
+            warehouse_address_locality: null,
+            warehouse_address_city: null,
+            warehouse_address_region: null,
+            warehouse_address_postalCode: null,
+            warehouse_address_country: null,
+            warehouse_bins_company: null,
+            warehouse_bins_warehouse_name: null,
+            warehouse_bins_bin: null,
+            warehouse_bins_inventory_sku: null,
+            warehouse_bins_inventory_bin: null,
+            warehouse_bins_inventory_time: null,
+            warehouse_bins_inventory_qty: null,
+            warehouse_bins_inventory_cost: null
+          }
+        ];
+        const r = new RecordSet(j);
+        r.addSQLResult(lines);
+        expect(JSON.stringify(r)).toBe('[{"company":"ANA191","sku":"DX676","description":"Hammer","warehouse":[]}]');
       });
 
       it('should create update statements', () => {
