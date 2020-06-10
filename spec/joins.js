@@ -56,5 +56,12 @@ module.exports = {
     table: tables.stock,
     on: ['company', 'sku'],
     readOnly: true
+  }),
+  stock_with_options: tables.stock.join({
+    name: 'options',
+    table: tables.stock_options,
+    type: 'left',
+    on: ['company', 'sku'],
+    single: true
   })
 }

@@ -406,7 +406,15 @@ class Record
       return this.table.joins.reduce((acc, join) => {
         const recordSet = _.get(this.data, join.path || join.name);
         if(recordSet instanceof RecordSet) {
-          _.set(acc, join.path || join.name, recordSet.toObject(options));
+          if(join.single) {
+            if(recordSet.length === 1) {
+              _.set(acc, join.path || join.name, recordSet.get('[0]'));
+            } else if(recordSet.length > 0) {
+              _.set(acc, join.path || join.name, recordSet.toObject(options));
+            }
+          } else {
+            _.set(acc, join.path || join.name, recordSet.toObject(options));
+          }
         }
         return acc;
       }, acc);

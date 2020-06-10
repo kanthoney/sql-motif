@@ -102,3 +102,15 @@ module.exports.inventory = new Table({
     }
   ]
 });
+
+module.exports.stock_options = new Table({
+  name: 'stock_options',
+  columns: [
+    { name: 'company', type: 'account', notNull: true },
+    { name: 'sku', type: 'sku', notNull: true },
+    { name: 'weight', type: 'decimal(6, 2)' },
+    { name: 'length', type: 'int' },
+    { name: 'width', type: 'int' },
+    { name: 'height', type: 'int' }
+  ]
+});

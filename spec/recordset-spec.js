@@ -729,6 +729,52 @@ describe("record set tests", () => {
 
     });
 
+    describe('stock_with_options tests', () => {
+
+      const j = joins.stock_with_options;
+
+      it('should create a record with one option set', () => {
+        const lines = [
+          {
+            company: 'ACE010',
+            sku: 'AA934',
+            description: 'Hammer',
+            options_company: 'ACE010',
+            options_sku: 'AA934',
+            options_weight: 0.45,
+            options_length: 28,
+            options_width: 14,
+            options_height: 8
+          }
+        ];
+        const recordSet = j.collate(lines);
+        expect(JSON.stringify(recordSet)).toBe(
+          '[{"company":"ACE010","sku":"AA934","description":"Hammer","options":{"company":"ACE010","sku":"AA934","weight":0.45,"length":28,"width":14,"height":8}}]'
+        );
+      });
+
+      it('should create a record with zero options set', () => {
+        const lines = [
+          {
+            company: 'ACE010',
+            sku: 'AA934',
+            description: 'Hammer',
+            options_company: null,
+            options_sku: null,
+            options_weight: null,
+            options_length: null,
+            options_width: null,
+            options_height: null
+          }
+        ];
+        const recordSet = j.collate(lines);
+        expect(JSON.stringify(recordSet)).toBe(
+          '[{"company":"ACE010","sku":"AA934","description":"Hammer"}]'
+        );
+      });
+
+    });
+
   });
 
 });

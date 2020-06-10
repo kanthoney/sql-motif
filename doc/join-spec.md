@@ -21,3 +21,6 @@ The join specification object can take the following parameters:
   * An array of arrays of the form `['join_column', 'main_column']`, or simply `['join_column']` if the two columns have the same name.
 
 * `readOnly`. Set to `true` to exclude table from data changing queries.
+
+* `single`. Set to `true` if the join is expected to yield a single subrecord. If there is indeed a single subrecord it is attached as an object instead of an array. If there is no subrecord
+it is omitted entirely from the record, and if there is more than one subrecord they are attached as an array as normal.
