@@ -408,7 +408,7 @@ class Record
         if(recordSet instanceof RecordSet) {
           if(join.single) {
             if(recordSet.length === 1) {
-              _.set(acc, join.path || join.name, recordSet.get('[0]'));
+              _.set(acc, join.path || join.name, recordSet.get('[0]').toJSON());
             } else if(recordSet.length > 0) {
               _.set(acc, join.path || join.name, recordSet.toObject(options));
             }
