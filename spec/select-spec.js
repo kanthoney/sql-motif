@@ -56,6 +56,13 @@ describe('select tests', () => {
         );
       });
 
+      it('should create a list of fields from company and delivery address via object selector', () => {
+        expect(t.select(['company', { delivery: 'address' }])).toBe(
+          '"s1"."orders"."company", "s1"."orders"."delivery_address_company", "s1"."orders"."delivery_address_street", "s1"."orders"."delivery_address_locality", ' +
+          '"s1"."orders"."delivery_address_city", "s1"."orders"."delivery_address_region", "s1"."orders"."delivery_address_postalCode", "s1"."orders"."delivery_address_country"'
+        );
+      });
+
     });
 
     describe('order line tests', () => {
@@ -142,6 +149,15 @@ describe('select tests', () => {
           '"warehouse_bins_warehouse_name", "warehouse_bins"."bin" as "warehouse_bins_bin", "inventory"."company" as "warehouse_bins_inventory_company", ' +
           '"inventory"."sku" as "warehouse_bins_inventory_sku", "inventory"."warehouse_name" as "warehouse_bins_inventory_warehouse_name", "inventory"."bin" as "warehouse_bins_inventory_bin", ' +
           '"inventory"."time" as "warehouse_bins_inventory_time", "inventory"."qty" as "warehouse_bins_inventory_qty", "inventory"."cost" as "warehouse_bins_inventory_cost"'
+        );
+      });
+
+      it('should select fields using object selector', () => {
+        expect(j.select({ company: true, warehouse: ['description', { bins: 'inventory' } ] })).toBe(
+          '"stock"."company", "s1"."warehouse"."description" as "warehouse_description", "inventory"."company" as "warehouse_bins_inventory_company", ' +
+            '"inventory"."sku" as "warehouse_bins_inventory_sku", "inventory"."warehouse_name" as "warehouse_bins_inventory_warehouse_name", ' +
+            '"inventory"."bin" as "warehouse_bins_inventory_bin", "inventory"."time" as "warehouse_bins_inventory_time", ' +
+            '"inventory"."qty" as "warehouse_bins_inventory_qty", "inventory"."cost" as "warehouse_bins_inventory_cost"'
         );
       });
 

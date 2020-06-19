@@ -8,6 +8,7 @@ const operators = require('./operators');
 const RecordSet = require('./recordset');
 const Record = require('./record');
 const _ = require('lodash');
+const Selector = require('./selector');
 
 class Table
 {
@@ -290,6 +291,9 @@ class Table
 
   selectArray(selector, options)
   {
+    if(!(selector instanceof Selector)) {
+      return this.selectArray(new Selector(selector), options);
+    }
     options = options || {};
     if(options.joins && options.joins !== '*') {
       if(!_.isArray(options.joins)) {
@@ -301,7 +305,11 @@ class Table
         if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
           return acc;
         }
-        return acc.concat(join.table.selectArray(selector, options));
+        const newSelector = selector.passesJoin(join);
+        if(newSelector) {
+          return acc.concat(join.table.selectArray(newSelector, options));
+        }
+        return acc;
       }, [])
     );
   }

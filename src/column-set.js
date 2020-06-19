@@ -8,6 +8,7 @@ const Record = require('./record');
 const Operator = require('./operator');
 const operators = require('./operators');
 const SafetyError = require('./safety-error');
+const Selector = require('./selector');
 
 class ColumnSet
 {
@@ -28,35 +29,28 @@ class ColumnSet
 
   passesSelection(selector)
   {
-    if(!this.config.hidden && (selector === undefined || selector === '*')) {
-      return true;
-    } else if(_.isArray(selector)) {
-      return selector.reduce((acc, selector) => acc || this.passesSelection(selector), false);
-    } else if(_.isString(selector)) {
-      const m = /^([\.@])(.+)/.exec(selector);
-      if(m) {
-        if(!this.config.hidden && m[1] === '@' && (this.config.table.config.alias || this.config.table.config.name) === m[2]) {
-          return true;
-        }
-        if(!this.config.hidden && m[1] === '.' && this.config.tags && this.config.tags.split(/\s+/g).includes(m[2])) {
-          return true;
-        }
-      }
-      return selector === (this.config.alias || this.config.name);
+    if(!(selector instanceof Selector)) {
+      return this.passesSelection(new Selector(selector));
     }
-    return false;
+    return selector.passes(this);
   }
 
   fields(selector, all)
   {
+    if(!(selector instanceof Selector)) {
+      return this.fields(new Selector(selector), all);
+    }
     return this.columns.reduce((acc, col) => {
       if(col instanceof ColumnSet) {
-        if(all || col.passesSelection(selector)) {
-          return acc.concat(col.fields('*', all));
+        if(all) {
+          return acc.concat(col.fields(new Selector('*'), all));
         }
-        return acc.concat(col.fields(selector));
+        const newSelector = selector.passes(col);
+        if(newSelector !== false) {
+          return acc.concat(col.fields(newSelector));
+        }
       } else if(col instanceof Column) {
-        if(all || col.passesSelection(selector)) {
+        if(all || selector.passes(col)) {
           return acc.concat(col);
         }
       }
@@ -128,12 +122,7 @@ class ColumnSet
         } else {
           context = { ...context, ...col.context };
         }
-        let result;
-        if(col.passesSelection(selector)) {
-          result = col.validateRecord(record, { ...options, context, selector: '*' });
-        } else {
-          result = col.validateRecord(record, options);
-        }
+        let result = col.validateRecord(record, { ...options, context, selector: col.passesSelection(selector) });
         if(!result.valid) {
           acc.valid = false;
         }

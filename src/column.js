@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const Selector = require('./selector');
 
 class Column
 {
@@ -24,33 +25,10 @@ class Column
 
   passesSelection(selector)
   {
-    const alias = this.table.config.path.concat(this.alias).join('_');
-    if((!this.hidden && (selector === undefined || selector === '*' ||
-        (_.isRegExp(selector) && selector.test(alias)))) ||
-        (_.isFunction(selector) && selector(this))) {
-      return true;
+    if(!(selector instanceof Selector)) {
+      return this.passesSelection(new Selector(selector));
     }
-    if(_.isString(selector)) {
-      if(selector === alias) {
-        return true;
-      }
-      let m = /^([\.@])(.*)/.exec(selector);
-      if(m) {
-        if(m[1] === '@' && m[2] === (this.table.config.alias || this.table.config.name) && !this.hidden) {
-          return true;
-        }
-        if(m[1] === '.' && this.tags) {
-          if(this.tags.split(/\s+/g).includes(m[2])) {
-            return true;
-          }
-        }
-      }
-      return false;
-    }
-    if(_.isArray(selector)) {
-      return selector.reduce((acc, s) => acc || this.passesSelection(s), false);
-    }
-    return false;
+    return selector.passes(this);
   }
 
   SQL(as)
