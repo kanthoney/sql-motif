@@ -13,6 +13,9 @@ class RecordSet
     } else {
       this.join = join;
     }
+    if(this.join.table.config.subquery) {
+      this.subTable = this.join.table.config.subquery.table;
+    }
     this.joined = joined || {};
     this.records= [];
     this.recordMap = {};
@@ -24,50 +27,15 @@ class RecordSet
       line.forEach(line => this.addSQLResult(line));
       return this;
     }
-    let empty = true;
-    const { recordData, joined } = this.join.table.columns.fields().reduce((acc, col) => {
-      const alias = col.table.config.path.concat(col.alias || col.name).join('_');
-      let value = _.get(line, alias);
-      if(!_.isNil(value)) {
-        empty = false;
-      }
-      if(value === undefined) {
-        value = _.get(this.joined, col.path);
-      }
-      if(value !== undefined) {
-        if(_.isFunction(col.format)) {
-          value = col.format(value);
-        }
-        _.set(acc.recordData, col.path, value);
-        acc.joined = col.joinedToFull.reduce((acc, path) => {
-          _.set(acc, path, value);
-          return acc;
-        }, acc.joined);
-      }
-      return acc;
-    }, { recordData: {}, joined: {} });
-    let record = new Record(this, empty?{}:recordData);
+    let record = Record.fromSQLLine(this, line);
     const hash = record.hashKey();
-    if(this.recordMap[hash] !== undefined) {
-      record = this.recordMap[hash];
-    }
-    this.join.table.joins.forEach(join => {
-      let recordSet = _.get(record.data, join.path || join.name);
-      if(recordSet === undefined) {
-        recordSet = new RecordSet(join, Object.assign({}, _.get(joined, join.table.config.path), _.get(this.joined, join.path || join.name)));
-        recordSet.addSQLResult(line);
-        if(recordSet.length > 0) {
-          empty = false;
-        }
-        _.set(record.data, join.path || join.name, recordSet);
-      } else {
-        recordSet.addSQLResult(line);
-        empty = false;
-      }
-    });
-    if(!empty && this.recordMap[hash] === undefined) {
-        this.records.push(record);
+    if(!_.isNil(hash) && this.recordMap[hash] !== undefined) {
+      record = this.recordMap[hash].merge(record);
+    } else if(!record.empty) {
+      this.records.push(record);
+      if(!_.isNil(hash)) {
         this.recordMap[hash] = record;
+      }
     }
     return this;
   }
@@ -78,10 +46,16 @@ class RecordSet
       return this.addRecord(record.records);
     }
     if(record instanceof Record) {
-      this.records.push(record);
       const hash = record.hashKey();
       if(hash) {
-        this.recordMap[hash] = record;
+        if(this.recordMap[hash]) {
+          this.recordMap[hash].merge(record);
+        } else {
+          this.records.push(record);
+          this.recordMap[hash] = record;
+        }
+      } else {
+        this.records.push(record);
       }
       return this;
     }

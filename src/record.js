@@ -13,25 +13,89 @@ class Record
     this.errors = {};
     this.dirty = true;
     this.joined = {};
+    this.empty = false;
+  }
+  
+  static fromSQLLine(recordSet, line)
+  {
+    const RecordSet = require('./recordset');
+    let empty = true;
+    let { recordData, joined } = recordSet.join.table.columns.fields().reduce((acc, col) => {
+      const alias = col.table.config.path.concat(col.alias || col.name).join('_');
+      let value = _.get(line, alias);
+      if(!_.isNil(value)) {
+        empty = false;
+      }
+      if(value === undefined) {
+        value = _.get(recordSet.joined, col.path);
+      }
+      if(value !== undefined) {
+        if(_.isFunction(col.format)) {
+          value = col.format(value);
+        }
+        _.set(acc.recordData, col.path, value);
+        acc.joined = col.joinedToFull.reduce((acc, path) => {
+          _.set(acc, path, value);
+          return acc;
+        }, acc.joined);
+      }
+      return acc;
+    }, { recordData: {}, joined: {} });
+    if(recordSet.subTable) {
+      const subRecord = Record.fromSQLLine(new RecordSet(recordSet.subTable, {}), recordData);
+      recordData = subRecord.data;
+    }
+    const record = new Record(recordSet, empty?{}:recordData);
+    record.joined = joined;
+    record.empty = empty;
+    recordSet.join.table.joins.forEach(join => {
+      let subRecordSet = _.get(record.data, join.path || join.name);
+      if(subRecordSet === undefined) {
+        subRecordSet = new RecordSet(join, Object.assign({}, _.get(record.joined, join.table.config.path), _.get(recordSet.joined, join.path || join.name)));
+        subRecordSet.addSQLResult(line);
+        if(subRecordSet.length > 0) {
+          record.empty = false;
+        }
+        _.set(record.data, join.path || join.name, subRecordSet);
+      } else {
+        subRecordSet.addSQLResult(line);
+        record.empty = false;
+      }
+    });
+    return record;
   }
 
   hashKey()
   {
+    const RecordSet = require('./recordset');
     if(this.hash === undefined || this.dirty) {
       let empty = true;
       const hash = this.table.columns.fields().reduce((acc, col) => {
         const path = col.path;
         let value = _.get(this.data, path);
-        if(!_.isNil(value)) {
-          empty = false;
-        }
         if(col.primaryKey || _.has(this.recordSet.joined, path)) {
           if(_.isNil(value)) {
             value = _.get(this.recordSet.joined, path);
           }
+          for(let i = 0; i < col.joinedTo.length && _.isNil(value); i++) {
+            let path = col.joinedTo[i];
+            value = this.data;
+            for(let j = 0; j < path.length; j++) {
+              value = _.get(value, path[j]);
+              if(value instanceof RecordSet) {
+                if(value.length > 0) {
+                  value = value.get('[0]').toJSON();
+                } else {
+                  value = null;
+                  break;
+                }
+              }
+            }
+          }
           if(value === undefined) {
             return acc.concat(null);
           } else {
+            empty = false;
             return acc.concat(value);
           }
         }
@@ -44,6 +108,43 @@ class Record
       }
     }
     return this.hash;
+  }
+
+  merge(other)
+  {
+    const RecordSet = require('./recordset');
+    if(this.hash !== other.hashKey()) {
+      return this;
+    }
+    this.table.joins.forEach(join => {
+      const subRecord = _.get(this.data, join.path || join.name);
+      const otherRecord = _.get(other.data, join.path || join.name);
+      if(subRecord instanceof RecordSet) {
+        if(otherRecord) {
+          subRecord.addRecord(otherRecord);
+        }
+      } else if(otherRecord) {
+        const recordSet = new RecordSet(otherRecord.recordSet.table, otherRecord.recordSet.joined);
+        recordSet.addRecord(otherRecord);
+        _.set(this.data, join.path || join.name, recordSet);
+      }
+    });
+    if(this.table.config.subquery) {
+      this.table.config.subquery.table.joins.forEach(join => {
+        const subRecord = _.get(this.data, join.path || join.name);
+        const otherRecord = _.get(other.data, join.path || join.name);
+        if(subRecord instanceof RecordSet) {
+          if(otherRecord) {
+            subRecord.addRecord(otherRecord);
+          }
+        } else if(otherRecord) {
+          const recordSet = new RecordSet(otherRecord.recordSet.table, otherRecord.recordSet.joined);
+          recordSet.addRecord(otherRecord);
+          _.set(this.data, join.path || join.name, recordSet);
+        }
+      });
+    }
+    return this;
   }
 
   get(path)
@@ -392,7 +493,7 @@ class Record
   {
     const RecordSet = require('./recordset');
     options = options || {};
-    const acc = this.table.columns.fields('*', true).reduce((acc, col) => {
+    let acc = this.table.columns.fields('*', true).reduce((acc, col) => {
       let value = _.get(this.data, col.path);
       if(value === undefined && options.mapJoined) {
         value = _.get(this.recordSet.joined, col.path);
@@ -403,7 +504,7 @@ class Record
       return acc;
     }, {});
     if(!options.noSubRecords) {
-      return this.table.joins.reduce((acc, join) => {
+      acc = this.table.joins.reduce((acc, join) => {
         const recordSet = _.get(this.data, join.path || join.name);
         if(recordSet instanceof RecordSet) {
           if(join.single) {
@@ -418,6 +519,23 @@ class Record
         }
         return acc;
       }, acc);
+      if(this.table.config.subquery) {
+        acc = this.table.config.subquery.table.joins.reduce((acc, join) => {
+          const recordSet = _.get(this.data, join.path || join.name);
+          if(recordSet instanceof RecordSet) {
+            if(join.single) {
+              if(recordSet.length === 1) {
+                _.set(acc, join.path || join.name, recordSet.get('[0]').toJSON());
+              } else if(recordSet.length > 0) {
+                _.set(acc, join.path || join.name, recordSet.toObject(options));
+              }
+            } else {
+              _.set(acc, join.path || join.name, recordSet.toObject(options));
+            }
+          }
+          return acc;
+        }, acc);
+      }
     }
     return acc;
   }

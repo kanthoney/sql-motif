@@ -308,8 +308,9 @@ describe("record set tests", () => {
         const r = new RecordSet(j);
         r.addSQLResult(lines);
         expect(JSON.stringify(r)).toBe(
-          '[{"lines":[{"company":"ABE081","order_id":12,"line_no":1,"sku":"ABA001","description":"Widget","qty":1,"price":4.32},{"company":"ABE081","order_id":12,"line_no":2,' +
-          '"sku":"ABJ994","description":"Gadget","qty":100,"price":8.94},{"company":"ABE081","order_id":13,"line_no":1,"sku":"ABJ994","description":"Gadget","qty":100,"price":8.94}]}]'
+          '[{"lines":[{"company":"ABE081","order_id":12,"line_no":1,"sku":"ABA001","description":"Widget","qty":1,"price":4.32},' +
+            '{"company":"ABE081","order_id":12,"line_no":2,"sku":"ABJ994","description":"Gadget","qty":100,"price":8.94}]},' +
+            '{"lines":[{"company":"ABE081","order_id":13,"line_no":1,"sku":"ABJ994","description":"Gadget","qty":100,"price":8.94}]}]'
         );
       });
 
