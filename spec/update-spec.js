@@ -171,15 +171,16 @@ describe('update tests', () => {
           }
         };
         expect(j.UpdateSafe(record, null, { joins: '*' })).toBe(
-          'update "s1"."orders" inner join "order_lines" on "order_lines"."company" = "s1"."orders"."company" and "order_lines"."order_id" = "s1"."orders"."order_id" ' +
-          'set "s1"."orders"."order_date" = \'2020-04-12\', "s1"."orders"."delivery_name" = \'Terry Test\', "s1"."orders"."delivery_address_company" = \'\', ' +
-          '"s1"."orders"."delivery_address_street" = \'17 Acacia Ave.\', "s1"."orders"."delivery_address_locality" = \'Stormford\', "s1"."orders"."delivery_address_city" = \'Manchester\', ' +
-          '"s1"."orders"."delivery_address_region" = \'\', "s1"."orders"."delivery_address_postalCode" = \'M9 5DF\', "s1"."orders"."delivery_address_country" = \'GB\', ' +
-          '"s1"."orders"."billing_name" = \'Bill Smith\', "s1"."orders"."billing_address_company" = \'Brimstone Ltd\', "s1"."orders"."billing_address_street" = \'17 Halford Court\', ' +
-          '"s1"."orders"."billing_address_locality" = \'Zenith Business Park\', "s1"."orders"."billing_address_city" = \'Huddersfield\', "s1"."orders"."billing_address_region" = \'West Yorkshire\', ' +
-          '"s1"."orders"."billing_address_postalCode" = \'HD12 6HF\', "s1"."orders"."billing_address_country" = \'GB\', "order_lines"."sku" = \'AA595\', "order_lines"."description" = \'Hammer\', ' +
-          '"order_lines"."qty" = 5, "order_lines"."price" = 7.98 where "s1"."orders"."company" = \'AA565\' and "s1"."orders"."order_id" = \'dea1734e-1af1-4508-966c-709fcc18fa5c\' ' +
-          'and "order_lines"."line_no" = \'1\''
+          'update "s1"."orders" inner join "order_lines" as "ol1" on "ol1"."company" = "s1"."orders"."company" and "ol1"."order_id" = "s1"."orders"."order_id" ' +
+            'set "s1"."orders"."order_date" = \'2020-04-12\', "s1"."orders"."delivery_name" = \'Terry Test\', "s1"."orders"."delivery_address_company" = \'\', ' +
+            '"s1"."orders"."delivery_address_street" = \'17 Acacia Ave.\', "s1"."orders"."delivery_address_locality" = \'Stormford\', ' +
+            '"s1"."orders"."delivery_address_city" = \'Manchester\', "s1"."orders"."delivery_address_region" = \'\', "s1"."orders"."delivery_address_postalCode" = \'M9 5DF\', ' +
+            '"s1"."orders"."delivery_address_country" = \'GB\', "s1"."orders"."billing_name" = \'Bill Smith\', "s1"."orders"."billing_address_company" = \'Brimstone Ltd\', ' +
+            '"s1"."orders"."billing_address_street" = \'17 Halford Court\', "s1"."orders"."billing_address_locality" = \'Zenith Business Park\', ' +
+            '"s1"."orders"."billing_address_city" = \'Huddersfield\', "s1"."orders"."billing_address_region" = \'West Yorkshire\', ' +
+            '"s1"."orders"."billing_address_postalCode" = \'HD12 6HF\', "s1"."orders"."billing_address_country" = \'GB\', "ol1"."sku" = \'AA595\', ' +
+            '"ol1"."description" = \'Hammer\', "ol1"."qty" = 5, "ol1"."price" = 7.98 where "s1"."orders"."company" = \'AA565\' and ' +
+            '"s1"."orders"."order_id" = \'dea1734e-1af1-4508-966c-709fcc18fa5c\' and "ol1"."line_no" = \'1\''
         );
       });
 
@@ -249,11 +250,11 @@ describe('update tests', () => {
           }
         };
         expect(j.UpdateSafe(record)).toBe(
-          'update "inventory" inner join ("warehouse_bins" inner join "s1"."warehouse" on "s1"."warehouse"."company" = "warehouse_bins"."company" and "s1"."warehouse"."name" = ' +
+          'update "inventory" inner join ("warehouse_bins" inner join "s1"."warehouse" as "w1" on "w1"."company" = "warehouse_bins"."company" and "w1"."name" = ' +
           '"warehouse_bins"."warehouse_name") on "warehouse_bins"."company" = "inventory"."company" and "warehouse_bins"."warehouse_name" = "inventory"."warehouse_name" and "warehouse_bins"."bin" ' +
           '= "inventory"."bin" inner join "stock" on "stock"."company" = "inventory"."company" and "stock"."sku" = "inventory"."sku" set "inventory"."qty" = 5, "inventory"."cost" = \'9.80\' ' +
           'where "inventory"."company" = \'AXA001\' and "inventory"."sku" = \'GL898\' and "inventory"."warehouse_name" = \'Atlas\' and "inventory"."bin" = \'AA12D\' and ' +
-          '"inventory"."time" = \'2020-03-12 15:39:54\' and "s1"."warehouse"."name" = \'Atlas\' and "stock"."sku" = \'GL898\''
+          '"inventory"."time" = \'2020-03-12 15:39:54\' and "w1"."name" = \'Atlas\' and "stock"."sku" = \'GL898\''
         );
 
       });

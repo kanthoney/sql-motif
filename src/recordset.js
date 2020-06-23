@@ -36,15 +36,14 @@ class RecordSet
       }
       if(value !== undefined) {
         if(_.isFunction(col.format)) {
-          _.set(acc.recordData, col.path, col.format(value));
-        } else {
-          _.set(acc.recordData, col.path, value);
+          value = col.format(value);
         }
+        _.set(acc.recordData, col.path, value);
+        acc.joined = col.joinedToFull.reduce((acc, path) => {
+          _.set(acc, path, value);
+          return acc;
+        }, acc.joined);
       }
-      acc.joined = col.joinedToFull.reduce((acc, path) => {
-        _.set(acc, path, value);
-        return acc;
-      }, acc.joined);
       return acc;
     }, { recordData: {}, joined: {} });
     let record = new Record(this, empty?{}:recordData);

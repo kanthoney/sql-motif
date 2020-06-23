@@ -108,15 +108,15 @@ describe('select tests', () => {
           '"s1"."orders"."billing_address_street" as "invoice_address_street", "s1"."orders"."billing_address_locality" as "invoice_address_locality", ' +
           '"s1"."orders"."billing_address_city" as "invoice_address_city", "s1"."orders"."billing_address_region" as "invoice_address_region", ' +
           '"s1"."orders"."billing_address_postalCode" as "invoice_address_postalCode", "s1"."orders"."billing_address_country" as "invoice_address_country", ' +
-          '"order_lines"."company" as "lines_company", "order_lines"."order_id" as "lines_order_id", "order_lines"."line_no" as "lines_line_no", "order_lines"."sku" as "lines_sku", ' +
-          '"order_lines"."description" as "lines_description", "order_lines"."qty" as "lines_qty", "order_lines"."price" as "lines_price"'
+          '"ol1"."company" as "lines_company", "ol1"."order_id" as "lines_order_id", "ol1"."line_no" as "lines_line_no", "ol1"."sku" as "lines_sku", ' +
+          '"ol1"."description" as "lines_description", "ol1"."qty" as "lines_qty", "ol1"."price" as "lines_price"'
         );
       });
 
       it('should create a list of order_lines fields', () => {
         expect(j.select('@order_lines')).toBe(
-          '"order_lines"."company" as "lines_company", "order_lines"."order_id" as "lines_order_id", "order_lines"."line_no" as "lines_line_no", ' +
-          '"order_lines"."sku" as "lines_sku", "order_lines"."description" as "lines_description", "order_lines"."qty" as "lines_qty", "order_lines"."price" as "lines_price"'
+          '"ol1"."company" as "lines_company", "ol1"."order_id" as "lines_order_id", "ol1"."line_no" as "lines_line_no", ' +
+          '"ol1"."sku" as "lines_sku", "ol1"."description" as "lines_description", "ol1"."qty" as "lines_qty", "ol1"."price" as "lines_price"'
         );
       });
 
@@ -127,9 +127,9 @@ describe('select tests', () => {
           '"s1"."orders"."billing_address_company" as "invoice_address_company", "s1"."orders"."billing_address_street" as "invoice_address_street", ' +
           '"s1"."orders"."billing_address_locality" as "invoice_address_locality", "s1"."orders"."billing_address_city" as "invoice_address_city", ' +
           '"s1"."orders"."billing_address_region" as "invoice_address_region", "s1"."orders"."billing_address_postalCode" as "invoice_address_postalCode", ' +
-          '"s1"."orders"."billing_address_country" as "invoice_address_country", "order_lines"."company" as "lines_company", "order_lines"."order_id" as "lines_order_id", ' +
-          '"order_lines"."line_no" as "lines_line_no", "order_lines"."sku" as "lines_sku", "order_lines"."description" as "lines_description", "order_lines"."qty" as "lines_qty", ' +
-          '"order_lines"."price" as "lines_price"'
+          '"s1"."orders"."billing_address_country" as "invoice_address_country", "ol1"."company" as "lines_company", "ol1"."order_id" as "lines_order_id", ' +
+          '"ol1"."line_no" as "lines_line_no", "ol1"."sku" as "lines_sku", "ol1"."description" as "lines_description", "ol1"."qty" as "lines_qty", ' +
+          '"ol1"."price" as "lines_price"'
         );
       });
 
@@ -141,11 +141,11 @@ describe('select tests', () => {
 
       it('Should produce a list of all fields', () => {
         expect(j.select()).toBe(
-          '"stock"."company", "stock"."sku", "stock"."description", "s1"."warehouse"."company" as "warehouse_company", "s1"."warehouse"."name" as "warehouse_name", ' +
-          '"s1"."warehouse"."description" as "warehouse_description", "s1"."warehouse"."address_company" as "warehouse_address_company", "s1"."warehouse"."address_street" as ' +
-          '"warehouse_address_street", "s1"."warehouse"."address_locality" as "warehouse_address_locality", "s1"."warehouse"."address_city" as "warehouse_address_city", ' +
-          '"s1"."warehouse"."address_region" as "warehouse_address_region", "s1"."warehouse"."address_postalCode" as "warehouse_address_postalCode", ' +
-          '"s1"."warehouse"."address_country" as "warehouse_address_country", "warehouse_bins"."company" as "warehouse_bins_company", "warehouse_bins"."warehouse_name" as ' +
+          '"stock"."company", "stock"."sku", "stock"."description", "w1"."company" as "warehouse_company", "w1"."name" as "warehouse_name", ' +
+          '"w1"."description" as "warehouse_description", "w1"."address_company" as "warehouse_address_company", "w1"."address_street" as ' +
+          '"warehouse_address_street", "w1"."address_locality" as "warehouse_address_locality", "w1"."address_city" as "warehouse_address_city", ' +
+          '"w1"."address_region" as "warehouse_address_region", "w1"."address_postalCode" as "warehouse_address_postalCode", ' +
+          '"w1"."address_country" as "warehouse_address_country", "warehouse_bins"."company" as "warehouse_bins_company", "warehouse_bins"."warehouse_name" as ' +
           '"warehouse_bins_warehouse_name", "warehouse_bins"."bin" as "warehouse_bins_bin", "inventory"."company" as "warehouse_bins_inventory_company", ' +
           '"inventory"."sku" as "warehouse_bins_inventory_sku", "inventory"."warehouse_name" as "warehouse_bins_inventory_warehouse_name", "inventory"."bin" as "warehouse_bins_inventory_bin", ' +
           '"inventory"."time" as "warehouse_bins_inventory_time", "inventory"."qty" as "warehouse_bins_inventory_qty", "inventory"."cost" as "warehouse_bins_inventory_cost"'
@@ -154,7 +154,7 @@ describe('select tests', () => {
 
       it('should select fields using object selector', () => {
         expect(j.select({ company: true, warehouse: ['description', { bins: 'inventory' } ] })).toBe(
-          '"stock"."company", "s1"."warehouse"."description" as "warehouse_description", "inventory"."company" as "warehouse_bins_inventory_company", ' +
+          '"stock"."company", "w1"."description" as "warehouse_description", "inventory"."company" as "warehouse_bins_inventory_company", ' +
             '"inventory"."sku" as "warehouse_bins_inventory_sku", "inventory"."warehouse_name" as "warehouse_bins_inventory_warehouse_name", ' +
             '"inventory"."bin" as "warehouse_bins_inventory_bin", "inventory"."time" as "warehouse_bins_inventory_time", ' +
             '"inventory"."qty" as "warehouse_bins_inventory_qty", "inventory"."cost" as "warehouse_bins_inventory_cost"'

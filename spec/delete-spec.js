@@ -174,7 +174,7 @@ describe('delete tests', () => {
           }
         };
         expect(j.Delete(record)).toBe(
-          'delete "s1"."orders", "order_lines" from "s1"."orders" inner join "order_lines" on "order_lines"."company" = "s1"."orders"."company" and "order_lines"."order_id" = ' +
+          'delete "s1"."orders", "ol1" from "s1"."orders" inner join "order_lines" as "ol1" on "ol1"."company" = "s1"."orders"."company" and "ol1"."order_id" = ' +
           '"s1"."orders"."order_id" where "s1"."orders"."company" = \'HAD010\' and "s1"."orders"."order_id" = \'cfc6b632-cf18-4e98-a8f1-acbec9da6581\''
         );
       });
@@ -216,7 +216,7 @@ describe('delete tests', () => {
           }
         };
         expect(j.Delete(record)).toBe(
-          'delete "s1"."orders", "order_lines" from "s1"."orders" inner join "order_lines" on "order_lines"."company" = "s1"."orders"."company" and "order_lines"."order_id" = ' +
+          'delete "s1"."orders", "ol1" from "s1"."orders" inner join "order_lines" as "ol1" on "ol1"."company" = "s1"."orders"."company" and "ol1"."order_id" = ' +
           '"s1"."orders"."order_id" where "s1"."orders"."company" = \'HAD010\''
         );
       });

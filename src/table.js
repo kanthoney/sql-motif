@@ -78,7 +78,7 @@ class Table
         join.table = new Table({
           ...join.table.config,
           columns: join.table.config.columns.concat(join.columns || []),
-          alias: join.alias,
+          alias: join.alias || join.table.config.alias,
           path: this.config.path.concat(join.path || join.name)
         });
       } else {
@@ -188,15 +188,59 @@ class Table
     });
   }
 
+  subquery(config)
+  {
+    config = config || {};
+    const columns = this.selectArray(config.selector).map(col => {
+      const path = (col.table.config.path || []).concat(col.path || col.alias || col.name);
+      const alias = path.join('_');
+      return {
+        name: col.fullAlias || col.alias || col.name,
+        type: col.type,
+        alias,
+        notNull: Boolean(col.notNull),
+        primaryKey: Boolean(col.primaryKey),
+        'default': col.default,
+        tags: col.tags,
+        hidden: Boolean(col.hidden),
+        validate: col.validate,
+        validationError: col.validationError
+      }
+    });
+    return new Table({
+      ...this.config,
+      name: config.name || this.config.name,
+      alias: config.alias || config.name || `${this.config.alias || this.config.name}_subquery`,
+      columns,
+      joins: [],
+      subquery: {
+        table: this,
+        selector: config.selector,
+        query: config.query
+      }
+    });
+  }
+
   from(options)
   {
     options = options || {};
+    let clause = this.fullNameAs();
+    if(this.config.subquery) {
+      if(_.isString(this.config.subquery.query)) {
+        clause = `( ${this.config.subquery.query} ) as ${this.escapeId(this.config.alias)}`;
+      } else if(_.isFunction(this.config.subquery.query)) {
+        clause = `( ${this.config.subquery.query({
+          table: this.config.subquery.table,
+          selector: this.config.subquery.selector,
+          context: options.context
+        })} ) as ${this.escapeId(this.config.alias)}`;
+      }
+    }
     if(options.joins && options.joins !== '*') {
       if(!_.isArray(options.joins)) {
         options.joins = [options.joins];
       }
     }
-    let clause = this.fullNameAs();
     const joins = this.joins.reduce((acc, join) => {
       if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
         return acc;

@@ -58,8 +58,8 @@ describe('set tests', () => {
             }
           }
         })).toBe(
-          '"stock"."company" = \'ACME001\', "stock"."sku" = \'AFJ010\', "stock"."description" = \'Spirit level\', "s1"."warehouse"."name" = \'Mercury\', ' +
-          '"warehouse_bins"."bin" = \'A14J\', "inventory"."time" = "inventory"."time" - interval 5 day, "inventory"."qty" = min(5, 6)'
+          '"stock"."company" = \'ACME001\', "stock"."sku" = \'AFJ010\', "stock"."description" = \'Spirit level\', "w1"."name" = \'Mercury\', "warehouse_bins"."bin" = \'A14J\', ' +
+            '"inventory"."time" = "inventory"."time" - interval 5 day, "inventory"."qty" = min(5, 6)'
         );
       });
 

@@ -112,19 +112,19 @@ describe('where tests', () => {
 
       it("should select orders where sku = 'JXC001'", () => {
         expect(j.where({ lines: { sku: 'JXC001' } })).toBe(
-          '"order_lines"."sku" = \'JXC001\''
+          '"ol1"."sku" = \'JXC001\''
         );
       });
 
       it("should select orders where order date is after 2020-04-01 with sku starting with 'HUT_$909'", () => {
         expect(j.where({ order_date: op.gt('2020-04-01'), lines: { sku: op.startsWith('HUT_$909') } })).toBe(
-          '"s1"."orders"."order_date" > \'2020-04-01\' and "order_lines"."sku" regexp \'^HUT_\\$909\''
+          '"s1"."orders"."order_date" > \'2020-04-01\' and "ol1"."sku" regexp \'^HUT_\\$909\''
         );
       });
 
       it("should select orders where sku does not contain 'DF^G'", () => {
         expect(j.where({ lines: { sku: op.notContains('DF^G') } })).toBe(
-          '"order_lines"."sku" not regexp \'^DF\\^G$\''
+          '"ol1"."sku" not regexp \'^DF\\^G$\''
         );
       });
 
@@ -169,7 +169,7 @@ describe('where tests', () => {
             }]
           }
         })).toBe(
-          '"stock"."company" = \'ACME001\' and "stock"."sku" = \'AFJ010\' and "stock"."description" = \'Spirit level\' and "s1"."warehouse"."name" = \'Mercury\' and ' +
+          '"stock"."company" = \'ACME001\' and "stock"."sku" = \'AFJ010\' and "stock"."description" = \'Spirit level\' and "w1"."name" = \'Mercury\' and ' +
           '(("warehouse_bins"."bin" = \'A14J\' and "inventory"."qty" = 5) or "warehouse_bins"."bin" = \'A52A\')'
         );
       });
