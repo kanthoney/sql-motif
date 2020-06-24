@@ -70,7 +70,9 @@ class Record
     const RecordSet = require('./recordset');
     if(this.hash === undefined || this.dirty) {
       let empty = true;
-      const hash = this.table.columns.fields().reduce((acc, col) => {
+      this.fullKey = true;
+      const table = this.table.config.subquery?this.table.config.subquery.table:this.table;
+      const hash = table.columns.fields().reduce((acc, col) => {
         const path = col.path;
         let value = _.get(this.data, path);
         if(col.primaryKey || _.has(this.recordSet.joined, path)) {
@@ -92,7 +94,8 @@ class Record
               }
             }
           }
-          if(value === undefined) {
+          if(_.isNil(value)) {
+            this.fullKey = false;
             return acc.concat(null);
           } else {
             empty = false;

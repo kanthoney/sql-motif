@@ -199,7 +199,7 @@ class Table
         type: col.type,
         alias,
         notNull: Boolean(col.notNull),
-        primaryKey: Boolean(col.primaryKey),
+        primaryKey: Boolean(col.primaryKey && col.table === this),
         'default': col.default,
         tags: col.tags,
         hidden: Boolean(col.hidden),

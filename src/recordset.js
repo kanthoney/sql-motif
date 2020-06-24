@@ -47,7 +47,7 @@ class RecordSet
     }
     if(record instanceof Record) {
       const hash = record.hashKey();
-      if(hash) {
+      if(hash && record.fullKey) {
         if(this.recordMap[hash]) {
           this.recordMap[hash].merge(record);
         } else {
