@@ -66,13 +66,16 @@ stock.Select(); // select "stock"."sku", "stock"."description"
 
 * `On()`. Returns an `on` clause including the `on` keyword. Returns an empty string if not part of a join.
 
-* `from()`. Returns a `from` clause, without the `from` keyword, including the table name and `as` clause along with any `on` clause and `join` clauses if the table has joined tables.
+* `from(options)`. Returns a `from` clause, without the `from` keyword, including the table name and `as` clause along with any `on` clause and `join` clauses if the table
+has joined tables. `options` is a set of [table options](./table-options.md).
 
-* `From()`. Returns a `from` clause including the `from` keyword.
+* `From(options)`. Returns a `from` clause including the `from` keyword.
 
 * <a name="join"></a>`join(config)`. Produces a new table joined to a second table as specified in the [join `config`](./join-spec.md).
 
 * `extend(config)`. Creates a new table with, for example, extra columns specified in `config`.
+
+* <a name="subquery"></a>`subquery(config)`. Creates a new table as a subquery whic references the old table, as specified in the [subquery `config`](./subquery-config.md)
 
 ### Column methods.
 
