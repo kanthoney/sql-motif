@@ -102,6 +102,12 @@ class ColumnSet
           if(value !== undefined) {
             return acc.concat({ col, value });
           }
+          if(col.subqueryPath) {
+            value = _.get(record, col.subqueryPath);
+            if(value !== undefined) {
+              return acc.concat({ col, value });
+            }
+          }
         }
         if(options.safe && col.primaryKey && !_.get(options.joined, col.path)) {
           throw new SafetyError(col);

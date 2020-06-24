@@ -71,16 +71,16 @@ class Record
     if(this.hash === undefined || this.dirty) {
       let empty = true;
       this.fullKey = true;
-      const table = this.table.config.subquery?this.table.config.subquery.table:this.table;
-      const hash = table.columns.fields().reduce((acc, col) => {
-        const path = col.path;
+      const hash = this.table.columns.fields().reduce((acc, col) => {
+        const path = col.subqueryPath || col.path;
         let value = _.get(this.data, path);
-        if(col.primaryKey || _.has(this.recordSet.joined, path)) {
+        if(col.primaryKey || _.has(this.recordSet.joined, col.path)) {
           if(_.isNil(value)) {
-            value = _.get(this.recordSet.joined, path);
+            value = _.get(this.recordSet.joined, col.path);
           }
-          for(let i = 0; i < col.joinedTo.length && _.isNil(value); i++) {
-            let path = col.joinedTo[i];
+          const joinedTo = col.joinedTo.concat(col.subqueryJoinedTo || []);
+          for(let i = 0; i < joinedTo.length && _.isNil(value); i++) {
+            let path = joinedTo[i];
             value = this.data;
             for(let j = 0; j < path.length; j++) {
               value = _.get(value, path[j]);
@@ -497,12 +497,19 @@ class Record
     const RecordSet = require('./recordset');
     options = options || {};
     let acc = this.table.columns.fields('*', true).reduce((acc, col) => {
-      let value = _.get(this.data, col.path);
+      let path = col.path;
+      let value = _.get(this.data, path);
+      if(value === undefined && col.subqueryPath) {
+        value = _.get(this.data, col.subqueryPath);
+        if(value !== undefined) {
+          path = col.subqueryPath;
+        }
+      }
       if(value === undefined && options.mapJoined) {
         value = _.get(this.recordSet.joined, col.path);
       }
       if(value !== undefined && (options.includeJoined || _.isNil(_.get(this.recordSet.joined, col.path)))) {
-        _.set(acc, col.path, value);
+        _.set(acc, path, value);
       }
       return acc;
     }, {});
@@ -512,7 +519,7 @@ class Record
         if(recordSet instanceof RecordSet) {
           if(join.single) {
             if(recordSet.length === 1) {
-              _.set(acc, join.path || join.name, recordSet.get('[0]').toJSON());
+              _.set(acc, join.path || join.name, recordSet.get('[0]').toObject(options));
             } else if(recordSet.length > 0) {
               _.set(acc, join.path || join.name, recordSet.toObject(options));
             }
@@ -528,7 +535,7 @@ class Record
           if(recordSet instanceof RecordSet) {
             if(join.single) {
               if(recordSet.length === 1) {
-                _.set(acc, join.path || join.name, recordSet.get('[0]').toJSON());
+                _.set(acc, join.path || join.name, recordSet.get('[0]').toObject(options));
               } else if(recordSet.length > 0) {
                 _.set(acc, join.path || join.name, recordSet.toObject(options));
               }

@@ -64,8 +64,14 @@ class RecordSet
       return this;
     }
     const { recordData, joined } = this.join.table.columns.fields().reduce((acc, col) => {
-      const path = col.path;
+      let path = col.path;
       let value = _.get(record, path);
+      if(value === undefined && col.subqueryPath) {
+        value = _.get(record, col.subqueryPath);
+        if(value !== undefined) {
+          path = col.subqueryPath;
+        }
+      }
       if(value === undefined) {
         value = _.get(this.joined, path);
       }
@@ -80,7 +86,8 @@ class RecordSet
     }, { recordData: {}, joined: { ...this.joined } });
     let r = new Record(this, recordData);
     r.joined = joined;
-    this.join.table.joins.forEach(join => {
+    const joins = this.join.table.joins.concat(this.join.table.config.subquery?this.join.table.config.subquery.table.joins:[]);
+    joins.forEach(join => {
       const value = _.get(record, join.path || join.name);
       if(value !== undefined) {
         let recordSet = _.get(r.data, join.path || join.name);

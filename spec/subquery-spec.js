@@ -262,5 +262,148 @@ describe('subquery tests', () => {
 
   });
 
+  describe('custom join tests', () => {
+
+    const { Table } = require('../index');
+    const types = require('./types');
+
+    const t = (new Table({
+      types,
+      name: 'orders',
+      columns: [
+        { name: 'order', type: [
+          { name: 'company', type: 'account' },
+          { name: 'id', type: 'id' },
+          { name: 'line_no', type: 'int' }
+        ], notNull: true, primaryKey: true },
+        { name: 'sku', type: 'sku' }
+      ]
+    })).join({
+      table: new Table({
+        name: 'inventory',
+        columns: [
+          { name: 'company', type: 'account', notNull: true, primaryKey: true },
+          { name: 'sku', type: 'sku', notNull: true, primaryKey: true },
+          { name: 'bin', type: 'char(6)', notNull: true, primaryKey: true },
+          { name: 'qty', type: 'int', notNull: true, default: 0 }
+        ]
+      }),
+      on: ['company:order_company', 'sku']
+    }).subquery({});
+
+    it('should create subquery', () => {
+      expect(t.SelectWhere('*', { inventory: { sku: 'ABA100' } })).toBe(
+        'select "orders_subquery"."order_company", "orders_subquery"."order_id", "orders_subquery"."order_line_no", "orders_subquery"."sku", ' +
+          '"orders_subquery"."inventory_company", "orders_subquery"."inventory_sku", "orders_subquery"."inventory_bin", "orders_subquery"."inventory_qty" from ' +
+          '( select "orders"."order_company", "orders"."order_id", "orders"."order_line_no", "orders"."sku", "inventory"."company" as "inventory_company", ' +
+          '"inventory"."sku" as "inventory_sku", "inventory"."bin" as "inventory_bin", "inventory"."qty" as "inventory_qty" from "orders" inner join "inventory" on ' +
+          '"inventory"."company" = "orders"."order_company" and "inventory"."sku" = "orders"."sku" ) as "orders_subquery" where "orders_subquery"."inventory_sku" = \'ABA100\''
+      );
+    });
+
+    it('should collate record', () => {
+      const lines = [
+        {
+          order_company: 'HAS109',
+          order_id: '319f5138-b43a-4aea-a390-ad371d08619a',
+          order_line_no: 1,
+          sku: 'VXJ889',
+          inventory_company: 'HAS109',
+          inventory_sku: 'VXJ889',
+          inventory_bin: 'D14A',
+          inventory_qty: 5
+        },
+        {
+          order_company: 'HAS109',
+          order_id: '319f5138-b43a-4aea-a390-ad371d08619a',
+          order_line_no: 1,
+          sku: 'VXJ889',
+          inventory_company: 'HAS109',
+          inventory_sku: 'VXJ889',
+          inventory_bin: 'J13D',
+          inventory_qty: 50
+        },
+        {
+          order_company: 'HAS109',
+          order_id: '319f5138-b43a-4aea-a390-ad371d08619a',
+          order_line_no: 2,
+          sku: 'VXJ889',
+          inventory_company: 'HAS109',
+          inventory_sku: 'PDD132',
+          inventory_bin: 'G05B',
+          inventory_qty: 23
+        },
+        {
+          order_company: 'HAS109',
+          order_id: '319f5138-b43a-4aea-a390-ad371d08619a',
+          order_line_no: 2,
+          sku: 'VXJ889',
+          inventory_company: 'HAS109',
+          inventory_sku: 'PDD132',
+          inventory_bin: 'X45J',
+          inventory_qty: 500
+        }
+      ];
+      expect(JSON.stringify(t.collate(lines))).toBe(
+        '[{"order":{"company":"HAS109","id":"319f5138-b43a-4aea-a390-ad371d08619a","line_no":1},"sku":"VXJ889","inventory":[{"company":"HAS109","sku":"VXJ889",' +
+          '"bin":"D14A","qty":5},{"company":"HAS109","sku":"VXJ889","bin":"J13D","qty":50}]},{"order":{"company":"HAS109","id":"319f5138-b43a-4aea-a390-ad371d08619a",' +
+          '"line_no":2},"sku":"VXJ889","inventory":[{"company":"HAS109","sku":"PDD132","bin":"G05B","qty":23},{"company":"HAS109","sku":"PDD132","bin":"X45J","qty":500}]}]'
+      );
+    });
+
+    it('should create recordset', () => {
+      const lines = [
+        {
+          order: {
+            company: 'HAS109',
+            id: '319f5138-b43a-4aea-a390-ad371d08619a',
+            line_no: 1
+          },
+          sku: 'VXJ889',
+          inventory: [{
+            company: 'HAS109',
+            sku: 'VXJ889',
+            bin: 'D14A',
+            qty: 5
+          },
+          {
+            company: 'HAS109',
+            sku: 'VXJ889',
+            bin: 'J13D',
+            qty: 50
+          }]
+        },
+        {
+          order: {
+            company: 'HAS109',
+            id: '319f5138-b43a-4aea-a390-ad371d08619a',
+            line_no: 2
+          },
+          sku: 'VXJ889',
+          inventory: [
+            {
+              company: 'HAS109',
+              sku: 'PDD132',
+              bin: 'G05B',
+              qty: 23
+            },
+            {
+              company: 'HAS109',
+              sku: 'PDD132',
+              bin: 'X45J',
+              qty: 500
+            }
+          ]
+        }
+      ];
+      expect(JSON.stringify(t.toRecordSet(lines))).toBe(
+        '[{"order":{"company":"HAS109","id":"319f5138-b43a-4aea-a390-ad371d08619a","line_no":1},"sku":"VXJ889","inventory":[{"company":"HAS109","sku":"VXJ889",' +
+          '"bin":"D14A","qty":5},{"company":"HAS109","sku":"VXJ889","bin":"J13D","qty":50}]},{"order":{"company":"HAS109","id":"319f5138-b43a-4aea-a390-ad371d08619a",' +
+          '"line_no":2},"sku":"VXJ889","inventory":[{"company":"HAS109","sku":"PDD132","bin":"G05B","qty":23},{"company":"HAS109","sku":"PDD132","bin":"X45J","qty":500}]}]'
+      );
+    });
+
+  });
+
 });
 

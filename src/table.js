@@ -204,7 +204,9 @@ class Table
         tags: col.tags,
         hidden: Boolean(col.hidden),
         validate: col.validate,
-        validationError: col.validationError
+        validationError: col.validationError,
+        subqueryPath: col.table.config.path.concat(col.path),
+        subqueryJoinedTo: col.joinedTo
       }
     });
     return new Table({
@@ -234,6 +236,8 @@ class Table
           selector: this.config.subquery.selector,
           context: options.context
         })} ) as ${this.escapeId(this.config.alias)}`;
+      } else {
+        clause = `( ${this.config.subquery.table.SelectWhere()} ) as ${this.escapeId(this.config.alias)}`;
       }
     }
     if(options.joins && options.joins !== '*') {
