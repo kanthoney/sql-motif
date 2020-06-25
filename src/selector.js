@@ -125,12 +125,23 @@ module.exports = class Selector
       }
       return false;
     } else if(_.isString(this.selector)) {
+      let m = /^@(.*)/.exec(this.selector);
+      if(m) {
+        if(m[1] === join.table.alias || join.table.name) {
+          return new Selector(true);
+        } else {
+          return this;
+        }
+      }
+      if(/^\./.test(this.selector)) {
+        return this;
+      }
       if(this.base) {
         if(`${this.base}_${join.alias || join.name}` === this.selector) {
           return new Selector(true);
         }
       } else {
-        if(this.selector === join.alias || join.name) {
+        if(this.selector === (join.alias || join.name)) {
           return new Selector(true);
         }
       }

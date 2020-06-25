@@ -9,6 +9,7 @@ const RecordSet = require('./recordset');
 const Record = require('./record');
 const _ = require('lodash');
 const Selector = require('./selector');
+const TypeExpander = require('./type-expander');
 
 class Table
 {
@@ -32,10 +33,10 @@ class Table
     if(!_.isArray(this.config.joins)) {
       this.config.joins = [this.config.joins];
     }
+    const typeExpander = new TypeExpander(this.config.types);
     this.columns = new ColumnSet({
       table: this,
-      types: config.types,
-      columns: config.columns,
+      columns: config.columns.map(col => typeExpander.expand({ ...col, table: this })),
       dialect: this.dialect,
       path: []
     });

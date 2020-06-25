@@ -18,13 +18,6 @@ class ColumnSet
       path: [],
       columns: []
     });
-    const typeExpander = new TypeExpander(this.config.types);
-    this.columns = config.columns.map(col => {
-      return typeExpander.expand({
-        ...col,
-        table: this.config.table
-      });
-    });
   }
 
   passesSelection(selector)
@@ -40,7 +33,7 @@ class ColumnSet
     if(!(selector instanceof Selector)) {
       return this.fields(new Selector(selector), all);
     }
-    return this.columns.reduce((acc, col) => {
+    return this.config.columns.reduce((acc, col) => {
       if(col instanceof ColumnSet) {
         if(all) {
           return acc.concat(col.fields(new Selector('*'), all));
@@ -60,7 +53,7 @@ class ColumnSet
 
   fieldFromName(name)
   {
-    return this.columns.reduce((acc, col) => {
+    return this.config.columns.reduce((acc, col) => {
       if(!acc) {
         if(col instanceof ColumnSet) {
           return col.fieldFromName(name);
@@ -75,7 +68,7 @@ class ColumnSet
 
   fieldFromAlias(name)
   {
-    return this.columns.reduce((acc, col) => {
+    return this.config.columns.reduce((acc, col) => {
       if(!acc) {
         if(col instanceof ColumnSet) {
           return col.fieldFromAlias(name);
@@ -92,7 +85,7 @@ class ColumnSet
   values(record, options)
   {
     options = options || {};
-    return this.columns.reduce((acc, col) => {
+    return this.config.columns.reduce((acc, col) => {
       if(col instanceof ColumnSet) {
         const value = _.get(record, col.config.path);
         return acc.concat({ col, value });
@@ -120,7 +113,7 @@ class ColumnSet
   validateRecord(record, options = {})
   {
     let { context, selector, ignoreMissing, ignoreMissingNonKey } = options;
-    return this.columns.reduce((acc, col) => {
+    return this.config.columns.reduce((acc, col) => {
       if(col instanceof ColumnSet) {
         if(_.isFunction(col.context)) {
           const value = _.get(record.data, col.config.path);
@@ -220,7 +213,7 @@ class ColumnSet
   validateAsync(record, options = {})
   {
     let { context, selector, ignoreMissing, ignoreMissingNonKey } = options;
-    return Promise.all(this.columns.map(col => {
+    return Promise.all(this.config.columns.map(col => {
       if(col instanceof ColumnSet) {
         if(_.isFunction(col.context)) {
           context = col.context(_.get(record.data, col.config.path), context);
@@ -311,7 +304,7 @@ class ColumnSet
   fill(record, options = {})
   {
     let { context, selector } = options;
-    this.columns.forEach(col => {
+    this.config.columns.forEach(col => {
       if(col instanceof ColumnSet) {
         if(_.isFunction(col.context)) {
           let value = _.get(record.data, col.config.path);
@@ -356,7 +349,7 @@ class ColumnSet
   fillAsync(record, options = {})
   {
     let { context, selector } = options;
-    return Promise.all(this.columns.map(col => {
+    return Promise.all(this.config.columns.map(col => {
       if(col instanceof ColumnSet) {
         if(_.isFunction(col.context)) {
           context = col.context(_.get(record.data, col.config.path), context);

@@ -29,12 +29,13 @@ class TypeExpander
       const table = col.table;
       const tags = col.tags;
       return new ColumnSet({
-        columns: type.map(subType => ({
+        columns: type.map(subType => this.expand({
           ...subType,
           ...(_.omit(col, ['type', 'tags', 'context'])),
           path: path.concat(subType.alias || subType.name),
           alias: `${alias}_${subType.alias || subType.name}`,
-          name: `${name}_${subType.name}`
+          name: `${name}_${subType.name}`,
+          table
         })),
         name,
         alias,
