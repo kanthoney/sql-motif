@@ -50,8 +50,8 @@ module.exports = class Selector
           if(m[1] === '@' && m[2] === (col.table.config.alias || col.table.config.name) && !col.hidden) {
             return true;
           }
-          if(m[1] === '.' && col.tags) {
-            if(col.tags.split(/\s+/g).includes(m[2])) {
+          if(m[1] === '.') {
+            if(col.tags && !col.hidden && col.tags.split(/\s+/g).includes(m[2])) {
               return true;
             }
           }
@@ -86,7 +86,6 @@ module.exports = class Selector
             }
           }
         }
-        
         if(this.selector === (col.config.alias || col.config.name)) {
           return '*';
         }

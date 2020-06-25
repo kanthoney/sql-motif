@@ -34,10 +34,9 @@ class Table
       this.config.joins = [this.config.joins];
     }
     const typeExpander = new TypeExpander(this.config.types);
-    this.columns = new ColumnSet({
+    this.columns = config.columns instanceof ColumnSet?config.columns.reTable(this):new ColumnSet({
       table: this,
       columns: config.columns.map(col => typeExpander.expand({ ...col, table: this })),
-      dialect: this.dialect,
       path: []
     });
     const keyColumns = this.columns.fields(col => col.table === this && col.primaryKey);
@@ -78,7 +77,7 @@ class Table
         join.name = join.name || join.table.config.name;
         join.table = new Table({
           ...join.table.config,
-          columns: join.table.config.columns.concat(join.columns || []),
+          columns: join.table.columns.concat((join.columns || []).map(col => typeExpander.expand({ ...col, table: join.table }))),
           alias: join.alias || join.table.config.alias,
           path: this.config.path.concat(join.path || join.name)
         });
@@ -185,6 +184,7 @@ class Table
   {
     return new Table({
       ...this.config,
+      columns: this.columns,
       joins: this.config.joins.concat(config)
     });
   }
@@ -192,6 +192,26 @@ class Table
   subquery(config)
   {
     config = config || {};
+    const selector = new Selector(config.selector);
+    const subTable = new Table({
+      ...this.config,
+      alias: config.alias || `${this.config.alias || this.config.name}_subquery`,
+      columns: [],
+      joins: [],
+      subquery: {
+        table: this,
+        selector,
+        query: config.query
+      }
+    });
+    subTable.columns = this.columns.subquery(selector, subTable).concat(this.joins.reduce((acc, join) => {
+      const newSelector = selector.passesJoin(join);
+      if(newSelector !== false) {
+        return acc.concat(join.table.columns.subquery(newSelector, subTable, join.path || join.name));
+      }
+      return acc;
+    }, []));
+    return subTable;
     const columns = this.selectArray(config.selector).map(col => {
       const path = (col.table.config.path || []).concat(col.path || col.alias || col.name);
       const alias = path.join('_');
@@ -950,10 +970,11 @@ class Table
 
   extend(config)
   {
+    const typeExpnder = new TypeExpander(this.config.types);
     return new Table({
       ...this.config,
       ...config,
-      columns: this.config.columns.concat(config.columns || []),
+      columns: this.columns.concat((config.columns || []).map(col => typeExpander.expand(col))),
       indexes: this.config.indexes.concat(config.indexes || []),
       references: this.config.references.concat(config.references || []),
       joins: this.config.joins.concat(config.joins || [])

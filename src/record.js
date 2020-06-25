@@ -33,7 +33,11 @@ class Record
         if(_.isFunction(col.format)) {
           value = col.format(value);
         }
-        _.set(acc.recordData, col.path, value);
+        if(recordSet.subTable) {
+          _.set(acc.recordData, col.alias || col.name, value);
+        } else {
+          _.set(acc.recordData, col.path, value);
+        }
         acc.joined = col.joinedToFull.reduce((acc, path) => {
           _.set(acc, path, value);
           return acc;

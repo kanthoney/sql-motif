@@ -35,14 +35,14 @@ class TypeExpander
           path: path.concat(subType.alias || subType.name),
           alias: `${alias}_${subType.alias || subType.name}`,
           name: `${name}_${subType.name}`,
-          table
+          table,
+          tags
         })),
         name,
         alias,
         path,
         table,
-        tags,
-        types: this.types
+        tags
       });
     }
     if(!this.types[col.type]) {

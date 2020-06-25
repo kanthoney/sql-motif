@@ -44,11 +44,10 @@ describe('subquery tests', () => {
 
       it('should create select clause with subquery', () => {
         expect(t.SelectWhere('*', { company: 'AAX002' }, { context: { from: 60, limit: 20 } })).toBe(
-          'select "sq1"."company", "sq1"."order_id", "ol1"."company" as "lines_company", "ol1"."order_id" as "lines_order_id", ' +
-            '"ol1"."line_no" as "lines_line_no", "ol1"."sku" as "lines_sku", "ol1"."description" as "lines_description", ' +
-            '"ol1"."qty" as "lines_qty", "ol1"."price" as "lines_price" from ( select "s1"."orders"."company", "s1"."orders"."order_id" ' +
-            'from "s1"."orders" order by "s1"."orders"."company" asc, "s1"."orders"."order_id" asc limit 60, 20 ) as "sq1" left join "order_lines" as "ol1" on ' +
-            '"ol1"."company" = "sq1"."company" and "ol1"."order_id" = "sq1"."order_id" where "sq1"."company" = \'AAX002\''
+          'select "sq1"."company", "sq1"."order_id", "ol1"."company" as "lines_company", "ol1"."order_id" as "lines_order_id", "ol1"."line_no" as "lines_line_no", ' +
+            '"ol1"."sku" as "lines_sku", "ol1"."description" as "lines_description", "ol1"."qty" as "lines_qty", "ol1"."price" as "lines_price" from ' +
+            '( select "s1"."orders"."company", "s1"."orders"."order_id" from "s1"."orders" order by "s1"."orders"."company" asc, "s1"."orders"."order_id" asc limit 60, 20 ) ' +
+            'as "sq1" left join "order_lines" as "ol1" on "ol1"."company" = "sq1"."company" and "ol1"."order_id" = "sq1"."order_id" where "sq1"."company" = \'AAX002\''
         );
       });
 

@@ -7,6 +7,7 @@ class Column
 {
   constructor(config)
   {
+    this.config = config || {};
     Object.assign(this, config || {});
     this.alias = this.alias || this.name;
     this.path = this.path || this.alias;

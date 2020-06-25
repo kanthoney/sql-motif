@@ -20,6 +20,64 @@ class ColumnSet
     });
   }
 
+  concat(cols)
+  {
+    return new ColumnSet({
+      table: this.config.table,
+      columns: this.config.columns.concat(cols),
+      path: this.config.path
+    });
+  }
+
+  reTable(table)
+  {
+    return new ColumnSet({
+      table,
+      columns: this.config.columns.map(col => {
+        if(col instanceof Column) {
+          return new Column({ ...col.config, table });
+        } else if(col instanceof ColumnSet) {
+          return col.reTable(table);
+        }
+      }),
+      path: this.config.path
+    });
+  }
+
+  subquery(selector, table, path = [])
+  {
+    if(!(selector instanceof Selector)) {
+      return this.subquery(new Selector(selector), table, path);
+    }
+    if(!_.isArray(path)) {
+      path = [path];
+    }
+    const columns = this.config.columns.reduce((acc, col) => {
+      if(col instanceof Column) {
+        if(selector.passes(col)) {
+          return acc.concat(new Column({
+              ...col.config,
+            table,
+            name: path.concat(col.alias || col.name).join('_'),
+            subqueryPath: col.table.config.path.concat(col.path),
+            subqueryJoinedTo: col.joinedTo
+          }));
+        }
+      } else if(col instanceof ColumnSet) {
+        const newSelector = selector.passes(col);
+        if(newSelector !== false) {
+          return acc.concat(col.subquery(newSelector, table, path));
+        }
+      }
+      return acc;
+    }, []);
+    return new ColumnSet({
+      table,
+      columns,
+      path: path.concat(this.config.path)
+    });
+  }
+
   passesSelection(selector)
   {
     if(!(selector instanceof Selector)) {
