@@ -23,15 +23,15 @@ class ColumnSet
   concat(cols)
   {
     return new ColumnSet({
-      table: this.config.table,
+      ...this.config,
       columns: this.config.columns.concat(cols),
-      path: this.config.path
     });
   }
 
   reTable(table)
   {
     return new ColumnSet({
+      ...this.config,
       table,
       columns: this.config.columns.map(col => {
         if(col instanceof Column) {
@@ -40,7 +40,6 @@ class ColumnSet
           return col.reTable(table);
         }
       }),
-      path: this.config.path
     });
   }
 
@@ -72,6 +71,7 @@ class ColumnSet
       return acc;
     }, []);
     return new ColumnSet({
+      ...this.config,
       table,
       columns,
       path: path.concat(this.config.path)

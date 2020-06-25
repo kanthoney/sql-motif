@@ -404,5 +404,200 @@ describe('subquery tests', () => {
 
   });
 
+  describe('nested subquery tests', () => {
+    
+    const types = require('./types');
+    const { Table } = require('../index');
+
+    const t = (new Table({
+      name: 'orders',
+      types,
+      columns: [
+        { name: 'id', type: 'id', notNull: true, primaryKey: true },
+        { name: 'delivery', type: 'contact' },
+        { name: 'billing', type: 'contact' }
+      ]
+    })).subquery({
+      selector: '*',
+      alias: 'o1',
+      query: ({ selector, table, context }) => {
+        context = context || {};
+        const page = context.page || 1;
+        const pageSize = context.pageSize || 25;
+        const start = (page-1)*pageSize+1;
+        return `${table.SelectWhere()} ${table.OrderBy('id')} ${table.Limit(start, pageSize)}`;
+      }
+    }).join({
+      name: 'lines',
+      table: new Table({
+        name: 'order_lines',
+        alias: 'ol1',
+        columns: [
+          { name: 'order_id', type: 'id', notNull: true, primaryKey: true },
+          { name: 'line_no', type: 'int', notNull: true, primaryKey: true },
+          { name: 'sku', type: 'sku' },
+          { name: 'qty', type: 'int' }
+        ]
+      }),
+      on: 'order_id:id'
+    }).subquery({
+      selector: '*',
+      alias: 'o2'
+    }).join({
+      name: 'inventory',
+      types,
+      alias: 'i1',
+      table: new Table({
+        name: 'inventory',
+        columns: [
+          { name: 'sku', type: 'sku', notNull: true, primaryKey: true },
+          { name: 'bin', type: 'bin', notNull: true, primaryKey: true },
+          { name: 'qty', type: 'int' }
+        ]
+      }),
+      on: ['sku:lines_sku']
+    });
+
+    it('should produce nested subquery', () => {
+      expect(t.SelectWhere(['delivery', 'inventory'], { delivery: { address: { postalCode: 'ST14 3NJ' } }, lines: { sku: 'ADA034' } })).toBe(
+        'select "o2"."delivery_name", "o2"."delivery_address_company", "o2"."delivery_address_street", "o2"."delivery_address_locality", "o2"."delivery_address_city", ' +
+          '"o2"."delivery_address_region", "o2"."delivery_address_postalCode", "o2"."delivery_address_country", "i1"."sku" as "inventory_sku", "i1"."bin" as "inventory_bin", ' +
+          '"i1"."qty" as "inventory_qty" from ( select "o1"."id", "o1"."delivery_name", "o1"."delivery_address_company", "o1"."delivery_address_street", ' +
+          '"o1"."delivery_address_locality", "o1"."delivery_address_city", "o1"."delivery_address_region", "o1"."delivery_address_postalCode", "o1"."delivery_address_country", ' +
+          '"o1"."billing_name", "o1"."billing_address_company", "o1"."billing_address_street", "o1"."billing_address_locality", "o1"."billing_address_city", ' +
+          '"o1"."billing_address_region", "o1"."billing_address_postalCode", "o1"."billing_address_country", "ol1"."order_id" as "lines_order_id", ' +
+          '"ol1"."line_no" as "lines_line_no", "ol1"."sku" as "lines_sku", "ol1"."qty" as "lines_qty" from ( select "orders"."id", "orders"."delivery_name", ' +
+          '"orders"."delivery_address_company", "orders"."delivery_address_street", "orders"."delivery_address_locality", "orders"."delivery_address_city", ' +
+          '"orders"."delivery_address_region", "orders"."delivery_address_postalCode", "orders"."delivery_address_country", "orders"."billing_name", ' +
+          '"orders"."billing_address_company", "orders"."billing_address_street", "orders"."billing_address_locality", "orders"."billing_address_city", ' +
+          '"orders"."billing_address_region", "orders"."billing_address_postalCode", "orders"."billing_address_country" from "orders" order by "orders"."id" ' +
+          'asc limit 1, 25 ) as "o1" inner join "order_lines" as "ol1" on "ol1"."order_id" = "o1"."id" ) as "o2" inner join "inventory" as "i1" on ' +
+          '"i1"."sku" = "o2"."lines_sku" where "o2"."delivery_address_postalCode" = \'ST14 3NJ\' and "o2"."lines_sku" = \'ADA034\''
+      );
+    });
+
+    it('should collate lines', () => {
+      const lines = [
+        {
+          id: 'fed8a9df-b0d6-42bd-9465-9927b60c7360',
+          delivery_name: 'Mrs J Applegate',
+          delivery_address_company: '',
+          delivery_address_street: '46 Hyacinth Grove',
+          delivery_address_locality: 'Beachcroft',
+          delivery_address_city: 'Southend',
+          delivery_address_region: '',
+          delivery_address_postalCode: 'SS2 5BF',
+          delivery_address_country: 'GB',
+          billing_name: 'Mrs J Applegate',
+          billing_address_company: '',
+          billing_address_street: '46 Hyacinth Grove',
+          billing_address_locality: 'Beachcroft',
+          billing_address_city: 'Southend',
+          billing_address_region: '',
+          billing_address_postalCode: 'SS2 5BF',
+          billing_address_country: 'GB',
+          lines_order_id: 'fed8a9df-b0d6-42bd-9465-9927b60c7360',
+          lines_line_no: 1,
+          lines_sku: 'HAC022',
+          lines_qty: 2,
+          inventory_sku: 'HAC022',
+          inventory_bin: 'AA541',
+          inventory_qty: 16
+        },
+        {
+          id: 'fed8a9df-b0d6-42bd-9465-9927b60c7360',
+          delivery_name: 'Mrs J Applegate',
+          delivery_address_company: '',
+          delivery_address_street: '46 Hyacinth Grove',
+          delivery_address_locality: 'Beachcroft',
+          delivery_address_city: 'Southend',
+          delivery_address_region: '',
+          delivery_address_postalCode: 'SS2 5BF',
+          delivery_address_country: 'GB',
+          billing_name: 'Mrs J Applegate',
+          billing_address_company: '',
+          billing_address_street: '46 Hyacinth Grove',
+          billing_address_locality: 'Beachcroft',
+          billing_address_city: 'Southend',
+          billing_address_region: '',
+          billing_address_postalCode: 'SS2 5BF',
+          billing_address_country: 'GB',
+          lines_order_id: 'fed8a9df-b0d6-42bd-9465-9927b60c7360',
+          lines_line_no: 1,
+          lines_sku: 'HAC022',
+          lines_qty: 2,
+          inventory_sku: 'HAC022',
+          inventory_bin: 'AA594',
+          inventory_qty: 241
+        },
+        {
+          id: 'fed8a9df-b0d6-42bd-9465-9927b60c7360',
+          delivery_name: 'Mrs J Applegate',
+          delivery_address_company: '',
+          delivery_address_street: '46 Hyacinth Grove',
+          delivery_address_locality: 'Beachcroft',
+          delivery_address_city: 'Southend',
+          delivery_address_region: '',
+          delivery_address_postalCode: 'SS2 5BF',
+          delivery_address_country: 'GB',
+          billing_name: 'Mrs J Applegate',
+          billing_address_company: '',
+          billing_address_street: '46 Hyacinth Grove',
+          billing_address_locality: 'Beachcroft',
+          billing_address_city: 'Southend',
+          billing_address_region: '',
+          billing_address_postalCode: 'SS2 5BF',
+          billing_address_country: 'GB',
+          lines_order_id: 'fed8a9df-b0d6-42bd-9465-9927b60c7360',
+          lines_line_no: 2,
+          lines_sku: 'JBG091',
+          lines_qty: 1,
+          inventory_sku: 'JBG091',
+          inventory_bin: 'BD053',
+          inventory_qty: 12
+        },
+        {
+          id: '8de141ae-9093-4772-8160-3ff9c176d3c7',
+          delivery_name: 'Mrs P Winterbottom',
+          delivery_address_company: '',
+          delivery_address_street: '18 Wimbourne Road',
+          delivery_address_locality: 'Smetherswick',
+          delivery_address_city: 'Bristol',
+          delivery_address_region: '',
+          delivery_address_postalCode: 'BS1 8QT',
+          delivery_address_country: 'GB',
+          billing_name: 'Mrs P Winterbottom',
+          billing_address_company: '',
+          billing_address_street: '18 Wimbourne Road',
+          billing_address_locality: 'Smetherswick',
+          billing_address_city: 'Bristol',
+          billing_address_region: '',
+          billing_address_postalCode: 'BS1 8QT',
+          billing_address_country: 'GB',
+          lines_order_id: '8de141ae-9093-4772-8160-3ff9c176d3c7',
+          lines_line_no: 1,
+          lines_sku: 'EDF902',
+          lines_qty: 1,
+          inventory_sku: 'EDF902',
+          inventory_bin: 'ST506',
+          inventory_qty: 48
+        }
+      ];
+      expect(JSON.stringify(t.collate(lines))).toBe(
+        '[{"id":"fed8a9df-b0d6-42bd-9465-9927b60c7360","delivery":{"name":"Mrs J Applegate","address":{"company":"","street":"46 Hyacinth Grove",' +
+          '"locality":"Beachcroft","city":"Southend","region":"","postalCode":"SS2 5BF","country":"GB"}},"billing":{"name":"Mrs J Applegate",' +
+          '"address":{"company":"","street":"46 Hyacinth Grove","locality":"Beachcroft","city":"Southend","region":"","postalCode":"SS2 5BF","country":"GB"}},' +
+          '"inventory":[{"sku":"HAC022","bin":"AA541","qty":16},{"sku":"HAC022","bin":"AA594","qty":241},{"sku":"JBG091","bin":"BD053","qty":12}],' +
+          '"lines":[{"order_id":"fed8a9df-b0d6-42bd-9465-9927b60c7360","line_no":1,"sku":"HAC022","qty":2},{"order_id":"fed8a9df-b0d6-42bd-9465-9927b60c7360",' +
+          '"line_no":2,"sku":"JBG091","qty":1}]},{"id":"8de141ae-9093-4772-8160-3ff9c176d3c7","delivery":{"name":"Mrs P Winterbottom","address":{"company":"",' +
+          '"street":"18 Wimbourne Road","locality":"Smetherswick","city":"Bristol","region":"","postalCode":"BS1 8QT","country":"GB"}},' +
+          '"billing":{"name":"Mrs P Winterbottom","address":{"company":"","street":"18 Wimbourne Road","locality":"Smetherswick","city":"Bristol",' +
+          '"region":"","postalCode":"BS1 8QT","country":"GB"}},"inventory":[{"sku":"EDF902","bin":"ST506","qty":48}],' +
+          '"lines":[{"order_id":"8de141ae-9093-4772-8160-3ff9c176d3c7","line_no":1,"sku":"EDF902","qty":1}]}]'
+      );
+    });
+
+  });
+
 });
 

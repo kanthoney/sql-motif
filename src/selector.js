@@ -136,11 +136,11 @@ module.exports = class Selector
         return this;
       }
       if(this.base) {
-        if(`${this.base}_${join.alias || join.name}` === this.selector) {
+        if(`${this.base}_${join.name}` === this.selector) {
           return new Selector(true);
         }
       } else {
-        if(this.selector === (join.alias || join.name)) {
+        if(this.selector === join.name) {
           return new Selector(true);
         }
       }
