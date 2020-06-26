@@ -13,6 +13,11 @@ to accept the column.
 
 * A string starting with a period will select columns with a tag specified in the `tags` field. For example, a selector of `.address` will select columns with `address` listed in the tags
 
+* A string starting with an `@` will select columns from the named subtable, for example `@stock` will select columns from the `stock` subtable. Either the table name or alias
+  can be used.
+
+* A string staring with `!` followed by a comma separated list of names will select all columns not listed.
+
 * An array of selectors, in which case any column passing any of the selectors will be included.
 
 * An object of selectors, in which the structure of the object follows the structure of the record. So the selector

@@ -46,6 +46,7 @@ module.exports = {
   }),
   inventory3: tables.inventory.join({
     name: 'bins',
+    alias: 'b1',
     table: tables.warehouse_bins.join({
       table: tables.warehouse,
       on: ['company', 'name:warehouse_name']
@@ -54,6 +55,7 @@ module.exports = {
     readOnly: true
   }).join({
     table: tables.stock,
+    alias: 'sk1',
     on: ['company', 'sku'],
     readOnly: true
   }),

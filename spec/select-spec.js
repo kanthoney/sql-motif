@@ -182,6 +182,44 @@ describe('select tests', () => {
 
     });
 
+    describe('inventory3 tests', () => {
+
+      const j = joins.inventory3;
+
+      it('should select fields from stock and warehouse subtables, except warehouse address locality and city fields', () => {
+        expect(j.select({ stock: true, bins: { warehouse: ['!address', { address: '!locality, city' } ] } })).toBe(
+          '"w1"."company" as "bins_warehouse_company", "w1"."name" as "bins_warehouse_name", "w1"."description" as "bins_warehouse_description", ' +
+            '"w1"."address_company" as "bins_warehouse_address_company", "w1"."address_street" as "bins_warehouse_address_street", ' +
+            '"w1"."address_region" as "bins_warehouse_address_region", "w1"."address_postalCode" as "bins_warehouse_address_postalCode", ' +
+            '"w1"."address_country" as "bins_warehouse_address_country", "sk1"."company" as "stock_company", "sk1"."sku" as "stock_sku", ' +
+            '"sk1"."description" as "stock_description"'
+        );
+      });
+
+      it('should select from inventory and warehouse tables', () => {
+        expect(j.select(['@w1', '@inventory'])).toBe(
+          '"inventory"."company", "inventory"."sku", "inventory"."warehouse_name", "inventory"."bin", "inventory"."time", "inventory"."qty", "inventory"."cost", ' +
+            '"w1"."company" as "bins_warehouse_company", "w1"."name" as "bins_warehouse_name", "w1"."description" as "bins_warehouse_description", ' +
+            '"w1"."address_company" as "bins_warehouse_address_company", "w1"."address_street" as "bins_warehouse_address_street", ' +
+            '"w1"."address_locality" as "bins_warehouse_address_locality", "w1"."address_city" as "bins_warehouse_address_city", ' +
+            '"w1"."address_region" as "bins_warehouse_address_region", "w1"."address_postalCode" as "bins_warehouse_address_postalCode", ' +
+            '"w1"."address_country" as "bins_warehouse_address_country"'
+        );
+      });
+
+      it('should select from inventory and warehouse tables, using table name for warehouse', () => {
+        expect(j.select(['@warehouse', '@inventory'])).toBe(
+          '"inventory"."company", "inventory"."sku", "inventory"."warehouse_name", "inventory"."bin", "inventory"."time", "inventory"."qty", "inventory"."cost", ' +
+            '"w1"."company" as "bins_warehouse_company", "w1"."name" as "bins_warehouse_name", "w1"."description" as "bins_warehouse_description", ' +
+            '"w1"."address_company" as "bins_warehouse_address_company", "w1"."address_street" as "bins_warehouse_address_street", ' +
+            '"w1"."address_locality" as "bins_warehouse_address_locality", "w1"."address_city" as "bins_warehouse_address_city", ' +
+            '"w1"."address_region" as "bins_warehouse_address_region", "w1"."address_postalCode" as "bins_warehouse_address_postalCode", ' +
+            '"w1"."address_country" as "bins_warehouse_address_country"'
+        );
+      });
+
+    });
+
   });
 
 });

@@ -250,11 +250,11 @@ describe('update tests', () => {
           }
         };
         expect(j.UpdateSafe(record)).toBe(
-          'update "inventory" inner join ("warehouse_bins" inner join "s1"."warehouse" as "w1" on "w1"."company" = "warehouse_bins"."company" and "w1"."name" = ' +
-          '"warehouse_bins"."warehouse_name") on "warehouse_bins"."company" = "inventory"."company" and "warehouse_bins"."warehouse_name" = "inventory"."warehouse_name" and "warehouse_bins"."bin" ' +
-          '= "inventory"."bin" inner join "stock" on "stock"."company" = "inventory"."company" and "stock"."sku" = "inventory"."sku" set "inventory"."qty" = 5, "inventory"."cost" = \'9.80\' ' +
-          'where "inventory"."company" = \'AXA001\' and "inventory"."sku" = \'GL898\' and "inventory"."warehouse_name" = \'Atlas\' and "inventory"."bin" = \'AA12D\' and ' +
-          '"inventory"."time" = \'2020-03-12 15:39:54\' and "w1"."name" = \'Atlas\' and "stock"."sku" = \'GL898\''
+          'update "inventory" inner join ("warehouse_bins" as "b1" inner join "s1"."warehouse" as "w1" on "w1"."company" = "b1"."company" and "w1"."name" = "b1"."warehouse_name") ' +
+            'on "b1"."company" = "inventory"."company" and "b1"."warehouse_name" = "inventory"."warehouse_name" and "b1"."bin" = "inventory"."bin" ' +
+            'inner join "stock" as "sk1" on "sk1"."company" = "inventory"."company" and "sk1"."sku" = "inventory"."sku" set "inventory"."qty" = 5, ' +
+            '"inventory"."cost" = \'9.80\' where "inventory"."company" = \'AXA001\' and "inventory"."sku" = \'GL898\' and "inventory"."warehouse_name" = \'Atlas\' ' +
+            'and "inventory"."bin" = \'AA12D\' and "inventory"."time" = \'2020-03-12 15:39:54\' and "w1"."name" = \'Atlas\' and "sk1"."sku" = \'GL898\''
         );
 
       });
