@@ -31,7 +31,7 @@ describe('select tests', () => {
       });
 
       it('should create a list of invoice address fields', () => {
-        expect(t.select('invoice_address')).toBe(
+        expect(t.select({ invoice: 'address' })).toBe(
           '"s1"."orders"."billing_address_company" as "invoice_address_company", "s1"."orders"."billing_address_street" as "invoice_address_street", ' +
           '"s1"."orders"."billing_address_locality" as "invoice_address_locality", "s1"."orders"."billing_address_city" as "invoice_address_city", ' +
           '"s1"."orders"."billing_address_region" as "invoice_address_region", "s1"."orders"."billing_address_postalCode" as "invoice_address_postalCode", ' +
@@ -50,16 +50,35 @@ describe('select tests', () => {
       });
 
       it('should create a list of fields from company and delivery address', () => {
-        expect(t.select(['company', 'delivery_address'])).toBe(
+        expect(t.select(['company', { delivery: 'address' }])).toBe(
           '"s1"."orders"."company", "s1"."orders"."delivery_address_company", "s1"."orders"."delivery_address_street", "s1"."orders"."delivery_address_locality", ' +
           '"s1"."orders"."delivery_address_city", "s1"."orders"."delivery_address_region", "s1"."orders"."delivery_address_postalCode", "s1"."orders"."delivery_address_country"'
         );
       });
 
-      it('should create a list of fields from company and delivery address via object selector', () => {
-        expect(t.select(['company', { delivery: 'address' }])).toBe(
-          '"s1"."orders"."company", "s1"."orders"."delivery_address_company", "s1"."orders"."delivery_address_street", "s1"."orders"."delivery_address_locality", ' +
-          '"s1"."orders"."delivery_address_city", "s1"."orders"."delivery_address_region", "s1"."orders"."delivery_address_postalCode", "s1"."orders"."delivery_address_country"'
+      it('should create a list of fields from company and some of delivery address via object selector', () => {
+        expect(t.select(['company', { delivery: { address: '!street,locality' } }])).toBe(
+          '"s1"."orders"."company", "s1"."orders"."delivery_address_company", "s1"."orders"."delivery_address_city", "s1"."orders"."delivery_address_region", ' +
+            '"s1"."orders"."delivery_address_postalCode", "s1"."orders"."delivery_address_country"'
+        );
+      });
+
+      it('should create a list of fields from company and some of delivery address via object selector', () => {
+        expect(t.select(['company', { delivery: { address: '!street, locality' } }])).toBe(
+          '"s1"."orders"."company", "s1"."orders"."delivery_address_company", "s1"."orders"."delivery_address_city", "s1"."orders"."delivery_address_region", ' +
+            '"s1"."orders"."delivery_address_postalCode", "s1"."orders"."delivery_address_country"'
+        );
+      });
+
+      it('should create a list of fields from company and delivery name', () => {
+        expect(t.select(['company', { delivery: '!address' }])).toBe(
+          '"s1"."orders"."company", "s1"."orders"."delivery_name"'
+        );
+      });
+
+      it('should create a list of fields like company and delivery name', () => {
+        expect(t.select([/company/, { delivery: '!address' }])).toBe(
+          '"s1"."orders"."company", "s1"."orders"."delivery_name", "s1"."orders"."delivery_address_company", "s1"."orders"."billing_address_company" as "invoice_address_company"'
         );
       });
 
