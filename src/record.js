@@ -180,7 +180,7 @@ class Record
     this.errors = {};
     if(this.table.config.context) {
       if(this.table.config.context instanceof Function) {
-        context = this.table.config.context(this, context);
+        context = this.table.config.context({ record: this, context });
       } else {
         context = { ...this.table.config.context, ...context };
       }
@@ -193,7 +193,7 @@ class Record
       if(subRecord instanceof RecordSet) {
         if(join.context) {
           if(join.context instanceof Function) {
-            context = join.context(subRecord, { ...context });
+            context = join.context({ record: this, recordSet: subRecord, context: { ...context } });
           } else {
             context = { ...join.context, ...context };
           }
@@ -221,7 +221,7 @@ class Record
     return Promise.resolve(context).then(context => {
       if(this.table.config.context) {
         if(this.table.config.context instanceof Function) {
-          return this.table.config.context(this, context);
+          return this.table.config.context({ record: this, context });
         } else {
           return { ...this.table.config.context, ...context };
         }
@@ -235,7 +235,7 @@ class Record
           return acc.concat(new Promise(resolve => {
             if(join.context) {
               if(join.context instanceof Function) {
-                context = join.context(recordSet, { ...context });
+                context = join.context({ record: this, recordSet, context: { ...context } });
               } else {
                 context = { ...join.context, ...context };
               }
@@ -296,7 +296,7 @@ class Record
     Object.assign(this.joined, this.recordSet.joined);
     if(this.table.config.context) {
       if(this.table.config.context instanceof Function) {
-        context = this.table.config.context(this, context);
+        context = this.table.config.context({ record: this, context });
       } else {
         context = { ...this.table.config.context, ...context };
       }
@@ -313,7 +313,7 @@ class Record
         Object.assign(recordSet.joined, _.get(this.joined, path));
         if(join.context) {
           if(join.context instanceof Function) {
-            context = join.context(recordSet, { ...context });
+            context = join.context({ record: this, recordSet, context: { ...context } });
           } else {
             context = { ...join.context, ...context };
           }
@@ -333,7 +333,7 @@ class Record
     return Promise.resolve(context).then(context => {
       if(this.table.config.context) {
         if(this.table.config.context instanceof Function) {
-          return this.table.config.context(this, context);
+          return this.table.config.context({ record: this, context });
         }
         return { ...this.table.config.context, ...context };
       }
@@ -346,7 +346,7 @@ class Record
           return new Promise(resolve => {
             if(join.context) {
               if(join.context instanceof Function) {
-                context = join.context(recordSet, { ...context });
+                context = join.context({ record: this, recordSet, context: { ...context } });
               } else {
                 context = { ...join.context,  ...context };
               }

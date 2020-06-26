@@ -218,7 +218,7 @@ class ColumnSet
       }
       if(col.validate) {
         if(_.isFunction(col.context)) {
-          context = col.context(value, context);
+          context = col.context({ value, context });
         } else if(col.context) {
           context = { ...col.context, ...context };
         }
@@ -237,7 +237,7 @@ class ColumnSet
           }
           if(_.isFunction(v)) {
             try {
-              const result = v(value, context, col);
+              const result = v({ value, context, col });
               if(result === true) {
                 return null;
               }
@@ -275,15 +275,15 @@ class ColumnSet
     return Promise.all(this.config.columns.map(col => {
       if(col instanceof ColumnSet) {
         if(_.isFunction(col.context)) {
-          context = col.context(_.get(record.data, col.config.path), context);
+          context = col.context({ value: _.get(record.data, col.config.path), context });
         } else {
           context = { ...context, ...col.context };
         }
-        if(col.passesSelection(selector)) {
-          return Promise.resolve(context).then(context => col.validateAsync(record, { ...options, context, selector: '*' }));
-        } else {
-          return Promise.resolve(context).then(context => col.validateAsync(record, options));
+        const newSelector = col.passesSelection(selector);
+        if(newSelector) {
+          return Promise.resolve(context).then(context => col.validateAsync(record, { ...options, context, selector: newSelector }));
         }
+        return null;
       }
       if(!col.passesSelection(selector)) {
         return null;
@@ -311,7 +311,7 @@ class ColumnSet
       }
       if(col.validate) {
         if(_.isFunction(col.context)) {
-          context = col.context(value, context);
+          context = col.context({ value, context });
         } else if(col.context) {
           context = { ...col.context, ...context };
         }
@@ -331,7 +331,7 @@ class ColumnSet
             }
             if(_.isFunction(v)) {
               try {
-                const result = await v(value, context, col);
+                const result = await v({ value, context, col });
                 if(result === true) {
                   return null;
                 }
@@ -367,15 +367,15 @@ class ColumnSet
       if(col instanceof ColumnSet) {
         if(_.isFunction(col.context)) {
           let value = _.get(record.data, col.config.path);
-          context = col.context(value, context);
+          context = col.context({ value, context });
         } else if(col.context) {
           context = { ...col.context, ...context };
         }
-        if(col.passesSelection(selector)) {
-          return col.fill(record, { ...options, context, selector: '*' });
-        } else {
-          return col.fill(record, options);
+        const newSelector = col.passesSelection(selector);
+        if(newSelector) {
+          return col.fill(record, { ...options, context, selector: newSelector });
         }
+        return;
       }
       if(!col.passesSelection(selector)) {
         return;
@@ -388,12 +388,12 @@ class ColumnSet
       }
       if(col.default !== undefined && (value === undefined || (col.notNull && value === null))) {
         if(_.isFunction(col.context)) {
-          context = col.context(value, context);
+          context = col.context({ value, context });
         } else if(col.context) {
           context = { ...col.context, ...context };
         }
         if(_.isFunction(col.default)) {
-          value = col.default(context, col);
+          value = col.default({ context, col });
         } else {
           value = col.default;
         }
@@ -411,15 +411,15 @@ class ColumnSet
     return Promise.all(this.config.columns.map(col => {
       if(col instanceof ColumnSet) {
         if(_.isFunction(col.context)) {
-          context = col.context(_.get(record.data, col.config.path), context);
+          context = col.context({ value: _.get(record.data, col.config.path), context });
         } else {
           context = { ...context, ...col.context };
         }
-        if(col.passesSelection(selector)) {
-          return Promise.resolve(context).then(context => col.fillAsync(record, { ...options, context, selector: '*' }));
-        } else {
-          return Promise.resolve(context).then(context => col.fillAsync(record, options));
+        const newSelector = col.passesSelection(selector);
+        if(newSelector) {
+          return Promise.resolve(context).then(context => col.fillAsync(record, { ...options, context, selector: newSelector }));
         }
+        return null;
       }
       const path = col.path;
       let value = _.get(record.data, path);
@@ -433,14 +433,14 @@ class ColumnSet
           });
         } else {
           if(_.isFunction(col.context)) {
-            context = col.context(value, context);
+            context = col.context({ value, context });
           } else if(col.context) {
             context = { ...col.context, ...context };
           }
           return Promise.resolve(context).then(context => {
             if(_.isFunction(col.default)) {
               return new Promise(resolve => {
-                resolve(col.default(context, col));
+                resolve(col.default({ context, col }));
               }).then(value => {
                 _.set(record.data, path, value);
                 col.joinedTo.forEach(path => {

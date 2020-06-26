@@ -12,6 +12,3 @@ joined tables is missing. Marked as experimental as it does not currently detect
 
 * `selector`. Include a (selector)[./selector.md] to select columns.
 
-* `context`. The `context` object is used in `from` and related methods. It is passed as the `context` parameter to any [subquery](./subquery-config.md) tables which use a function
-to generate the subquery.
-

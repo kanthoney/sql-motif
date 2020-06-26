@@ -52,7 +52,7 @@ module.exports = (name, dialect, db) => {
     columns: [
       { name: 'company', type: 'account', nouNull: true, primaryKey: true },
       { name: 'order_id', type: 'id', notNull: true, primaryKey: true },
-      { name: 'line_no', type: 'int', notNull: true, primaryKey: true, default: context => context.line_no++ },
+      { name: 'line_no', type: 'int', notNull: true, primaryKey: true, default: ({ context }) => context.line_no++ },
       { name: 'sku', type: 'sku', notNull: true },
       { name: 'description', type: 'text' },
       { name: 'qty', type: 'qty', notNull: true },
@@ -78,60 +78,64 @@ module.exports = (name, dialect, db) => {
       readOnly: true,
       on: ['company', 'sku']
     }),
-    context: value => ({ line_no: value.reduce((acc, record) => Math.max((record.get('line_no') || 0) + 1, acc), 1) }),
+    context: ({ recordSet }) => ({ line_no: recordSet.reduce((acc, record) => Math.max((record.get('line_no') || 0) + 1, acc), 1) }),
     on: ['company', 'order_id']
   });
 
   describe(`Database tests for ${name}`, () => {
 
     it("should create tables and insert records, perform basic tests then delete order records", async done => {
-      await db.query(Object.keys(tables).reverse().map(k => tables[k].DropIfExists()));
-      await db.query(Object.keys(tables).map(k => tables[k].Create()));
-      expect(await db.query(joins.orders.SelectWhere())).toEqual([]);
-      const sample_stock = require('./sample-stock.json');
-      await(db.query(tables.stock.Insert(sample_stock)));
-      expect(parseInt((await(db.query(tables.stock.SelectWhere('count'))))[0].count)).toBe(20);
-      const sample_orders = require('./sample-orders.json');
-      let records = joins.orders.validate(sample_orders);
-      expect(records.valid).toBe(false);
-      records = records.fill(sample_orders);
-      records = records.validate();
-      expect(records.valid).toBe(true);
-      await db.query(records.InsertIgnore());
-      await db.query(records.Update());
-      expect(parseInt((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count'])).toBe(1413);
-      expect(parseInt((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count'])).toBe(1938);
-      const big_orders = records.filter(record => record.get('lines').length > 3);
-      expect(big_orders.valid).toBe(true);
-      const order_id = big_orders.get('[0].order_id');
-      let lines = await db.query(`${joins.orders.SelectWhere('*', { order_id })} ${joins.orders.OrderBy('lines_line_no')}`);
-      expect(JSON.stringify(joins.orders.collate(lines))).toBe(
-        `[{"company":"AAD010","order_id":"${order_id}","order_date":"2020-04-23","customer":"BFV46","delivery":{"name":"Mrs Maureen Francis",` +
-        `"address":{"company":"Kingsbury Ltd","street":"22 Longmoor Road","locality":"Bedbury Business Park","city":"Birmingham","region":"","postalCode":"B1 6LD","country":"GB"}},` +
-        `"invoice":{"name":"Mrs Maureen Francis","address":{"company":"Kingsbury Ltd","street":"22 Longmoor Road","locality":"Bedbury Business Park","city":"Birmingham","region":"",` +
-        `"postalCode":"B1 6LD","country":"GB"}},"lines":[{"company":"AAD010","order_id":"${order_id}","line_no":1,"sku":"EON46NX","description":"Hammer","qty":7,` +
-        `"price":15.11,"stock":[{"company":"AAD010","sku":"EON46NX","description":"Hammer","cost":9.07}]},{"company":"AAD010","order_id":"${order_id}","line_no":2,` +
-        `"sku":"CKB40KL","description":"Hand brush","qty":50,"price":10.82,"stock":[{"company":"AAD010","sku":"CKB40KL","description":"Hand brush","cost":8.42}]},{"company":"AAD010",` +
-        `"order_id":"${order_id}","line_no":3,"sku":"QBE99BI","description":"Chisel","qty":1,"price":7.85,"stock":[{"company":"AAD010","sku":"QBE99BI",` +
-        `"description":"Chisel","cost":6.27}]},{"company":"AAD010","order_id":"${order_id}","line_no":4,"sku":"DKP27VM","description":"Box of nails",` +
-        `"qty":6,"price":3.64,"stock":[{"company":"AAD010","sku":"DKP27VM","description":"Box of nails","cost":2.33}]}]}]`
-      );
-      lines = await db.query(joins.orders.SelectWhere('*', { customer: operators.gt('ZX') } ));
-      expect(joins.orders.collate(lines).length).toBe(7);
-      lines = await db.query(joins.orders.SelectWhere('*', { customer: operators.between('F', 'H') } ));
-      expect(joins.orders.collate(lines).length).toBe(103);
-      lines = await db.query(joins.orders.SelectWhere('*', { customer: [operators.between('F', 'H'), operators.between('R', 'S')], lines: { sku: ['HCY61KQ', 'DKP27VM'] } } ));
-      expect(joins.orders.collate(lines).length).toBe(16);
-      lines = await db.query(joins.orders.SelectWhere('*', { customer: operators.between('A', 'E'), lines: { sku: 'WFN86XT' } }));
-      expect(joins.orders.collate(lines).length).toBe(14);
-      const toDelete = records.slice(0, 800);
-      await db.query(toDelete.Delete());
-      expect(parseInt((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count'])).toBe(613);
-      expect(parseInt((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count'])).toBe(868);
-      await db.query(records.Delete());
-      expect(parseInt((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count'])).toBe(0);
-      expect(parseInt((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count'])).toBe(0);
-      expect(parseInt((await(db.query(tables.stock.SelectWhere('count'))))[0].count)).toBe(20);
+      try {
+        await db.query(Object.keys(tables).reverse().map(k => tables[k].DropIfExists()));
+        await db.query(Object.keys(tables).map(k => tables[k].Create()));
+        expect(await db.query(joins.orders.SelectWhere())).toEqual([]);
+        const sample_stock = require('./sample-stock.json');
+        await(db.query(tables.stock.Insert(sample_stock)));
+        expect(parseInt((await(db.query(tables.stock.SelectWhere('count'))))[0].count)).toBe(20);
+        const sample_orders = require('./sample-orders.json');
+        let records = joins.orders.validate(sample_orders);
+        expect(records.valid).toBe(false);
+        records = records.fill(sample_orders);
+        records = records.validate();
+        expect(records.valid).toBe(true);
+        await db.query(records.InsertIgnore());
+        await db.query(records.Update());
+        expect(parseInt((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count'])).toBe(1413);
+        expect(parseInt((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count'])).toBe(1938);
+        const big_orders = records.filter(record => record.get('lines').length > 3);
+        expect(big_orders.valid).toBe(true);
+        const order_id = big_orders.get('[0].order_id');
+        let lines = await db.query(`${joins.orders.SelectWhere('*', { order_id })} ${joins.orders.OrderBy('lines_line_no')}`);
+        expect(JSON.stringify(joins.orders.collate(lines))).toBe(
+          `[{"company":"AAD010","order_id":"${order_id}","order_date":"2020-04-23","customer":"BFV46","delivery":{"name":"Mrs Maureen Francis",` +
+          `"address":{"company":"Kingsbury Ltd","street":"22 Longmoor Road","locality":"Bedbury Business Park","city":"Birmingham","region":"","postalCode":"B1 6LD","country":"GB"}},` +
+          `"invoice":{"name":"Mrs Maureen Francis","address":{"company":"Kingsbury Ltd","street":"22 Longmoor Road","locality":"Bedbury Business Park","city":"Birmingham","region":"",` +
+          `"postalCode":"B1 6LD","country":"GB"}},"lines":[{"company":"AAD010","order_id":"${order_id}","line_no":1,"sku":"EON46NX","description":"Hammer","qty":7,` +
+          `"price":15.11,"stock":[{"company":"AAD010","sku":"EON46NX","description":"Hammer","cost":9.07}]},{"company":"AAD010","order_id":"${order_id}","line_no":2,` +
+          `"sku":"CKB40KL","description":"Hand brush","qty":50,"price":10.82,"stock":[{"company":"AAD010","sku":"CKB40KL","description":"Hand brush","cost":8.42}]},{"company":"AAD010",` +
+          `"order_id":"${order_id}","line_no":3,"sku":"QBE99BI","description":"Chisel","qty":1,"price":7.85,"stock":[{"company":"AAD010","sku":"QBE99BI",` +
+          `"description":"Chisel","cost":6.27}]},{"company":"AAD010","order_id":"${order_id}","line_no":4,"sku":"DKP27VM","description":"Box of nails",` +
+          `"qty":6,"price":3.64,"stock":[{"company":"AAD010","sku":"DKP27VM","description":"Box of nails","cost":2.33}]}]}]`
+        );
+        lines = await db.query(joins.orders.SelectWhere('*', { customer: operators.gt('ZX') } ));
+        expect(joins.orders.collate(lines).length).toBe(7);
+        lines = await db.query(joins.orders.SelectWhere('*', { customer: operators.between('F', 'H') } ));
+        expect(joins.orders.collate(lines).length).toBe(103);
+        lines = await db.query(joins.orders.SelectWhere('*', { customer: [operators.between('F', 'H'), operators.between('R', 'S')], lines: { sku: ['HCY61KQ', 'DKP27VM'] } } ));
+        expect(joins.orders.collate(lines).length).toBe(16);
+        lines = await db.query(joins.orders.SelectWhere('*', { customer: operators.between('A', 'E'), lines: { sku: 'WFN86XT' } }));
+        expect(joins.orders.collate(lines).length).toBe(14);
+        const toDelete = records.slice(0, 800);
+        await db.query(toDelete.Delete());
+        expect(parseInt((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count'])).toBe(613);
+        expect(parseInt((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count'])).toBe(868);
+        await db.query(records.Delete());
+        expect(parseInt((await(db.query(tables.orders.SelectWhere('order_count'))))[0]['order_count'])).toBe(0);
+        expect(parseInt((await(db.query(tables.order_lines.SelectWhere('count'))))[0]['count'])).toBe(0);
+        expect(parseInt((await(db.query(tables.stock.SelectWhere('count'))))[0].count)).toBe(20);
+      } catch(error) {
+        fail(error);
+      }
       done();
     }, 360000);
   });

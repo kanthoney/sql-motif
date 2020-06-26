@@ -37,6 +37,10 @@ The constructor takes a configuration object with the following fields:
 
 * `joins`. An optional array of join specifications.
 
+* `context`. A user defined object or function to provide a `context` object for `default` or `validate` functions in the [column specifications](./columnspec.md). If a function,
+  it is called for each record in the [record set](./record-set.md) with an object of the form `{ record, context }`, where `record` is the current record and 
+  `context` is the context passed to the `fill` or `validate` methods.
+
 ## Methods
 
 As a general rule, SQL generating methods starting with a capital letter produce keywords whereas those starting with a lower case letter don't. For example:
@@ -66,8 +70,8 @@ stock.Select(); // select "stock"."sku", "stock"."description"
 
 * `On()`. Returns an `on` clause including the `on` keyword. Returns an empty string if not part of a join.
 
-* `from(options)`. Returns a `from` clause, without the `from` keyword, including the table name and `as` clause along with any `on` clause and `join` clauses if the table
-has joined tables. `options` is a set of [table options](./table-options.md).
+* <a name="from"></a> `from(options)`. Returns a `from` clause, without the `from` keyword, including the table name and `as` clause along with any `on` clause and
+  `join` clauses if the table has joined tables. `options` is a set of [from options](./from-options.md).
 
 * `From(options)`. Returns a `from` clause including the `from` keyword.
 

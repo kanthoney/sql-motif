@@ -22,7 +22,7 @@ module.exports.order_lines = new Table({
   columns: [
     { name: 'company', type: 'account', notNull: true, primaryKey: true },
     { name: 'order_id', type: 'primaryId' },
-    { name: 'line_no', type: 'int', notNull: true, primaryKey: true, default: context => context.line_no++ },
+    { name: 'line_no', type: 'int', notNull: true, primaryKey: true, default: ({ context }) => context.line_no++ },
     { name: 'sku', type: 'sku' },
     { name: 'description', type: 'text' },
     { name: 'qty', type: 'qty', notNull: true },
