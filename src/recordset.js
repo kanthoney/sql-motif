@@ -91,7 +91,7 @@ class RecordSet
       const value = _.get(record, join.path || join.name);
       if(value !== undefined) {
         let recordSet = _.get(r.data, join.path || join.name);
-        if(recordSet === undefined) {
+        if(!(recordSet instanceof RecordSet)) {
           recordSet = new RecordSet(join, Object.assign({}, _.get(r.joined, join.path || join.name)));
           _.set(r.data, join.path || join.name, recordSet);
         }

@@ -43,7 +43,7 @@ class ColumnSet
     });
   }
 
-  subquery(selector, table, path = [])
+  subquery(selector, table, primaryTable, path = [])
   {
     if(!(selector instanceof Selector)) {
       return this.subquery(new Selector(selector), table, path);
@@ -56,6 +56,7 @@ class ColumnSet
         if(selector.passes(col)) {
           return acc.concat(new Column({
               ...col.config,
+            primaryKey: primaryTable && col.primaryKey,
             table,
             name: path.concat(col.alias || col.name).join('_'),
             subqueryPath: col.table.config.path.concat(col.path),

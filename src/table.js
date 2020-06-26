@@ -204,10 +204,10 @@ class Table
         query: config.query
       }
     });
-    subTable.columns = this.columns.subquery(selector, subTable).concat(this.joins.reduce((acc, join) => {
+    subTable.columns = this.columns.subquery(selector, subTable, true).concat(this.joins.reduce((acc, join) => {
       const newSelector = selector.passesJoin(join);
       if(newSelector !== false) {
-        return acc.concat(join.table.columns.subquery(newSelector, subTable, join.path || join.name));
+        return acc.concat(join.table.columns.subquery(newSelector, subTable, false, join.path || join.name));
       }
       return acc;
     }, []));

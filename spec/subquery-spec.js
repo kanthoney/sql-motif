@@ -597,6 +597,288 @@ describe('subquery tests', () => {
       );
     });
 
+    it('should collate records', () => {
+      const lines = [
+        {
+          id: 'fed8a9df-b0d6-42bd-9465-9927b60c7360',
+          delivery: {
+            name: 'Mrs J Applegate',
+            address: {
+              company: '',
+              street: '46 Hyacinth Grove',
+              locality: 'Beachcroft',
+              city: 'Southend',
+              region: '',
+              postalCode: 'SS2 5BF',
+              country: 'GB'
+            }
+          },
+          billing: {
+            name: 'Mrs J Applegate',
+            address: {
+              company: '',
+              street: '46 Hyacinth Grove',
+              locality: 'Beachcroft',
+              city: 'Southend',
+              region: '',
+              postalCode: 'SS2 5BF',
+              country: 'GB'
+            }
+          },
+          lines: {
+            order_id: 'fed8a9df-b0d6-42bd-9465-9927b60c7360',
+            line_no: 1,
+            sku: 'HAC022',
+            qty: 2
+          },
+          inventory: {
+            sku: 'HAC022',
+            bin: 'AA541',
+            qty: 16
+          },
+        },
+        {
+          id: 'fed8a9df-b0d6-42bd-9465-9927b60c7360',
+          delivery: {
+            name: 'Mrs J Applegate',
+            address: {
+              company: '',
+              street: '46 Hyacinth Grove',
+              locality: 'Beachcroft',
+              city: 'Southend',
+              region: '',
+              postalCode: 'SS2 5BF',
+              country: 'GB'
+            }
+          },
+          billing: {
+            name: 'Mrs J Applegate',
+            address: {
+              company: '',
+              street: '46 Hyacinth Grove',
+              locality: 'Beachcroft',
+              city: 'Southend',
+              region: '',
+              postalCode: 'SS2 5BF',
+              country: 'GB'
+            }
+          },
+          lines: {
+            order_id: 'fed8a9df-b0d6-42bd-9465-9927b60c7360',
+            line_no: 1,
+            sku: 'HAC022',
+            qty: 2
+          },
+          inventory: {
+            sku: 'HAC022',
+            bin: 'AA594',
+            qty: 241
+          }
+        },
+        {
+          id: 'fed8a9df-b0d6-42bd-9465-9927b60c7360',
+          delivery: {
+            name: 'Mrs J Applegate',
+            address: {
+              company: '',
+              street: '46 Hyacinth Grove',
+              locality: 'Beachcroft',
+              city: 'Southend',
+              region: '',
+              postalCode: 'SS2 5BF',
+              country: 'GB'
+            }
+          },
+          billing: {
+            name: 'Mrs J Applegate',
+            address: {
+              company: '',
+              street: '46 Hyacinth Grove',
+              locality: 'Beachcroft',
+              city: 'Southend',
+              region: '',
+              postalCode: 'SS2 5BF',
+              country: 'GB'
+            }
+          },
+          lines: {
+            order_id: 'fed8a9df-b0d6-42bd-9465-9927b60c7360',
+            line_no: 2,
+            sku: 'JBG091',
+            qty: 1
+          },
+          inventory: {
+            sku: 'JBG091',
+            bin: 'BD053',
+            qty: 12
+          }
+        },
+        {
+          id: '8de141ae-9093-4772-8160-3ff9c176d3c7',
+          delivery: {
+            name: 'Mrs P Winterbottom',
+            address: {
+              company: '',
+              street: '18 Wimbourne Road',
+              locality: 'Smetherswick',
+              city: 'Bristol',
+              region: '',
+              postalCode: 'BS1 8QT',
+              country: 'GB',
+            }
+          },
+          billing: {
+            name: 'Mrs P Winterbottom',
+            address: {
+              company: '',
+              street: '18 Wimbourne Road',
+              locality: 'Smetherswick',
+              city: 'Bristol',
+              region: '',
+              postalCode: 'BS1 8QT',
+              country: 'GB'
+            }
+          },
+          lines: {
+            order_id: '8de141ae-9093-4772-8160-3ff9c176d3c7',
+            line_no: 1,
+            sku: 'EDF902',
+            qty: 1
+          },
+          inventory: {
+            sku: 'EDF902',
+            bin: 'ST506',
+            qty: 48
+          }
+        }
+      ];
+      expect(JSON.stringify(t.toRecordSet(lines))).toBe(
+        '[{"id":"fed8a9df-b0d6-42bd-9465-9927b60c7360","delivery":{"name":"Mrs J Applegate","address":{"company":"","street":"46 Hyacinth Grove",' +
+          '"locality":"Beachcroft","city":"Southend","region":"","postalCode":"SS2 5BF","country":"GB"}},"billing":{"name":"Mrs J Applegate",' +
+          '"address":{"company":"","street":"46 Hyacinth Grove","locality":"Beachcroft","city":"Southend","region":"","postalCode":"SS2 5BF","country":"GB"}},' +
+          '"inventory":[{"sku":"HAC022","bin":"AA541","qty":16},{"sku":"HAC022","bin":"AA594","qty":241},{"sku":"JBG091","bin":"BD053","qty":12}],' +
+          '"lines":[{"order_id":"fed8a9df-b0d6-42bd-9465-9927b60c7360","line_no":1,"sku":"HAC022","qty":2},{"order_id":"fed8a9df-b0d6-42bd-9465-9927b60c7360",' +
+          '"line_no":2,"sku":"JBG091","qty":1}]},{"id":"8de141ae-9093-4772-8160-3ff9c176d3c7","delivery":{"name":"Mrs P Winterbottom","address":{"company":"",' +
+          '"street":"18 Wimbourne Road","locality":"Smetherswick","city":"Bristol","region":"","postalCode":"BS1 8QT","country":"GB"}},' +
+          '"billing":{"name":"Mrs P Winterbottom","address":{"company":"","street":"18 Wimbourne Road","locality":"Smetherswick","city":"Bristol",' +
+          '"region":"","postalCode":"BS1 8QT","country":"GB"}},"inventory":[{"sku":"EDF902","bin":"ST506","qty":48}],' +
+          '"lines":[{"order_id":"8de141ae-9093-4772-8160-3ff9c176d3c7","line_no":1,"sku":"EDF902","qty":1}]}]'
+      );
+    });
+
+    it('should add records', () => {
+      const lines = [
+        {
+          id: 'fed8a9df-b0d6-42bd-9465-9927b60c7360',
+          delivery: {
+            name: 'Mrs J Applegate',
+            address: {
+              company: '',
+              street: '46 Hyacinth Grove',
+              locality: 'Beachcroft',
+              city: 'Southend',
+              region: '',
+              postalCode: 'SS2 5BF',
+              country: 'GB'
+            }
+          },
+          billing: {
+            name: 'Mrs J Applegate',
+            address: {
+              company: '',
+              street: '46 Hyacinth Grove',
+              locality: 'Beachcroft',
+              city: 'Southend',
+              region: '',
+              postalCode: 'SS2 5BF',
+              country: 'GB'
+            }
+          },
+          lines: [
+            {
+              order_id: 'fed8a9df-b0d6-42bd-9465-9927b60c7360',
+              line_no: 1,
+              sku: 'HAC022',
+              qty: 2
+            },
+            {
+              order_id: 'fed8a9df-b0d6-42bd-9465-9927b60c7360',
+              line_no: 2,
+              sku: 'JBG091',
+              qty: 1
+            }
+          ],
+          inventory: [
+            {
+              sku: 'HAC022',
+              bin: 'AA541',
+              qty: 16
+            },
+            {
+              sku: 'HAC022',
+              bin: 'AA594',
+              qty: 241
+            },
+            {
+              sku: 'JBG091',
+              bin: 'BD053',
+              qty: 12
+            }
+          ]
+        },
+        {
+          id: '8de141ae-9093-4772-8160-3ff9c176d3c7',
+          delivery: {
+            name: 'Mrs P Winterbottom',
+            address: {
+              company: '',
+              street: '18 Wimbourne Road',
+              locality: 'Smetherswick',
+              city: 'Bristol',
+              region: '',
+              postalCode: 'BS1 8QT',
+              country: 'GB',
+            }
+          },
+          billing: {
+            name: 'Mrs P Winterbottom',
+            address: {
+              company: '',
+              street: '18 Wimbourne Road',
+              locality: 'Smetherswick',
+              city: 'Bristol',
+              region: '',
+              postalCode: 'BS1 8QT',
+              country: 'GB'
+            }
+          },
+          lines: {
+            order_id: '8de141ae-9093-4772-8160-3ff9c176d3c7',
+            line_no: 1,
+            sku: 'EDF902',
+            qty: 1
+          },
+          inventory: {
+            sku: 'EDF902',
+            bin: 'ST506',
+            qty: 48
+          }
+        }
+      ];
+      expect(JSON.stringify(t.toRecordSet(lines))).toBe(
+        '[{"id":"fed8a9df-b0d6-42bd-9465-9927b60c7360","delivery":{"name":"Mrs J Applegate","address":{"company":"","street":"46 Hyacinth Grove",' +
+          '"locality":"Beachcroft","city":"Southend","region":"","postalCode":"SS2 5BF","country":"GB"}},"billing":{"name":"Mrs J Applegate",' +
+          '"address":{"company":"","street":"46 Hyacinth Grove","locality":"Beachcroft","city":"Southend","region":"","postalCode":"SS2 5BF","country":"GB"}},' +
+          '"inventory":[{"sku":"HAC022","bin":"AA541","qty":16},{"sku":"HAC022","bin":"AA594","qty":241},{"sku":"JBG091","bin":"BD053","qty":12}],' +
+          '"lines":[{"order_id":"fed8a9df-b0d6-42bd-9465-9927b60c7360","line_no":1,"sku":"HAC022","qty":2},{"order_id":"fed8a9df-b0d6-42bd-9465-9927b60c7360",' +
+          '"line_no":2,"sku":"JBG091","qty":1}]},{"id":"8de141ae-9093-4772-8160-3ff9c176d3c7","delivery":{"name":"Mrs P Winterbottom","address":{"company":"",' +
+          '"street":"18 Wimbourne Road","locality":"Smetherswick","city":"Bristol","region":"","postalCode":"BS1 8QT","country":"GB"}},' +
+          '"billing":{"name":"Mrs P Winterbottom","address":{"company":"","street":"18 Wimbourne Road","locality":"Smetherswick","city":"Bristol",' +
+          '"region":"","postalCode":"BS1 8QT","country":"GB"}},"inventory":[{"sku":"EDF902","bin":"ST506","qty":48}],' +
+          '"lines":[{"order_id":"8de141ae-9093-4772-8160-3ff9c176d3c7","line_no":1,"sku":"EDF902","qty":1}]}]'
+      );
+    });
+
   });
 
 });
