@@ -58,15 +58,92 @@ describe("record set tests", () => {
         }
       ];
 
+      const data = [
+        {
+          company: 'ABE081',
+          order_id: 12,
+          order_date: '2020-04-13',
+          customer: 'TET001',
+          delivery: {
+            name: 'Terry Test',
+            address: {
+              company: '',
+              street: '12 Whitfield Road',
+              locality: '',
+              city: 'Birmingham',
+              region: '',
+              postalCode: 'B15 8JX',
+              country: 'GB'
+            }
+          },
+          invoice: {
+            name: 'Terry Test',
+            address: {
+              company: '',
+              street: '12 Whitfield Road',
+              locality: '',
+              city: 'Birmingham',
+              region: '',
+              postalCode: 'B15 8JX',
+              country: 'GB'
+            }
+          },
+        },
+        {
+          company: 'ABE081',
+          order_id: 13,
+          order_date: '2020-04-13',
+          customer: 'TAT001',
+          delivery: {
+            name: 'Tabitha Trial',
+            address: {
+              company: '',
+              street: '14 Whitfield Road',
+              locality: '',
+              city: 'Birmingham',
+              region: '',
+              postalCode: 'B15 8JX',
+              country: 'GB'
+            }
+          },
+          invoice: {
+            name: 'Terry Test',
+            address: {
+              company: '',
+              street: '12 Whitfield Road',
+              locality: '',
+              city: 'Birmingham',
+              region: '',
+              postalCode: 'B15 8JX',
+              country: 'GB'
+            }
+          },
+        }
+      ];
+
       it('should import order records', () => {
         const r = new RecordSet(t);
         r.addSQLResult(lines);
         expect(JSON.stringify(r)).toBe(
           '[{"company":"ABE081","order_id":12,"order_date":"2020-04-13","customer":"TET001","delivery":{"name":"Terry Test","address":{"company":"","street":"12 Whitfield Road",' +
-          '"locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},"invoice":{"name":"Terry Test","address":{"company":"","street":"12 Whitfield Road",' +
-          '"locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}}},{"company":"ABE081","order_id":13,"order_date":"2020-04-13","customer":"TAT001",' +
-          '"delivery":{"name":"Tabitha Trial","address":{"company":"","street":"14 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},' +
-          '"invoice":{"name":"Terry Test","address":{"company":"","street":"12 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}}}]'
+            '"locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},"invoice":{"name":"Terry Test","address":{"company":"",' +
+            '"street":"12 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}}},{"company":"ABE081","order_id":13,' +
+            '"order_date":"2020-04-13","customer":"TAT001","delivery":{"name":"Tabitha Trial","address":{"company":"","street":"14 Whitfield Road","locality":"",' +
+            '"city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},"invoice":{"name":"Terry Test","address":{"company":"","street":"12 Whitfield Road",' +
+            '"locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}}}]'
+        );
+      });
+
+      it('should import order data', () => {
+        const r = new RecordSet(t);
+        r.addRecord(data);
+        expect(JSON.stringify(r)).toBe(
+          '[{"company":"ABE081","order_id":12,"order_date":"2020-04-13","customer":"TET001","delivery":{"name":"Terry Test","address":{"company":"","street":"12 Whitfield Road",' +
+            '"locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},"invoice":{"name":"Terry Test","address":{"company":"",' +
+            '"street":"12 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}}},{"company":"ABE081","order_id":13,' +
+            '"order_date":"2020-04-13","customer":"TAT001","delivery":{"name":"Tabitha Trial","address":{"company":"","street":"14 Whitfield Road","locality":"",' +
+            '"city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},"invoice":{"name":"Terry Test","address":{"company":"","street":"12 Whitfield Road",' +
+            '"locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}}}]'
         );
       });
 
@@ -199,6 +276,7 @@ describe("record set tests", () => {
             lines_price: null
           }
         ];
+
         const r = new RecordSet(j);
         r.addSQLResult(lines);
         expect(JSON.stringify(r)).toBe(
@@ -213,6 +291,186 @@ describe("record set tests", () => {
           '"delivery":{"name":"Thomas Test","address":{"company":"","street":"18 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},' +
           '"invoice":{"name":"Thomas Test","address":{"company":"","street":"18 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},"lines":[]}]'
         );
+      });
+
+      it('should collate order lines', () => {
+
+        const data = [
+          {
+            company: 'ABE081',
+            order_id: 12,
+            order_date: '2020-04-13',
+            customer: 'TET001',
+            delivery: {
+              name: 'Terry Test',
+              address: {
+                company: '',
+                street: '12 Whitfield Road',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B15 8JX',
+                country: 'GB'
+              }
+            },
+            invoice: {
+              name: 'Terry Test',
+              address: {
+                company: '',
+                street: '12 Whitfield Road',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B15 8JX',
+                country: 'GB'
+              }
+            },
+            lines: {
+              company: 'ABE081',
+              order_id: 12,
+              line_no: 1,
+              sku: 'ABA001',
+              description: 'Widget',
+              qty: 1,
+              price: 4.32
+            }
+          },
+          {
+            company: 'ABE081',
+            order_id: 12,
+            order_date: '2020-04-13',
+            customer: 'TET001',
+            delivery: {
+              name: 'Terry Test',
+              address: {
+                company: '',
+                street: '12 Whitfield Road',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B15 8JX',
+                country: 'GB'
+              }
+            },
+            invoice: {
+              name: 'Terry Test',
+              address: {
+                company: '',
+                street: '12 Whitfield Road',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B15 8JX',
+                country: 'GB'
+              }
+            },
+            lines: {
+              company: 'ABE081',
+              order_id: 12,
+              line_no: 2,
+              sku: 'ABJ994',
+              description: 'Gadget',
+              qty: 100,
+              price: 8.94
+            }
+          },
+          {
+            company: 'ABE081',
+            order_id: 13,
+            order_date: '2020-04-13',
+            customer: 'TAT001',
+            delivery: {
+              name: 'Tabitha Trial',
+              address: {
+                company: '',
+                street: '14 Whitfield Road',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B15 8JX',
+                country: 'GB'
+              }
+            },
+            invoice: {
+              name: 'Terry Test',
+              address: {
+                company: '',
+                street: '12 Whitfield Road',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B15 8JX',
+                country: 'GB'
+              }
+            },
+            lines: {
+              company: 'ABE081',
+              order_id: 13,
+              line_no: 1,
+              sku: 'ABJ994',
+              description: 'Gadget',
+              qty: 100,
+              price: 8.94
+            }
+          },
+          {
+            company: 'ANE131',
+            order_id: 14,
+            order_date: '2020-04-13',
+            customer: 'THT001',
+            delivery: {
+              name: 'Thomas Test',
+              address: {
+                company: '',
+                street: '18 Whitfield Road',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B15 8JX',
+                country: 'GB'
+              }
+            },
+            invoice: {
+              name: 'Thomas Test',
+              address: {
+                company: '',
+                street: '18 Whitfield Road',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B15 8JX',
+                country: 'GB'
+              }
+            },
+            lines: {
+              company: 'ANE131',
+              order_id: 14,
+              line_no: 1,
+              sku: 'GTE941',
+              description: 'Soldering iron',
+              qty: 5,
+              price: 12.14
+            }
+          }
+        ];
+
+        const r = new RecordSet(j);
+        r.addRecord(data);
+        expect(JSON.stringify(r)).toBe(
+          '[{"company":"ABE081","order_id":12,"order_date":"2020-04-13","customer":"TET001","delivery":{"name":"Terry Test","address":{"company":"","street":"12 Whitfield Road",' +
+          '"locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},"invoice":{"name":"Terry Test","address":{"company":"",' +
+            '"street":"12 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},"lines":[{"company":"ABE081","order_id":12,' +
+            '"line_no":1,"sku":"ABA001","description":"Widget","qty":1,"price":4.32},{"company":"ABE081","order_id":12,"line_no":2,"sku":"ABJ994","description":"Gadget",' +
+            '"qty":100,"price":8.94}]},{"company":"ABE081","order_id":13,"order_date":"2020-04-13","customer":"TAT001","delivery":{"name":"Tabitha Trial",' +
+            '"address":{"company":"","street":"14 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},' +
+            '"invoice":{"name":"Terry Test","address":{"company":"","street":"12 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX",' +
+            '"country":"GB"}},"lines":[{"company":"ABE081","order_id":13,"line_no":1,"sku":"ABJ994","description":"Gadget","qty":100,"price":8.94}]},' +
+            '{"company":"ANE131","order_id":14,"order_date":"2020-04-13","customer":"THT001","delivery":{"name":"Thomas Test","address":{"company":"",' +
+            '"street":"18 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},"invoice":{"name":"Thomas Test",' +
+            '"address":{"company":"","street":"18 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},' +
+            '"lines":[{"company":"ANE131","order_id":14,"line_no":1,"sku":"GTE941","description":"Soldering iron","qty":5,"price":12.14}]}]'
+        );
+
       });
 
       it("should cope with null main table fields as in right join", () => {
