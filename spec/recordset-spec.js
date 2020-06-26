@@ -293,7 +293,7 @@ describe("record set tests", () => {
         );
       });
 
-      it('should collate order lines', () => {
+      it('should import order records', () => {
 
         const data = [
           {
@@ -412,6 +412,160 @@ describe("record set tests", () => {
               qty: 100,
               price: 8.94
             }
+          },
+          {
+            company: 'ANE131',
+            order_id: 14,
+            order_date: '2020-04-13',
+            customer: 'THT001',
+            delivery: {
+              name: 'Thomas Test',
+              address: {
+                company: '',
+                street: '18 Whitfield Road',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B15 8JX',
+                country: 'GB'
+              }
+            },
+            invoice: {
+              name: 'Thomas Test',
+              address: {
+                company: '',
+                street: '18 Whitfield Road',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B15 8JX',
+                country: 'GB'
+              }
+            },
+            lines: {
+              company: 'ANE131',
+              order_id: 14,
+              line_no: 1,
+              sku: 'GTE941',
+              description: 'Soldering iron',
+              qty: 5,
+              price: 12.14
+            }
+          }
+        ];
+
+        const r = new RecordSet(j);
+        r.addRecord(data);
+        expect(JSON.stringify(r)).toBe(
+          '[{"company":"ABE081","order_id":12,"order_date":"2020-04-13","customer":"TET001","delivery":{"name":"Terry Test","address":{"company":"","street":"12 Whitfield Road",' +
+          '"locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},"invoice":{"name":"Terry Test","address":{"company":"",' +
+            '"street":"12 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},"lines":[{"company":"ABE081","order_id":12,' +
+            '"line_no":1,"sku":"ABA001","description":"Widget","qty":1,"price":4.32},{"company":"ABE081","order_id":12,"line_no":2,"sku":"ABJ994","description":"Gadget",' +
+            '"qty":100,"price":8.94}]},{"company":"ABE081","order_id":13,"order_date":"2020-04-13","customer":"TAT001","delivery":{"name":"Tabitha Trial",' +
+            '"address":{"company":"","street":"14 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},' +
+            '"invoice":{"name":"Terry Test","address":{"company":"","street":"12 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX",' +
+            '"country":"GB"}},"lines":[{"company":"ABE081","order_id":13,"line_no":1,"sku":"ABJ994","description":"Gadget","qty":100,"price":8.94}]},' +
+            '{"company":"ANE131","order_id":14,"order_date":"2020-04-13","customer":"THT001","delivery":{"name":"Thomas Test","address":{"company":"",' +
+            '"street":"18 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},"invoice":{"name":"Thomas Test",' +
+            '"address":{"company":"","street":"18 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},' +
+            '"lines":[{"company":"ANE131","order_id":14,"line_no":1,"sku":"GTE941","description":"Soldering iron","qty":5,"price":12.14}]}]'
+        );
+
+      });
+
+      it('should import order records', () => {
+
+        const data = [
+          {
+            company: 'ABE081',
+            order_id: 12,
+            order_date: '2020-04-13',
+            customer: 'TET001',
+            delivery: {
+              name: 'Terry Test',
+              address: {
+                company: '',
+                street: '12 Whitfield Road',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B15 8JX',
+                country: 'GB'
+              }
+            },
+            invoice: {
+              name: 'Terry Test',
+              address: {
+                company: '',
+                street: '12 Whitfield Road',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B15 8JX',
+                country: 'GB'
+              }
+            },
+            lines: [
+              {
+                company: 'ABE081',
+                order_id: 12,
+                line_no: 1,
+                sku: 'ABA001',
+                description: 'Widget',
+                qty: 1,
+                price: 4.32
+              },
+              {
+                company: 'ABE081',
+                order_id: 12,
+                line_no: 2,
+                sku: 'ABJ994',
+                description: 'Gadget',
+                qty: 100,
+                price: 8.94
+              }
+            ]
+          },
+          {
+            company: 'ABE081',
+            order_id: 13,
+            order_date: '2020-04-13',
+            customer: 'TAT001',
+            delivery: {
+              name: 'Tabitha Trial',
+              address: {
+                company: '',
+                street: '14 Whitfield Road',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B15 8JX',
+                country: 'GB'
+              }
+            },
+            invoice: {
+              name: 'Terry Test',
+              address: {
+                company: '',
+                street: '12 Whitfield Road',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B15 8JX',
+                country: 'GB'
+              }
+            },
+            lines: [
+              {
+                company: 'ABE081',
+                order_id: 13,
+                line_no: 1,
+                sku: 'ABJ994',
+                description: 'Gadget',
+                qty: 100,
+                price: 8.94
+              }
+            ]
           },
           {
             company: 'ANE131',
@@ -683,6 +837,153 @@ describe("record set tests", () => {
           }
         ];
         r.addSQLResult(lines);
+        expect(JSON.stringify(r)).toBe(
+          '[{"company":"HJ8009","sku":"JFX192","description":"gadget","warehouse":[{"company":"HJ9009","name":"mercury","description":"","address":{"company":"H&J Ltd",' +
+          '"street":"16 Hatfield court","locality":"Chester Industrial Estate","city":"Manchester","region":"","postalCode":"M8 9EF","country":"GB"}}],' +
+          '"bin":[{"company":"HJ8009","warehouse_name":"mercury","bin":"A15D2"},{"company":"HJ8009","warehouse_name":"mercury","bin":"B09A6"}],' +
+          '"inventory":[{"company":"HJ8009","sku":"JFX192","bin":"A15D2","time":"2020-04-13 12:45:31","qty":7,"cost":6.32},{"company":"HJ8009","sku":"JFX192","bin":"A15D2",' +
+          '"time":"2019-10-20 15:09:12","qty":800,"cost":6.32},{"company":"HJ8009","sku":"JFX192","bin":"A15D2","time":"2019-03-09 08:15:42","qty":7,"cost":6.32},' +
+          '{"company":"HJ8009","sku":"JFX192","bin":"B09A6","time":"2017-06-14 11:21:09","qty":600,"cost":5.14}]}]'
+        );
+      });
+
+      it('should import inventory records', () => {
+        const r = new RecordSet(j);
+        const data = [
+          {
+            company: 'HJ8009',
+            sku: 'JFX192',
+            description: 'gadget',
+            warehouse: {
+              company: 'HJ9009',
+              name: 'mercury',
+              description: '',
+              address: {
+                company: 'H&J Ltd',
+                street: '16 Hatfield court',
+                locality: 'Chester Industrial Estate',
+                city: 'Manchester',
+                region: '',
+                postalCode: 'M8 9EF',
+                country: 'GB'
+              }
+            },
+            bin: {
+              company: 'HJ8009',
+              warehouse_name: 'mercury',
+              bin: 'A15D2'
+            },
+            inventory: {
+              company: 'HJ8009',
+              sku: 'JFX192',
+              warehouse: 'mercury',
+              bin: 'A15D2',
+              time: '2020-04-13 12:45:31',
+              qty: 7,
+              cost: 6.32
+            }
+          },
+          {
+            company: 'HJ8009',
+            sku: 'JFX192',
+            description: 'gadget',
+            warehouse: {
+              company: 'HJ9009',
+              name: 'mercury',
+              description: '',
+              address: {
+                company: 'H&J Ltd',
+                street: '16 Hatfield court',
+                locality: 'Chester Industrial Estate',
+                city: 'Manchester',
+                region: '',
+                postalCode: 'M8 9EF',
+                country: 'GB'
+              }
+            },
+            bin: {
+              company: 'HJ8009',
+              warehouse_name: 'mercury',
+              bin: 'A15D2'
+            },
+            inventory: {
+              company: 'HJ8009',
+              sku: 'JFX192',
+              warehouse: 'mercury',
+              bin: 'A15D2',
+              time: '2019-10-20 15:09:12',
+              qty: 800,
+              cost: 6.32
+            }
+          },
+          {
+            company: 'HJ8009',
+            sku: 'JFX192',
+            description: 'gadget',
+            warehouse: {
+              company: 'HJ9009',
+              name: 'mercury',
+              description: '',
+              address: {
+                company: 'H&J Ltd',
+                street: '16 Hatfield court',
+                locality: 'Chester Industrial Estate',
+                city: 'Manchester',
+                region: '',
+                postalCode: 'M8 9EF',
+                country: 'GB'
+              }
+            },
+            bin: {
+              company: 'HJ8009',
+              warehouse_name: 'mercury',
+              bin: 'A15D2'
+            },
+            inventory: {
+              company: 'HJ8009',
+              sku: 'JFX192',
+              warehouse: 'mercury',
+              bin: 'A15D2',
+              time: '2019-03-09 08:15:42',
+              qty: 7,
+              cost: 6.32
+            }
+          },
+          {
+            company: 'HJ8009',
+            sku: 'JFX192',
+            description: 'gadget',
+            warehouse: {
+              company: 'HJ9009',
+              name: 'mercury',
+              description: '',
+              address: {
+                company: 'H&J Ltd',
+                street: '16 Hatfield court',
+                locality: 'Chester Industrial Estate',
+                city: 'Manchester',
+                region: '',
+                postalCode: 'M8 9EF',
+                country: 'GB'
+              }
+            },
+            bin: {
+              company: 'HJ8009',
+              warehouse_name: 'mercury',
+              bin: 'B09A6'
+            },
+            inventory: {
+              company: 'HJ8009',
+              sku: 'JFX192',
+              warehouse: 'mercury',
+              bin: 'B09A6',
+              time: '2017-06-14 11:21:09',
+              qty: 600,
+              cost: 5.14
+            }
+          }
+        ];
+        r.addRecord(data);
         expect(JSON.stringify(r)).toBe(
           '[{"company":"HJ8009","sku":"JFX192","description":"gadget","warehouse":[{"company":"HJ9009","name":"mercury","description":"","address":{"company":"H&J Ltd",' +
           '"street":"16 Hatfield court","locality":"Chester Industrial Estate","city":"Manchester","region":"","postalCode":"M8 9EF","country":"GB"}}],' +
