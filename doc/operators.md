@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-const ops = require('@kanthoney/sql-motif').operators;
+const ops = require('sql-motif').operators;
 
 stock.where({ sku: ops.gt('STE') }); // "stock"."sku" > 'STE'
 ```

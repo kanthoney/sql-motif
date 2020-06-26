@@ -1,10 +1,10 @@
 {
-  "name": "@kanthoney/sql-motif",
+  "name": "sql-motif",
   "version": "0.0.1",
   "description": "sql query fragment builder",
   "main": "index.js",
   "scripts": {
-    "test": "jasmine"
+    "test": "npx jasmine"
   },
   "keywords": [
     "sql",

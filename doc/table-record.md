@@ -2,8 +2,9 @@
 
 Table methods such as `where` and `set` take a `record` argument. The format of the `record` is described here.
 
-The record is given by an object where each key is the alias of a column (or the name if the column has no alias) and the value is the value of that column. If the [type](./types.md) of the column
-is a compound type, i.e. the type was given as an array of column specifications, then the value will itself be an object with the keys being the names of the subtypes.
+The record is given by an object where each key is the alias of a column (or the name if the column has no alias) and the value is the value of that column. If the
+[type](./types.md) of the column is a compound type, i.e. the type was given as an array of column specifications, then the value will itself be an object with the keys
+being the names of the subtypes.
 
 ## Example
 
@@ -84,7 +85,7 @@ The values of the record can be plain values such as strings or numbers, or one 
 * A value of the `Operator` class. This allows you to use operators other than `=` in where clauses. For example:
 
 ```
-const { operators } = require('@kanthoney/sql-motif');
+const { operators } = require('sql-motif');
 
 console.log(stock.where({ sku: operators.ge('ACME') })) // "stock"."sku" >= 'ACME'
 ```
@@ -93,7 +94,7 @@ console.log(stock.where({ sku: operators.ge('ACME') })) // "stock"."sku" >= 'ACM
 and all the others are the values passed to it:
 
 ```
-const { Fn } = require('@kanthoney/sql-motif');
+const { Fn } = require('sql-motif');
 
 console.log(stock.where({ qty: Fn('greatest', 2, 3, 4) })); // "stock"."qty" = greatest(2, 3, 4)
 ```
@@ -101,7 +102,7 @@ console.log(stock.where({ qty: Fn('greatest', 2, 3, 4) })); // "stock"."qty" = g
 * A value of the `Verbatim` class is passed directly to the SQL query without being escaped or otherwise modified:
 
 ```
-const { Verbatim } = require('@kanthoney/sql-motif');
+const { Verbatim } = require('sql-motif');
 
 console.log(stock.where({ sku: Verbatim('unescaped') })); // "stock"."sku" = unescaped
 ```

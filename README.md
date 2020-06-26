@@ -6,7 +6,7 @@ then you can still use it to generate the tedious parts such as field lists.
 ## Installation
 
 ```
-npm install --save @kanthoney/sql-motif
+npm install --save sql-motif
 ```
 
 ## Documentation
@@ -42,7 +42,7 @@ const types = {
 
 // import the library, specifying defaults if required.
 
-const motif = require('@kanthoney/sql-motif')({ types, dialect: 'mysql' });
+const motif = require('sql-motif')({ types, dialect: 'mysql' });
 
 // Set up table specifications
 
