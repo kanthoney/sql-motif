@@ -94,6 +94,8 @@ stock.Select(); // select "stock"."sku", "stock"."description"
 
 * `Select([selector, options])`. Produces a select clause, including the `select` keyword, with a field list from the given [selector](./selector.md).
 
+* `selectArray([selector, options])`. Produces an array of columns selected according to the given selector.
+
 * `selectWhere(selector, where)`. Produces a simple `select` query (except for the `select` keyword) for the table for the specified columns and `where` specification.
 
 * `SelectWhere(selector, where)`. Produces a simple `select` statement including the `select` keyword.

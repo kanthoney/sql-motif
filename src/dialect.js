@@ -48,18 +48,6 @@ class Dialect
       this.options.idQuotes += this.options.idQuotes;
     }
     this.like_escape_re = new RegExp(`[${_.escapeRegExp(this.options.likeChars)}]`, 'g');
-    this.template = (strings, ...args) => {
-      let s = '';
-      let i = 0;
-      while(i < strings.length) {
-        s += strings[i];
-        if(i < args.length) {
-          s += this.escape(args[i]);
-        }
-        i++;
-      }
-      return new Verbatim(s);
-    }
   }
 
   escapeNoQuotes(s)
@@ -98,15 +86,19 @@ class Dialect
     return `X${this.options.quotes[0]}${s.toString('hex')}${this.options.quotes[1]}`;
   }
 
-  escape(s)
+  escape(s, context)
   {
     const DateTime = require('./datetime');
     const DateOnly = require('./dateonly');
     const Fn = require('./function');
     const Identifier = require('./identifier');
     const Column = require('./column');
+    const ColumnSet = require('./column-set');
     const Table = require('./table');
     const Operator = require('./operator');
+    if(s instanceof Array) {
+      return s.map(item => this.escape(item)).join(', ');
+    }
     if(_.isNil(s)) {
       return 'null';
     }
@@ -134,8 +126,8 @@ class Dialect
     if(s instanceof Identifier) {
       return this.escapeId(s.name);
     }
-    if(s instanceof Column) {
-      return s.SQL();
+    if(s instanceof Column || s instanceof ColumnSet) {
+      return s.SQL(false, context);
     }
     if(s instanceof Table) {
       return s.fullName();
@@ -170,6 +162,21 @@ class Dialect
     return '';
   }
 
+  template(context = {})
+  {
+    return (strings, ...args) => {
+      let s = '';
+      let i = 0;
+      while(i < strings.length) {
+        s += strings[i];
+        if(i < args.length) {
+          s += this.escape(args[i], context);
+        }
+        i++;
+      }
+      return new Verbatim(s);
+    }
+  }
 }
 
 module.exports = Dialect;

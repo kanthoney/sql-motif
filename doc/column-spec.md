@@ -27,3 +27,23 @@
  or throw an error or return a string to provide a custom error.
 
  * `validationError`. A default error message to return if the validation fails. If not specified will use a standard error message.
+
+ * `calc`. Specifies a calculation column. Can be a string or a function. If a function, is called with a single argument, which is an object with the following properties:
+
+   * `table`. The table the column belongs to
+
+   * `sql`. This is a tag function for escaping template strings. For example, if the `order_count` column was something like:
+
+```
+{
+  name: 'order_count',
+  calc: ({ table, sql }) => sql`count(distinct ${table.selectArray(['company', 'order_id'])})`
+}
+```
+
+then `select`ing the column would produce something like:
+
+```
+select count(distinct "orders"."company", "orders"."order_id") as "order_count"
+```
+

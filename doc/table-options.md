@@ -12,3 +12,6 @@ joined tables is missing. Marked as experimental as it does not currently detect
 
 * `selector`. Include a (selector)[./selector.md] to select columns.
 
+* `context`. A user supplied object passed to functions such as those specified in `calc` [columns](column-spec.md), `where` clauses and subqueries.
+
+ 

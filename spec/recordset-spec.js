@@ -1035,6 +1035,7 @@ describe("record set tests", () => {
     describe('inventory2 tests', () => {
 
       const j = joins.inventory2;
+
       const lines = [
         {
           company: 'ANA191',
@@ -1177,9 +1178,229 @@ describe("record set tests", () => {
         }
       ];
 
+      const data = [
+        {
+          company: 'ANA191',
+          sku: 'DX676',
+          description: 'Hammer',
+          warehouse: {
+            company: 'ANA191',
+            name: 'Chesterfield',
+            description: 'grotty',
+            address: {
+              company: 'Tools 4 U Ltd',
+              street: '29 Sudbury Lane',
+              locality: '',
+              city: 'Chesterfield',
+              region: 'Derbyshire',
+              postalCode: 'S40 9DS',
+              country: 'GB'
+            },
+            bins: {
+              company: 'ANA191',
+              warehouse_name: 'Chesterfield',
+              bin: 'FA76D2',
+              inventory: {
+                sku: 'DX676',
+                bin: 'FA76D2',
+                time: '2019-06-14 09:12:54',
+                qty: 5,
+                cost: 98.34
+              }
+            }
+          }
+        },
+        {
+          company: 'ANA191',
+          sku: 'DX676',
+          description: 'Hammer',
+          warehouse: {
+            company: 'ANA191',
+            name: 'Chesterfield',
+            description: 'grotty',
+            address: {
+              company: 'Tools 4 U Ltd',
+              street: '29 Sudbury Lane',
+              locality: '',
+              city: 'Chesterfield',
+              region: 'Derbyshire',
+              postalCode: 'S40 9DS',
+              country: 'GB'
+            },
+            bins: {
+              warehouse_name: 'Chesterfield',
+              company: 'ANA191',
+              warehouse_name: 'Chesterfield',
+              bin: 'GA15A3',
+              inventory: {
+                sku: 'DX676',
+                bin: 'GA15A3',
+                time: '2019-04-30 11:32:19',
+                qty: 20,
+                cost: 96.41
+              }
+            }
+          }
+        },
+        {
+          company: 'ANA191',
+          sku: 'DX676',
+          description: 'Hammer',
+          warehouse: {
+            company: 'ANA191',
+            name: 'Chesterfield',
+            description: 'grotty',
+            address: {
+              company: 'Tools 4 U Ltd',
+              street: '29 Sudbury Lane',
+              locality: '',
+              city: 'Chesterfield',
+              region: 'Derbyshire',
+              postalCode: 'S40 9DS',
+              country: 'GB'
+            },
+            bins: {
+              company: 'ANA191',
+              warehouse_name: 'Chesterfield',
+              bin: 'FA76D2',
+              inventory: {
+                sku: 'DX676',
+                bin: 'FA76D2',
+                time: '2019-07-16 13:16:29',
+                qty: 40,
+                cost: 95.32
+              }
+            }
+          }
+        },
+        {
+          company: 'ANA191',
+          sku: 'DX676',
+          description: 'Hammer',
+          warehouse: {
+            company: 'ANA191',
+            name: 'Chesterfield',
+            description: 'grotty',
+            address: {
+              company: 'Tools 4 U Ltd',
+              street: '29 Sudbury Lane',
+              locality: '',
+              city: 'Chesterfield',
+              region: 'Derbyshire',
+              postalCode: 'S40 9DS',
+              country: 'GB'
+            },
+            bins: {
+              company: 'ANA191',
+              warehouse_name: 'Chesterfield',
+              bin: 'FA76D2',
+              inventory: {
+                sku: 'DX676',
+                bin: 'FA76D2',
+                time: '2019-06-14 09:12:54',
+                qty: 5,
+                cost: 98.34
+              }
+            }
+          }
+        },
+        {
+          company: 'ANA191',
+          sku: 'DX676',
+          description: 'Hammer',
+          warehouse: {
+            company: 'ANA191',
+            name: 'Wolverhampton',
+            description: 'even grottier',
+            address: {
+              company: 'Hammer Time Ltd',
+              street: '45 Strawberry St',
+              locality: '',
+              city: 'Wolverhampton',
+              region: 'West Midlands',
+              postalCode: 'WV17 9JK',
+              country: 'GB'
+            },
+            bins: {
+              company: 'ANA191',
+              warehouse_name: 'Wolverhampton',
+              bin: 'J16X',
+              inventory: {
+                sku: 'DX676',
+                bin: 'J16X',
+                time: '2020-02-12 08:55:19',
+                qty: 200,
+                cost: 84.96
+              }
+            }
+          }
+        },
+        {
+          company: 'ANA191',
+          sku: 'DX678',
+          description: 'Chisel',
+          warehouse: {
+            company: 'ANA191',
+            name: 'Telford',
+            description: 'quite nice but small',
+            address: {
+              company: 'Chisels Unlimited Ltd',
+              street: '16 Shrewsbury St',
+              locality: 'Victoria Business Park',
+              city: 'Telford',
+              region: 'Shropshire',
+              postalCode: 'TF2 8XD',
+              country: 'GB'
+            },
+            bins: {
+              company: 'ANA191',
+              warehouse_name: 'Telford',
+              bin: 'H78D',
+              inventory: []
+            }
+          }
+        }
+      ];
+
       it("should collate lines for inventory2", () => {
         const r = new RecordSet(j);
         r.addSQLResult(lines);
+        expect(JSON.stringify(r.get('[0].warehouse[0].bins[0]'))).toBe(
+          '{"company":"ANA191","warehouse_name":"Chesterfield","bin":"FA76D2","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2",' +
+          '"time":"2019-06-14 09:12:54","qty":5,"cost":98.34},{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2","time":"2019-07-16 13:16:29","qty":40,"cost":95.32}]}'
+        );
+        expect(JSON.stringify(r)).toBe(
+          '[{"company":"ANA191","sku":"DX676","description":"Hammer","warehouse":[{"company":"ANA191","name":"Chesterfield","description":"grotty",' +
+          '"address":{"company":"Tools 4 U Ltd","street":"29 Sudbury Lane","locality":"","city":"Chesterfield","region":"Derbyshire","postalCode":"S40 9DS","country":"GB"},' +
+          '"bins":[{"company":"ANA191","warehouse_name":"Chesterfield","bin":"FA76D2","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2",' +
+          '"time":"2019-06-14 09:12:54","qty":5,"cost":98.34},{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2","time":"2019-07-16 13:16:29",' +
+          '"qty":40,"cost":95.32}]},{"company":"ANA191","warehouse_name":"Chesterfield","bin":"GA15A3","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield",' +
+          '"bin":"GA15A3","time":"2019-04-30 11:32:19","qty":20,"cost":96.41}]}]},{"company":"ANA191","name":"Wolverhampton","description":"even grottier",' +
+          '"address":{"company":"Hammer Time Ltd","street":"45 Strawberry St","locality":"","city":"Wolverhampton","region":"West Midlands","postalCode":"WV17 9JK","country":"GB"},' +
+          '"bins":[{"company":"ANA191","warehouse_name":"Wolverhampton","bin":"J16X","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Wolverhampton","bin":"J16X",' +
+          '"time":"2020-02-12 08:55:19","qty":200,"cost":84.96}]}]}]},{"company":"ANA191","sku":"DX678","description":"Chisel","warehouse":[{"company":"ANA191","name":"Telford",' +
+          '"description":"quite nice but small","address":{"company":"Chisels Unlimited Ltd","street":"16 Shrewsbury St","locality":"Victoria Business Park","city":"Telford",' +
+          '"region":"Shropshire","postalCode":"TF2 8XD","country":"GB"},"bins":[{"company":"ANA191","warehouse_name":"Telford","bin":"H78D","inventory":[]}]}]}]'
+        );
+        expect(JSON.stringify(j.validate(r).validationResult())).toBe(
+          '{"results":[{"record":{"company":"ANA191","sku":"DX676","description":"Hammer","warehouse":[{"company":"ANA191","name":"Chesterfield","description":"grotty",' +
+          '"address":{"company":"Tools 4 U Ltd","street":"29 Sudbury Lane","locality":"","city":"Chesterfield","region":"Derbyshire","postalCode":"S40 9DS","country":"GB"},' +
+          '"bins":[{"company":"ANA191","warehouse_name":"Chesterfield","bin":"FA76D2","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2",' +
+          '"time":"2019-06-14 09:12:54","qty":5,"cost":98.34},{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2","time":"2019-07-16 13:16:29","qty":40,"cost":95.32}]},' +
+          '{"company":"ANA191","warehouse_name":"Chesterfield","bin":"GA15A3","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"GA15A3",' +
+          '"time":"2019-04-30 11:32:19","qty":20,"cost":96.41}]}]},{"company":"ANA191","name":"Wolverhampton","description":"even grottier","address":{"company":"Hammer Time Ltd",' +
+          '"street":"45 Strawberry St","locality":"","city":"Wolverhampton","region":"West Midlands","postalCode":"WV17 9JK","country":"GB"},"bins":[{"company":"ANA191",' +
+          '"warehouse_name":"Wolverhampton","bin":"J16X","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Wolverhampton","bin":"J16X","time":"2020-02-12 08:55:19",' +
+          '"qty":200,"cost":84.96}]}]}]},"valid":true,"errors":{}},{"record":{"company":"ANA191","sku":"DX678","description":"Chisel","warehouse":[{"company":"ANA191","name":"Telford",' +
+          '"description":"quite nice but small","address":{"company":"Chisels Unlimited Ltd","street":"16 Shrewsbury St","locality":"Victoria Business Park","city":"Telford",' +
+          '"region":"Shropshire","postalCode":"TF2 8XD","country":"GB"},"bins":[{"company":"ANA191","warehouse_name":"Telford","bin":"H78D","inventory":[]}]}]},' +
+          '"valid":true,"errors":{}}],"valid":true}'
+        );
+      });
+
+      it("should import records for inventory2", () => {
+        const r = new RecordSet(j);
+        r.addRecord(data);
         expect(JSON.stringify(r.get('[0].warehouse[0].bins[0]'))).toBe(
           '{"company":"ANA191","warehouse_name":"Chesterfield","bin":"FA76D2","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2",' +
           '"time":"2019-06-14 09:12:54","qty":5,"cost":98.34},{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2","time":"2019-07-16 13:16:29","qty":40,"cost":95.32}]}'

@@ -87,7 +87,7 @@ class Table
           ...join.table,
           columns: join.table.columns.concat(join.columns || []),
           alias: join.alias,
-          path: this.path.concat(join.path || join.name)
+          path: this.config.path.concat(join.path || join.name)
         });
       }
       let on = join.on || [];
@@ -113,8 +113,8 @@ class Table
           left = on[0];
           right = on[1];
         }
-        left = join.table.config.path.concat(left).join('_');
-        right = this.config.path.concat(right).join('_');
+        //left = join.table.config.path.concat(left).join('_');
+        //right = this.config.path.concat(right).join('_');
         const leftCol = join.table.column(left);
         const rightCol = this.column(right);
         if(leftCol && rightCol) {
@@ -124,6 +124,7 @@ class Table
           rightCol.joinedToFull.push(leftCol.table.config.path.concat(leftCol.path));
           return acc.concat({ left: leftCol, right: rightCol });
         } else {
+          console.log(join.table.config.path, this.config.path);
           console.warn(
             `Problem creating join for table ${this.config.name} with left column '${left}' and right column '${right}'`
           );
@@ -141,9 +142,9 @@ class Table
     });
   }
 
-  escape(s)
+  escape(s, context)
   {
-    return this.dialect.escape(s);
+    return this.dialect.escape(s, context);
   }
 
   escapeId(s)
@@ -330,13 +331,16 @@ class Table
     return '';
   }
 
-  column(alias)
+  column(alias, subTable)
   {
+    if(!subTable) {
+      alias = this.config.path.concat(alias).join('_');
+    }
     return this.columns.fieldFromAlias(alias) || this.joins.reduce((acc, join) => {
       if(acc !== undefined) {
         return acc;
       }
-      return join.table.column(alias);
+      return join.table.column(alias, true);
     }, undefined);
   }
 
@@ -351,10 +355,10 @@ class Table
     }, []));
   }
 
-  select(selector, options)
+  select(selector, options = {})
   {
     return this.selectArray(selector, options).map(field => {
-      return field.SQL(true);
+      return field.SQL(true, options.context);
     }).join(', ');
   }
 
@@ -391,9 +395,9 @@ class Table
   selectWhere(selector, where, options)
   {
     if(where) {
-      return `${this.select(selector)} ${this.From(options)} ${this.Where(where, options)}`;
+      return `${this.select(selector, options)} ${this.From(options)} ${this.Where(where, options)}`;
     }
-    return `${this.select(selector)} ${this.From(options)}`;
+    return `${this.select(selector, options)} ${this.From(options)}`;
   }
 
   SelectWhere(selector, where, options)
@@ -404,9 +408,9 @@ class Table
   selectWhereKey(selector, where, options)
   {
     if(where) {
-      return `${this.select(selector)} ${this.From(options)} ${this.WhereKey(where, options)}`;
+      return `${this.select(selector, options)} ${this.From(options)} ${this.WhereKey(where, options)}`;
     }
-    return `${this.select(selector)} ${this.From(options)}`;
+    return `${this.select(selector, options)} ${this.From(options)}`;
   }
 
   SelectWhereKey(selector, where, options)
@@ -417,9 +421,9 @@ class Table
   selectWhereMainKey(selector, where, options)
   {
     if(where) {
-      return `${this.select(selector)} ${this.From(options)} ${this.WhereKey(where, { ...options, joins: [] })}`;
+      return `${this.select(selector, options)} ${this.From(options)} ${this.WhereKey(where, { ...options, joins: [] })}`;
     }
-    return `${this.select(selector)} ${this.From(options)}`;
+    return `${this.select(selector, options)} ${this.From(options)}`;
   }
 
   SelectWhereMainKey(selector, where, options)
@@ -970,11 +974,11 @@ class Table
 
   extend(config)
   {
-    const typeExpnder = new TypeExpander(this.config.types);
+    const typeExpander = new TypeExpander(this.config.types);
     return new Table({
       ...this.config,
       ...config,
-      columns: this.columns.concat((config.columns || []).map(col => typeExpander.expand(col))),
+      columns: this.columns.concat((config.columns || []).map(col => typeExpander.expand({ ...col, table: this }))),
       indexes: this.config.indexes.concat(config.indexes || []),
       references: this.config.references.concat(config.references || []),
       joins: this.config.joins.concat(config.joins || [])

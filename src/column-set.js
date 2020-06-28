@@ -556,11 +556,11 @@ class ColumnSet
       }
       const fullName = dialect.options.singleTableUpdate?col.sql.name:col.sql.fullName;
       if(value instanceof Operator) {
-        return acc.concat(`${value.clause(dialect), col}`);
+        return acc.concat(`${value.clause(dialect, col, options.context || {})}`);
       } else if(value instanceof Function) {
-        return acc.concat(`${fullName} = ${dialect.escape(value(col, dialect.template))}`);
+        return acc.concat(`${fullName} = ${dialect.escape(value({ table, col, sql: dialect.template(options.context), context: options.context || {} }))}`);
       }
-      return acc.concat(`${fullName} = ${dialect.escape(value)}`);
+      return acc.concat(`${fullName} = ${dialect.escape(value, options.context)}`);
     }, []);
   }
 
@@ -623,14 +623,19 @@ class ColumnSet
           return `${value.map(value => clause(value)).join(' or ')}`;
         }
         if(value instanceof Operator) {
-          return value.clause(table.dialect, col);
+          return value.clause(table.dialect, col, options.context || {});
         } else if(value instanceof Function) {
-          return `${col.SQL()} = ${table.escape(value(col, this.dialect.template))}`;
+          return `${col.SQL(false, options.context || {})} = ${table.escape(value({ table, col, sql: table.dialect.template(options.context), context: options.context || {} }))}`;
         }
-        return operators.eq(value).clause(table.dialect, col);
+        return operators.eq(value).clause(table.dialect, col, options.context || {});
       }
       return acc.concat(clause(value));
     }, []);
+  }
+
+  SQL(as, context = {})
+  {
+    return this.config.columns.map(col => col.SQL(as, context)).join(', ');
   }
 
 };

@@ -86,6 +86,17 @@ describe('escape tests', () => {
       expect(d.escape(Buffer.from('Hello'))).toBe("X'48656c6c6f'");
     });
 
+    it('should escape a column set', () => {
+      expect(d.escape(tables.orders.columns)).toBe(
+        '"s1"."orders"."company", "s1"."orders"."order_id", "s1"."orders"."order_date", "s1"."orders"."customer", "s1"."orders"."delivery_name", ' +
+          '"s1"."orders"."delivery_address_company", "s1"."orders"."delivery_address_street", "s1"."orders"."delivery_address_locality", ' +
+          '"s1"."orders"."delivery_address_city", "s1"."orders"."delivery_address_region", "s1"."orders"."delivery_address_postalCode", ' +
+          '"s1"."orders"."delivery_address_country", "s1"."orders"."billing_name", "s1"."orders"."billing_address_company", "s1"."orders"."billing_address_street", ' +
+          '"s1"."orders"."billing_address_locality", "s1"."orders"."billing_address_city", "s1"."orders"."billing_address_region", "s1"."orders"."billing_address_postalCode", ' +
+          '"s1"."orders"."billing_address_country"'
+      );
+    });
+
   });
 
   describe('mysql dialect', () => {
@@ -149,16 +160,6 @@ describe('escape tests', () => {
 
       it('should escape a function', () => {
         expect(d.escape(Fn('test_func', 5, 8))).toBe('test_func(5, 8)');
-      });
-
-      it('should escape a column', () => {
-        const t = tables.orders;
-        expect(d.escape(t.column('order_id'))).toBe('"s1"."orders"."order_id"');
-      });
-
-      it('should escape a function with column as parameter', () => {
-        const t = tables.orders;
-        expect(d.escape(Fn('ifnull', t.column('order_id'), '6a49edb7-45f3-4478-849e-badd08ee0930'))).toBe('ifnull("s1"."orders"."order_id", \'6a49edb7-45f3-4478-849e-badd08ee0930\')');
       });
 
       it('should escape a buffer', () => {
@@ -231,16 +232,6 @@ describe('escape tests', () => {
         expect(d.escape(Fn('test_func', 5, 8))).toBe('test_func(5, 8)');
       });
 
-      it('should escape a column', () => {
-        const t = tables.orders;
-        expect(d.escape(t.column('order_id'))).toBe('"s1"."orders"."order_id"');
-      });
-
-      it('should escape a function with column as parameter', () => {
-        const t = tables.orders;
-        expect(d.escape(Fn('ifnull', t.column('order_id'), '6a49edb7-45f3-4478-849e-badd08ee0930'))).toBe('ifnull("s1"."orders"."order_id", \'6a49edb7-45f3-4478-849e-badd08ee0930\')');
-      });
-
       it('should escape a buffer', () => {
         expect(d.escape(Buffer.from('Hello'))).toBe("X'48656c6c6f'");
       });
@@ -309,16 +300,6 @@ describe('escape tests', () => {
 
       it('should escape a function', () => {
         expect(d.escape(Fn('test_func', 5, 8))).toBe('test_func(5, 8)');
-      });
-
-      it('should escape a column', () => {
-        const t = tables.orders;
-        expect(d.escape(t.column('order_id'))).toBe('"s1"."orders"."order_id"');
-      });
-
-      it('should escape a function with column as parameter', () => {
-        const t = tables.orders;
-        expect(d.escape(Fn('ifnull', t.column('order_id'), '6a49edb7-45f3-4478-849e-badd08ee0930'))).toBe('ifnull("s1"."orders"."order_id", \'6a49edb7-45f3-4478-849e-badd08ee0930\')');
       });
 
       it('should escape a buffer', () => {

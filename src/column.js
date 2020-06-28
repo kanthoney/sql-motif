@@ -32,12 +32,13 @@ class Column
     return selector.passes(this);
   }
 
-  SQL(as)
+  SQL(as, context = {})
   {
     if(_.isString(this.calc)) {
       return as?`${this.calc} as ${this.table.dialect.escapeId(this.fullAlias)}`:this.calc;
     } else if(_.isFunction(this.calc)) {
-      return as?`${this.calc(this.table, this.table.dialect.template)} as ${this.table.dialect.escapeId(this.fullAlias)}`:this.calc(this.table, this.table.dialect.template);
+      return as?`${this.calc({ table: this.table, sql: this.table.dialect.template(context), context })} as ${this.table.dialect.escapeId(this.fullAlias)}`:
+      this.calc({ table: this.table, sql: this.table.dialect.template(context), context });
     }
     return as?this.sql.fullNameAs:this.sql.fullName;
   }

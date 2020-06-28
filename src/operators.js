@@ -29,11 +29,11 @@ class InOperator extends Operator
     }
   }
 
-  clause(dialect, rhs)
+  clause(dialect, rhs, context = {})
   {
     let value;
     if(this.value instanceof Function) {
-      value = this.value(rhs, dialect.template);
+      value = this.value({ col: rhs, sql: dialect.template(context), context });
     } else {
       value = this.value;
     }
@@ -51,11 +51,11 @@ class BetweenOperator extends Operator
     super(name, [value1, value2])
   }
 
-  clause(dialect, rhs)
+  clause(dialect, rhs, context = {})
   {
     let value;
     if(this.value instanceof Function) {
-      value = this.value(rhs, dialect.template);
+      value = this.value({ col: rhs, sql: dialect.template(context), context });
     } else {
       value = this.value;
     }
