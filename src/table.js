@@ -213,36 +213,6 @@ class Table
       return acc;
     }, []));
     return subTable;
-    const columns = this.selectArray(config.selector).map(col => {
-      const path = (col.table.config.path || []).concat(col.path || col.alias || col.name);
-      const alias = path.join('_');
-      return {
-        name: col.fullAlias || col.alias || col.name,
-        type: col.type,
-        alias,
-        notNull: Boolean(col.notNull),
-        primaryKey: Boolean(col.primaryKey && col.table === this),
-        'default': col.default,
-        tags: col.tags,
-        hidden: Boolean(col.hidden),
-        validate: col.validate,
-        validationError: col.validationError,
-        subqueryPath: col.table.config.path.concat(col.path),
-        subqueryJoinedTo: col.joinedTo
-      }
-    });
-    return new Table({
-      ...this.config,
-      name: config.name || this.config.name,
-      alias: config.alias || config.name || `${this.config.alias || this.config.name}_subquery`,
-      columns,
-      joins: [],
-      subquery: {
-        table: this,
-        selector: config.selector,
-        query: config.query
-      }
-    });
   }
 
   from(options)
