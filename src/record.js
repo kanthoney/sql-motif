@@ -76,13 +76,13 @@ class Record
       let empty = true;
       this.fullKey = true;
       const hash = this.table.columns.fields().reduce((acc, col) => {
-        const path = col.subqueryPath || col.path;
+        const path = col.subTablePath || col.path;
         let value = _.get(this.data, path);
         if(col.primaryKey || _.has(this.recordSet.joined, col.path)) {
           if(_.isNil(value)) {
             value = _.get(this.recordSet.joined, col.path);
           }
-          const joinedTo = col.joinedTo.concat(col.subqueryJoinedTo || []);
+          const joinedTo = col.joinedTo.concat(col.subTableJoinedTo || []);
           for(let i = 0; i < joinedTo.length && _.isNil(value); i++) {
             let path = joinedTo[i];
             value = this.data;
@@ -136,8 +136,8 @@ class Record
         _.set(this.data, join.path || join.name, recordSet);
       }
     });
-    if(this.table.config.subquery) {
-      this.table.config.subquery.table.joins.forEach(join => {
+    if(this.table.config.subtable) {
+      this.table.config.subtable.table.joins.forEach(join => {
         const subRecord = _.get(this.data, join.path || join.name);
         const otherRecord = _.get(other.data, join.path || join.name);
         if(subRecord instanceof RecordSet) {
@@ -503,10 +503,10 @@ class Record
     let acc = this.table.columns.fields('*', true).reduce((acc, col) => {
       let path = col.path;
       let value = _.get(this.data, path);
-      if(value === undefined && col.subqueryPath) {
-        value = _.get(this.data, col.subqueryPath);
+      if(value === undefined && col.subTablePath) {
+        value = _.get(this.data, col.subTablePath);
         if(value !== undefined) {
-          path = col.subqueryPath;
+          path = col.subTablePath;
         }
       }
       if(value === undefined && options.mapJoined) {
@@ -533,8 +533,8 @@ class Record
         }
         return acc;
       }, acc);
-      if(this.table.config.subquery) {
-        acc = this.table.config.subquery.table.joins.reduce((acc, join) => {
+      if(this.table.config.subtable) {
+        acc = this.table.config.subtable.table.joins.reduce((acc, join) => {
           const recordSet = _.get(this.data, join.path || join.name);
           if(recordSet instanceof RecordSet) {
             if(join.single) {

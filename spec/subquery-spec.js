@@ -238,6 +238,7 @@ describe('subquery tests', () => {
             lines_inventory_cost: 42.13
           }
         ];
+        global.debug = true;
         expect(JSON.stringify(t.collate(lines))).toBe(
           '[{"company":"AAX010","order_id":"6f5c0747-cf9f-4424-bf2b-e81f9946b801","order_date":"2020-06-23","customer":"AST001","delivery":{"name":"Mark Walbourne",' +
             '"address":{"company":"Clips & Fasteners Ltd","street":"18 Featherstone St.","locality":"Harwick","city":"Stoke on Trent","region":"Staffordshire",' +
@@ -255,6 +256,7 @@ describe('subquery tests', () => {
             '"line_no":1,"sku":"BB845","description":"Sewing Machine","qty":1,"price":54.8,"inventory":[{"company":"AAX010","sku":"BB845","warehouse_name":"Highburn",' +
             '"bin":"A14B","time":"2017-05-06 13:07:35","qty":10,"cost":42.13}]}]}]'
         );
+        global.debug = false;
       });
       
     });
@@ -442,7 +444,8 @@ describe('subquery tests', () => {
       on: 'order_id:id'
     }).subquery({
       selector: '*',
-      alias: 'o2'
+      alias: 'o2',
+      debug: true
     }).join({
       name: 'inventory',
       types,

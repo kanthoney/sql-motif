@@ -9,7 +9,7 @@ module.exports = class Selector
     if(selector instanceof Selector) {
       this.selector = selector.selector;
     } else if(_.isArray(selector)) {
-      this.selector = selector.map(selector => new Selector(selector));
+      this.selector = selector.map(selector => selector instanceof Selector?selector:new Selector(selector));
     } else {
       this.selector = selector;
     }
@@ -20,6 +20,9 @@ module.exports = class Selector
     const Column = require('./column');
     const ColumnSet = require('./column-set');
     const Table = require('./table');
+    if(this.selector === false) {
+      return false;
+    }
     if(col instanceof Column) {
       if((!col.hidden && (this.selector === undefined || this.selector === '*' || this.selector === true ||
                           (_.isRegExp(this.selector) && this.selector.test(col.partName || col.name)))) ||
@@ -101,18 +104,18 @@ module.exports = class Selector
   passesJoin(join)
   {
     if(_.isArray(this.selector)) {
-      return this.selector.reduce((acc, s) => {
+      return new Selector(this.selector.reduce((acc, s) => {
         if(_.isArray(acc)) {
           if(s.selector === `@${join.alias}` || s.selector === `@${join.name}`) {
             return new Selector('*');
           }
           const newSelector = s.passesJoin(join);
           if(newSelector) {
-            return acc.concat(newSelector);
+            return acc.concat(newSelector.selector);
           }
         }
         return acc;
-      }, []);
+      }, []));
     } else if(_.isPlainObject(this.selector)) {
       const newSelector = _.get(this.selector, join.alias) || _.get(this.selector, join.name);
       if(newSelector) {
@@ -120,16 +123,21 @@ module.exports = class Selector
       }
       return false;
     } else if(_.isString(this.selector)) {
+      if(this.selector === '*') {
+        return new Selector(true);
+      }
       let m = /^([@!])(.*)/.exec(this.selector);
       if(m) {
-        if(m[1] === '@' && (m[2] === join.table.alias || m[2] === join.table.name)) {
-          return new Selector(true);
-        } else {
-          return this;
+        if(m[1] === '@') {
+          if(m[2] === join.table.alias || m[2] === join.table.name) {
+            return new Selector(true);
+          } else {
+            return this;
+          }
         }
         if(m[1] === '!') {
           const joins = m[2].split(',').map(join => join.trim());
-          if(!joins.includes(join.table.name)) {
+          if(!joins.includes(join.name)) {
             return new Selector(true);
           }
           return false;
@@ -141,6 +149,7 @@ module.exports = class Selector
       if(this.selector === join.name) {
         return new Selector(true);
       }
+      return false;
     }
     return this;
   }

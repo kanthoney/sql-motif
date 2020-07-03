@@ -113,8 +113,6 @@ class Table
           left = on[0];
           right = on[1];
         }
-        //left = join.table.config.path.concat(left).join('_');
-        //right = this.config.path.concat(right).join('_');
         const leftCol = join.table.column(left);
         const rightCol = this.column(right);
         if(leftCol && rightCol) {
@@ -124,7 +122,6 @@ class Table
           rightCol.joinedToFull.push(leftCol.table.config.path.concat(leftCol.path));
           return acc.concat({ left: leftCol, right: rightCol });
         } else {
-          console.log(join.table.config.path, this.config.path);
           console.warn(
             `Problem creating join for table ${this.config.name} with left column '${left}' and right column '${right}'`
           );
@@ -199,19 +196,36 @@ class Table
       alias: config.alias || `${this.config.alias || this.config.name}_subquery`,
       columns: [],
       joins: [],
-      subquery: {
+      subtable: {
+        type: 'subquery',
         table: this,
         selector,
         query: config.query
       }
     });
-    subTable.columns = this.columns.subquery(selector, subTable, true).concat(this.joins.reduce((acc, join) => {
-      const newSelector = selector.passesJoin(join);
-      if(newSelector !== false) {
-        return acc.concat(join.table.columns.subquery(newSelector, subTable, false, join.path || join.name));
+    subTable.columns = this.columns.subTable(selector, subTable, true, true);
+    return subTable;
+  }
+
+  view(config)
+  {
+    config = config || {};
+    const selector = new Selector(config.selector);
+    const subTable = new Table({
+      ...this.config,
+      name: config.name || `${this.config.name}_view`,
+      columns: [],
+      joins: [],
+      subtable: {
+        type: 'view',
+        table: this,
+        selector,
+        query: config.query
       }
-      return acc;
-    }, []));
+    });
+    global.debug = config.debug;
+    subTable.columns = this.columns.subTable(selector, subTable, true, true);
+    global.debug = false;
     return subTable;
   }
 
@@ -219,17 +233,18 @@ class Table
   {
     options = options || {};
     let clause = this.fullNameAs();
-    if(this.config.subquery) {
-      if(_.isString(this.config.subquery.query)) {
-        clause = `( ${this.config.subquery.query} ) as ${this.escapeId(this.config.alias)}`;
-      } else if(_.isFunction(this.config.subquery.query)) {
-        clause = `( ${this.config.subquery.query({
-          table: this.config.subquery.table,
-          selector: this.config.subquery.selector,
+    if(this.config.subtable && this.config.subtable.type === 'subquery') {
+      if(_.isString(this.config.subtable.query)) {
+        clause = `( ${this.config.subtable.query} ) as ${this.escapeId(this.config.alias)}`;
+      } else if(_.isFunction(this.config.subtable.query)) {
+        clause = `( ${this.config.subtable.query({
+          table: this.config.subtable.table,
+          selector: this.config.subtable.selector,
+          sql: this.dialect.template(),
           context: options.context
         })} ) as ${this.escapeId(this.config.alias)}`;
       } else {
-        clause = `( ${this.config.subquery.table.SelectWhere()} ) as ${this.escapeId(this.config.alias)}`;
+        clause = `( ${this.config.subtable.table.SelectWhere(this.config.subtable.selector)} ) as ${this.escapeId(this.config.alias)}`;
       }
     }
     if(options.joins && options.joins !== '*') {
@@ -780,11 +795,29 @@ class Table
 
   create()
   {
+    if(this.config.subtable && this.config.subtable.type === 'view') {
+      let query = `${this.fullName()} as `;
+      if(_.isString(this.config.subtable.query)) {
+        query += this.config.subtable.query;
+      } else if(_.isFunction(this.config.subtable.query)) {
+        query += this.config.subtable.query({
+          table: this.config.subtable.table,
+          selector: this.config.subtable.selector,
+          sql: this.dialect.template()
+        });
+      } else {
+        query += this.config.subtable.table.SelectWhere(this.config.subtable.selector);
+      }
+      return query;
+    }
     return `${this.fullName()} (${this.createArray().join(', ')})`;
   }
 
   Create()
   {
+    if(this.config.subtable && this.config.subtable.type === 'view') {
+      return `create view ${this.create()}`;
+    }
     return `create table ${this.create()}`;
   }
 

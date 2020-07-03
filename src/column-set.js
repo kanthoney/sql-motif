@@ -43,15 +43,15 @@ class ColumnSet
     });
   }
 
-  subquery(selector, table, primaryTable, path = [])
+  subTable(selector, table, joins, primaryTable, path = [])
   {
     if(!(selector instanceof Selector)) {
-      return this.subquery(new Selector(selector), table, path);
+      return this.subTable(new Selector(selector), table, joins, primaryTable, path);
     }
     if(!_.isArray(path)) {
       path = [path];
     }
-    const columns = this.config.columns.reduce((acc, col) => {
+    let columns = this.config.columns.reduce((acc, col) => {
       if(col instanceof Column) {
         if(selector.passes(col)) {
           return acc.concat(new Column({
@@ -59,18 +59,31 @@ class ColumnSet
             primaryKey: primaryTable && col.primaryKey,
             table,
             name: path.concat(col.alias || col.name).join('_'),
-            subqueryPath: col.table.config.path.concat(col.path),
-            subqueryJoinedTo: col.joinedTo
+            subTablePath: col.table.config.path.concat(col.path),
+            subTableJoinedTo: col.joinedTo
           }));
         }
       } else if(col instanceof ColumnSet) {
         const newSelector = selector.passes(col);
         if(newSelector !== false) {
-          return acc.concat(col.subquery(newSelector, table, path));
+          const columnSet = col.subTable(newSelector, table, false, primaryTable, path);
+          if(columnSet.config.columns.length === 0) {
+            return acc;
+          }
+          return acc.concat(columnSet);
         }
       }
       return acc;
     }, []);
+    if(joins) {
+      columns = columns.concat(this.config.table.joins.reduce((acc, join) => {
+        const newSelector = selector.passesJoin(join);
+        if(newSelector !== false) {
+          return acc.concat(join.table.columns.subTable(newSelector, table, true, false, path.concat(join.path || join.name)));
+        }
+        return acc;
+      }, []));
+    }
     return new ColumnSet({
       ...this.config,
       table,
@@ -154,8 +167,8 @@ class ColumnSet
           if(value !== undefined) {
             return acc.concat({ col, value });
           }
-          if(col.subqueryPath) {
-            value = _.get(record, col.subqueryPath);
+          if(col.subTablePath) {
+            value = _.get(record, col.subTablePath);
             if(value !== undefined) {
               return acc.concat({ col, value });
             }
@@ -636,6 +649,19 @@ class ColumnSet
   SQL(as, context = {})
   {
     return this.config.columns.map(col => col.SQL(as, context)).join(', ');
+  }
+
+  toJSON()
+  {
+    return {
+      path: this.config.path,
+      columns: this.config.columns.map(col => {
+        if(col instanceof ColumnSet) {
+          return col.toJSON();
+        }
+        return col.config.name;
+      })
+    }
   }
 
 };
