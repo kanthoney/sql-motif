@@ -214,6 +214,7 @@ class Table
     const subTable = new Table({
       ...this.config,
       name: config.name || `${this.config.name}_view`,
+      schema: config.schema || this.config.schema,
       columns: [],
       joins: [],
       subtable: {

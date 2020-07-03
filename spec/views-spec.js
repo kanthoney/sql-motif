@@ -9,6 +9,7 @@ describe('view specs', () => {
 
     const v1 = tables.orders.view({
       name: 'order_delivery_addresses',
+      schema: 'views',
       selector: ['company', 'order_id', { delivery: { address: true } }]
     });
 
@@ -20,7 +21,7 @@ describe('view specs', () => {
 
     it('should produce create view statement with default query', () => {
       expect(v1.Create()).toBe(
-        'create view "s1"."order_delivery_addresses" as select "s1"."orders"."company", "s1"."orders"."order_id", "s1"."orders"."delivery_address_company", ' +
+        'create view "views"."order_delivery_addresses" as select "s1"."orders"."company", "s1"."orders"."order_id", "s1"."orders"."delivery_address_company", ' +
           '"s1"."orders"."delivery_address_street", "s1"."orders"."delivery_address_locality", "s1"."orders"."delivery_address_city", ' +
           '"s1"."orders"."delivery_address_region", "s1"."orders"."delivery_address_postalCode", "s1"."orders"."delivery_address_country" from "s1"."orders"'
       );
