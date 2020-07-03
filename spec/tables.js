@@ -114,3 +114,4 @@ module.exports.stock_options = new Table({
     { name: 'height', type: 'int' }
   ]
 });
+

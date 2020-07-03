@@ -79,7 +79,9 @@ stock.Select(); // select "stock"."sku", "stock"."description"
 
 * `extend(config)`. Creates a new table with, for example, extra columns specified in `config`.
 
-* <a name="subquery"></a>`subquery(config)`. Creates a new table as a subquery whic references the old table, as specified in the [subquery `config`](./subquery-config.md)
+* <a name="subquery"></a>`subquery(config)`. Creates a new table as a subquery which references the old table, as specified in the [subquery `config`](./subquery-config.md)
+
+* <a name="view"></a> `view(config)`. Create a new table as a view. `config` is a [view `config`](/.view-config.md) object.
 
 ### Column methods.
 
