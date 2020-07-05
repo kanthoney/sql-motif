@@ -14,9 +14,7 @@ module.exports = {
   }),
   inventory: tables.stock.join({
     table: tables.warehouse,
-    on: {
-      company: 'company'
-    },
+    on: 'company',
     name: 'warehouse'
   }).join({
     table: tables.warehouse_bins,
@@ -24,11 +22,7 @@ module.exports = {
     name: 'bin'
   }).join({
     table: tables.inventory,
-    on: {
-      company: 'company',
-      sku: 'sku',
-      bin: 'bin_bin'
-    },
+    on: ['company', 'sku', 'bin:bin_bin'],
     type: 'left',
     alias: 'i1',
     name: 'inventory'

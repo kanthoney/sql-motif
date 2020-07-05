@@ -1,6 +1,7 @@
 'use strict';
 
 const joins = require('./joins');
+const tables = require('./tables');
 
 describe('join tests', () => {
 
@@ -49,6 +50,47 @@ describe('join tests', () => {
         '"warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name") on "w1"."company" = "stock"."company"'
       );
     });
+
+    it('should create a join clause including values in on clause', () => {
+      expect(j.From({ where: { warehouse: { name: 'Mercury', bins: { bin: 'A01A' } } } })).toBe(
+        'from "stock" inner join ("s1"."warehouse" as "w1" inner join ("warehouse_bins" inner join "inventory" on "inventory"."company" = "warehouse_bins"."company" and ' +
+          '"inventory"."bin" = "warehouse_bins"."bin" and "inventory"."warehouse_name" = "warehouse_bins"."warehouse_name" and "inventory"."sku" = "stock"."sku") ' +
+          'on "warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name" and "warehouse_bins"."bin" = \'A01A\') ' +
+          'on "w1"."company" = "stock"."company" and "w1"."name" = \'Mercury\''
+      );
+    });
+  });
+
+  describe('joins with fixed values in on clauses', () => {
+
+    const join = tables.stock.join({
+      table: tables.warehouse.join({
+        table: tables.warehouse_bins.join({
+          table: tables.inventory,
+          on: ['company', 'bin', 'warehouse_name']
+        }),
+        name: 'bins',
+        on: ['company', 'warehouse_name:name']
+      }),
+      on: ['company', 'bins_inventory_sku:sku', { bins: { inventory: { sku: 'AA454' } } }]
+    });
+
+    it('should create from clause', () => {
+      expect(join.From()).toBe(
+        'from "stock" inner join ("s1"."warehouse" as "w1" inner join ("warehouse_bins" inner join "inventory" on "inventory"."company" = "warehouse_bins"."company" and ' +
+          '"inventory"."bin" = "warehouse_bins"."bin" and "inventory"."warehouse_name" = "warehouse_bins"."warehouse_name" and "inventory"."sku" = "stock"."sku" and ' +
+          '"inventory"."sku" = \'AA454\') on "warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name") on "w1"."company" = "stock"."company"'
+      );
+    });
+
+    it('should create from clause, overriding sku', () => {
+      expect(join.From({ where: { warehouse: { bins: { inventory: { sku: 'ME430' } } } } })).toBe(
+        'from "stock" inner join ("s1"."warehouse" as "w1" inner join ("warehouse_bins" inner join "inventory" on "inventory"."company" = "warehouse_bins"."company" and ' +
+          '"inventory"."bin" = "warehouse_bins"."bin" and "inventory"."warehouse_name" = "warehouse_bins"."warehouse_name" and "inventory"."sku" = "stock"."sku" and ' +
+          '"inventory"."sku" = \'ME430\') on "warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name") on "w1"."company" = "stock"."company"'
+      );
+    });
+
   });
 
 });

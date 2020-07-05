@@ -90,16 +90,12 @@ class Table
           path: this.config.path.concat(join.path || join.name)
         });
       }
-      let on = join.on || [];
-      if(!_.isArray(on)) {
-        if(_.isPlainObject(on)) {
-          on = Object.keys(on).map(k => [ k, on[k] ]);
-        } else {
-          on = [on];
-        }
-      }
-      on = on.reduce((acc, on) => {
+      let { on, where } = [].concat(join.on || []).reduce((acc, on) => {
         let left, right;
+        if(_.isPlainObject(on)) {
+          acc.where = Object.assign(acc.where || {}, on);
+          return acc;
+        }
         if(_.isString(on)) {
           const m = /([^:]+):([^:]+)/.exec(on);
           if(m) {
@@ -120,19 +116,24 @@ class Table
           const relPath = leftCol.table.config.path.slice(rightCol.table.config.path.length);
           rightCol.joinedTo.push(relPath.concat(leftCol.path));
           rightCol.joinedToFull.push(leftCol.table.config.path.concat(leftCol.path));
-          return acc.concat({ left: leftCol, right: rightCol });
+          acc.on = acc.on.concat({ left: leftCol, right: rightCol });
         } else {
           console.warn(
             `Problem creating join for table ${this.config.name} with left column '${left}' and right column '${right}'`
           );
         }
         return acc;
-      }, []);
+      }, { on: [] });
+      if(where) {
+        join.table.onWhere = where;
+      }
       on.forEach(on => {
         on.left.table.onFields.push(on);
       });
       join.colMap = on.reduce((acc, on) => {
-        acc[on.right.alias || on.right.name] = on.left;
+        if(on.right) {
+          acc[on.right.alias || on.right.name] = on.left;
+        }
         return acc;
       }, {});
       this.joins.push(join);
@@ -253,6 +254,10 @@ class Table
         options.joins = [options.joins];
       }
     }
+    let where;
+    if(options.where || this.onWhere) {
+      where = Object.assign({}, this.onWhere, options.where);
+    }
     const joins = this.joins.reduce((acc, join) => {
       if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
         return acc;
@@ -275,16 +280,20 @@ class Table
         clause = 'inner join';
         break;
       }
-      return acc.concat(`${clause} ${join.table.from({ ...options, brackets: true, includeOn: true })}`);
+      return acc.concat(`${clause} ${join.table.from({ ...options, brackets: true, includeOn: true, where: _.get(where, join.path || join.name) })}`);
     }, []);
     if(joins.length > 0 && options.brackets) {
       clause = `(${[clause].concat(joins).join(' ')})`;
     } else {
       clause = [clause].concat(joins).join(' ');
     }
-    let on = this.On();
-    if(on && options.includeOn) {
-      clause = `${clause} ${on}`;
+    if(options.includeOn) {
+      clause = `${clause} ${this.On(where)}`;
+    } else if(where) {
+      let on = this.columns.whereArray(where);
+      if(on.length > 0) {
+        clause = `${clause} on ${on.join(' and ')}`;
+      }
     }
     return clause;
   }
@@ -294,14 +303,18 @@ class Table
     return `from ${this.from(options)}`;
   }
 
-  on()
+  on(where)
   {
-    return this.onFields.map(field => `${field.left.sql.fullName} = ${field.right.sql.fullName}`).join(' and ');
+    let on = this.onFields.map(field => `${field.left.sql.fullName} = ${field.right.sql.fullName}`);
+    if(where) {
+      on = on.concat(this.columns.whereArray(where));
+    }
+    return on.join(' and ');
   }
 
-  On()
+  On(where)
   {
-    let clause = this.on();
+    let clause = this.on(where);
     if(clause) {
       return `on ${clause}`;
     }

@@ -125,10 +125,7 @@ describe('context tests', () => {
   joins.orders = tables.orders.join({
     name: 'lines',
     table: tables.order_lines,
-    on: {
-      company: 'company',
-      order_id: 'order_id'
-    }
+    on: ['company', 'order_id']
   });
 
   const records = require('./context-records.json');

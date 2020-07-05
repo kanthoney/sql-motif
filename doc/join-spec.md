@@ -13,12 +13,13 @@ The join specification object can take the following parameters:
 
 * `on`. Specifies which columns are joined to which. This takes one of the following formats:
 
-  * An object where the keys are the names of the columns of the joined table and the values are the names of the main table.
-
   * A string or an array of strings of the form `'join_column:main_column'`. If `join_column` happens to be the same as `main_column` then you can simply use
-`'join_column'`.
+  `'join_column'`. The column names are created by concatenating the column path together with underscores, e.g. the `street` field in the `address` object of the
+  `warehouse` subtable will have a column name of `warehouse_address_street`.
 
   * An array of arrays of the form `['join_column', 'main_column']`, or simply `['join_column']` if the two columns have the same name.
+
+  * An object. This is used to specify values (instead of other fields) in the on clause, e.g. { sku: 'AF657' } will include the condition `"sku" = 'AF657'` in the on clause.
 
 * `readOnly`. Set to `true` to exclude table from data changing queries.
 
