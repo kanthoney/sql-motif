@@ -237,5 +237,45 @@ describe('view specs', () => {
 
   });
 
+  describe('view and subquery specs', () => {
+
+    const { Table } = require('../index');
+
+    const table = (new Table({
+      name: 'orders',
+      columns: [
+        { name: 'id', type: 'id', primaryKey: true }
+      ]
+    }).join({
+      name: 'lines',
+      table: {
+        name: 'order_lines',
+        columns: [
+          { name: 'order_id', type: 'id', primaryKey: true },
+          { name: 'line_no', type: 'int', primaryKey: true }
+        ]
+      },
+      on: ['order_id:id']
+    }).view({
+      name: 'orders_with_lines'
+    }).subquery({
+      alias: 'sq1'
+    }));
+
+    it('should collate lines', () => {
+      const lines = [
+        {
+          id: 'a0668fb0-b912-4545-bd72-d9aabf78799d',
+          lines_order_id: 'a0668fb0-b912-4545-bd72-d9aabf78799d',
+          lines_line_no: 1
+        }
+      ];
+      expect(JSON.stringify(table.collate(lines))).toBe(
+        '[{"id":"a0668fb0-b912-4545-bd72-d9aabf78799d","lines":[{"order_id":"a0668fb0-b912-4545-bd72-d9aabf78799d","line_no":1}]}]'
+      );
+    });
+
+  });
+
 });
 

@@ -500,7 +500,11 @@ class Record
   {
     const RecordSet = require('./recordset');
     options = options || {};
-    let acc = this.table.columns.fields('*', true).reduce((acc, col) => {
+    let table = this.table;
+    while(table.config.subquery) {
+      table = table.config.subquery.table;
+    }
+    let acc = table.columns.fields('*', true).reduce((acc, col) => {
       let path = col.path;
       let value = _.get(this.data, path);
       if(value === undefined && col.subTablePath) {
@@ -517,24 +521,10 @@ class Record
       }
       return acc;
     }, {});
-    if(!options.noSubRecords) {
-      acc = this.table.joins.reduce((acc, join) => {
-        const recordSet = _.get(this.data, join.path || join.name);
-        if(recordSet instanceof RecordSet) {
-          if(join.single) {
-            if(recordSet.length === 1) {
-              _.set(acc, join.path || join.name, recordSet.get('[0]').toObject(options));
-            } else if(recordSet.length > 0) {
-              _.set(acc, join.path || join.name, recordSet.toObject(options));
-            }
-          } else {
-            _.set(acc, join.path || join.name, recordSet.toObject(options));
-          }
-        }
-        return acc;
-      }, acc);
-      if(this.table.config.subtable) {
-        acc = this.table.config.subtable.table.joins.reduce((acc, join) => {
+    table = this.table;
+    while(table) {
+      if(!options.noSubRecords) {
+        acc = table.joins.reduce((acc, join) => {
           const recordSet = _.get(this.data, join.path || join.name);
           if(recordSet instanceof RecordSet) {
             if(join.single) {
@@ -549,6 +539,11 @@ class Record
           }
           return acc;
         }, acc);
+      }
+      if(table.config.subtable) {
+        table = table.config.subtable.table;
+      } else {
+        break;
       }
     }
     return acc;
