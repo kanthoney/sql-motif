@@ -31,3 +31,47 @@ The join specification object can take the following parameters:
  [record set](./record-set.md) containing the set of subrecords for this join, and `context` is the context object passed to the `fill` or `validate` [table](./table.md)
  methods.
 
+* `reducer`. A function used to convert the [record set](./record-set.md) of subrecords into an arbitrary value when the top-level record set is converted to a plain object
+  via the `toObject` or `toJSON` methods. The function takes the arguments `(acc, record)` where `acc` is initially `undefined` and `record` is a [record](./record.md) from
+  the joined subrecords. The function is called for each record and returns the `acc` to be passed to the next invocation. The result is the final `acc` returned.
+
+Example:
+
+```
+const stock = new Table({
+  name: 'stock',
+  columns: [
+    { name: 'sku', type: 'varchar(30)', primaryKey: true },
+    { name: 'description', type: 'text' }
+  ]
+});
+
+const stock_attributes = new Table({
+  name: 'stock_attributes',
+  columns: [
+    { name: 'sku', type: 'varchar(30)', primaryKey: true },
+    { name: 'key_id', type: 'varchar(30)', primaryKey: true },
+    { name: 'value', type: 'text' }
+  ]
+});
+
+const stock_with_attributes = stock.join({
+  name: 'attributes',
+  table: stock_attributes,
+  on: 'sku',
+  reducer: (acc, record) => {
+    if(acc === undefined) {
+      acc = {};
+    }
+    acc[record.get('key_id')] = record.get('value');
+    return acc;
+  }
+});
+
+const result = await db.query(stock_with_attributes.SelectWhere());
+const collated = stock_with_attributes.collate(result).toJSON();
+
+// The attributes fields in the collated array will be objects with the appropriate key/values, not an array of objects with sku/key_id/value properties.
+
+```
+

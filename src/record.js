@@ -527,7 +527,9 @@ class Record
         acc = table.joins.reduce((acc, join) => {
           const recordSet = _.get(this.data, join.path || join.name);
           if(recordSet instanceof RecordSet) {
-            if(join.single) {
+            if(join.reducer) {
+              _.set(acc, join.path || join.name, recordSet.reduce(join.reducer));
+            } else if(join.single) {
               if(recordSet.length === 1) {
                 _.set(acc, join.path || join.name, recordSet.get('[0]').toObject(options));
               } else if(recordSet.length > 0) {
