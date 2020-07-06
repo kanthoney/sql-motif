@@ -426,7 +426,7 @@ describe('subquery tests', () => {
         context = context || {};
         const page = context.page || 1;
         const pageSize = context.pageSize || 25;
-        const start = (page-1)*pageSize+1;
+        const start = (page-1)*pageSize;
         return `${table.SelectWhere()} ${table.OrderBy('id')} ${table.Limit(start, pageSize)}`;
       }
     }).join({
@@ -474,7 +474,7 @@ describe('subquery tests', () => {
           '"orders"."delivery_address_region", "orders"."delivery_address_postalCode", "orders"."delivery_address_country", "orders"."billing_name", ' +
           '"orders"."billing_address_company", "orders"."billing_address_street", "orders"."billing_address_locality", "orders"."billing_address_city", ' +
           '"orders"."billing_address_region", "orders"."billing_address_postalCode", "orders"."billing_address_country" from "orders" order by "orders"."id" ' +
-          'asc limit 1, 25 ) as "o1" inner join "order_lines" as "ol1" on "ol1"."order_id" = "o1"."id" ) as "o2" inner join "inventory" as "i1" on ' +
+          'asc limit 0, 25 ) as "o1" inner join "order_lines" as "ol1" on "ol1"."order_id" = "o1"."id" ) as "o2" inner join "inventory" as "i1" on ' +
           '"i1"."sku" = "o2"."lines_sku" where "o2"."delivery_address_postalCode" = \'ST14 3NJ\' and "o2"."lines_sku" = \'ADA034\''
       );
     });
