@@ -82,7 +82,7 @@ module.exports = (name, dialect, db) => {
     on: ['company', 'order_id']
   });
 
-  xdescribe(`Database tests for ${name}`, () => {
+  describe(`Database tests for ${name}`, () => {
 
     it("should create tables and insert records, perform basic tests then delete order records", async done => {
       try {

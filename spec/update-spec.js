@@ -123,6 +123,48 @@ describe('update tests', () => {
         expect(() => t.UpdateSafe(record)).toThrowError(SafetyError);
       });
 
+      it('should update a record with a given where object', () => {
+        const record = {
+          company: 'AA565',
+          order_id: 'dea1734e-1af1-4508-966c-709fcc18fa5c',
+          order_date: '2020-04-12',
+          delivery: {
+            name: 'Terry Test',
+            address: {
+              company: '',
+              street: '17 Acacia Ave.',
+              locality: 'Stormford',
+              city: 'Manchester',
+              region: '',
+              postalCode: 'M9 5DF',
+              country: 'GB'
+            }
+          },
+          invoice: {
+            name: 'Bill Smith',
+            address: {
+              company: 'Brimstone Ltd',
+              street: '17 Halford Court',
+              locality: 'Zenith Business Park',
+              city: 'Huddersfield',
+              region: 'West Yorkshire',
+              postalCode: 'HD12 6HF',
+              country: 'GB'
+            }
+          }
+        };
+        expect(t.UpdateWhere(record, { invoice: { name: 'Gloria Spencer' } })).toBe(
+          'update "s1"."orders" set "s1"."orders"."company" = \'AA565\', "s1"."orders"."order_id" = \'dea1734e-1af1-4508-966c-709fcc18fa5c\', ' +
+            '"s1"."orders"."order_date" = \'2020-04-12\', "s1"."orders"."delivery_name" = \'Terry Test\', "s1"."orders"."delivery_address_company" = \'\', ' +
+            '"s1"."orders"."delivery_address_street" = \'17 Acacia Ave.\', "s1"."orders"."delivery_address_locality" = \'Stormford\', ' +
+            '"s1"."orders"."delivery_address_city" = \'Manchester\', "s1"."orders"."delivery_address_region" = \'\', "s1"."orders"."delivery_address_postalCode" = \'M9 5DF\', ' +
+            '"s1"."orders"."delivery_address_country" = \'GB\', "s1"."orders"."billing_name" = \'Bill Smith\', "s1"."orders"."billing_address_company" = \'Brimstone Ltd\', ' +
+            '"s1"."orders"."billing_address_street" = \'17 Halford Court\', "s1"."orders"."billing_address_locality" = \'Zenith Business Park\', ' +
+            '"s1"."orders"."billing_address_city" = \'Huddersfield\', "s1"."orders"."billing_address_region" = \'West Yorkshire\', ' +
+            '"s1"."orders"."billing_address_postalCode" = \'HD12 6HF\', "s1"."orders"."billing_address_country" = \'GB\' where "s1"."orders"."billing_name" = \'Gloria Spencer\''
+        );
+      });
+
     });
 
   });

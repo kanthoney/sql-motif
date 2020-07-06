@@ -42,7 +42,11 @@ Does not include subrecords.
 
 * `UpdateKey(key, options)`. Produces an `update` statement for this record. `key` contains key fields that are different from the record.
 
-* `updateKey(key, options)`. Produces an `update` statement for this record, excluding the `update` keyword. `key` contains key fieldss that are different from the record.
+* `updateKey(key, options)`. Produces an `update` statement for this record, excluding the `update` keyword. `key` contains key fields that are different from the record.
+
+* `UpdateWhere(where, options)`. Produces an `update` statement for this record. `where` is used for the `where` clause.
+
+* `updateWhere(where, options)`. Produces an `update` statement for this record, excluding the `update` keyword. `where` is used for the where clause.
 
 * `Delete(options)`. Produces a `delete` statement for this record.
 

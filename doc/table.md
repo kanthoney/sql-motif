@@ -161,10 +161,20 @@ the key fields are taken from the `record`. `record` is a [record](./table-recor
 
 * `Update(record, [old, options])`. Produces a full `update` query including the `update` keyword.
 
+* `updateWhere(record, where, [options])`. Produces a full `update` query excluding the `update` keyword. The fields from `where`, including non-key fields,  are used
+in the `where` clause. `record` is a [record](./table-record.md). Takes an optional [`options`](./table-options.md) argument.
+
+* `UpdateWhere(record, where, [options])`. Produces a full `update` query including the `update` keyword.
+
 * `updateSafe(record, [old, options])` (*experimental*). Produces an `update` query, throwing an error if any part of the primary key is missing from either the main table or
 joined tables not marked as read only. Does not currently detect if the missing key can be obtained from one of the subtables.
 
 * `UpdateSafe(record, [old, options])` (*experimental*). Produces an `update` query, including the `update` keyword, throwing an error if the part of the primary key is missing.
+
+* `updateWhereSafe(record, where, [options])` (*experimental*). Produces an `update` query, throwing an error if any part of the primary key is missing from either the main table or
+joined tables not marked as read only. Does not currently detect if the missing key can be obtained from one of the subtables.
+
+* `UpdateWhereSafe(record, where, [options])` (*experimental*). Produces an `update` query, including the `update` keyword, throwing an error if the part of the primary key is missing.
 
 ### Delete methods
 

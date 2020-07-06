@@ -616,6 +616,24 @@ class Table
     return `update ${this.update(record, old, options)}`;
   }
 
+  updateWhere(record, where, options)
+  {
+    options = options || {};
+    if(this.dialect.options.singleTableUpdate) {
+      options.joins = [];
+    }
+    const setClause = this.Set(record, options);
+    if(setClause) {
+      return `${this.from(options)} ${setClause} ${this.Where(where, options)}`;
+    }
+    return '';
+  }
+
+  UpdateWhere(record, where, options)
+  {
+    return `update ${this.updateWhere(record, where, options)}`;
+  }
+
   updateSafe(record, old, options)
   {
     return this.update(record, old, { ...options, safe: true });
@@ -624,6 +642,16 @@ class Table
   UpdateSafe(record, old, options)
   {
     return this.Update(record, old, { ...options, safe: true });
+  }
+
+  updateWhereSafe(record, where, options)
+  {
+    return this.updateWhere(record, where, { ...options, safe: true });
+  }
+
+  UpdateWhereSafe(record, where, options)
+  {
+    return this.UpdateWhere(record, where, { ...options, safe: true });
   }
 
   delete(record, options)

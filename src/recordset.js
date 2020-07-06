@@ -350,6 +350,40 @@ class RecordSet
     }, []);
   }
 
+  UpdateWhere(where, options)
+  {
+    options = options || {};
+    return this.reduce((acc, record) => {
+      return acc.concat(record.UpdateWhere(where, options)).concat(record.reduceSubtables((acc, recordSet) => {
+        if(recordSet.join.readOnly || (options.joins && options.joins !== '*' && !options.joins.includes(recordSet.join.name))) {
+          return acc;
+        }
+        const newWhere = _.get(where, recordSet.join.name);
+        if(!newWhere) {
+          return acc;
+        }
+        return acc.concat(recordSet.updateWhere(newWhere, options));
+      }, []));
+    }, []);
+  }
+
+  updateWhere(where, options)
+  {
+    options = options || {};
+    return this.reduce((acc, record) => {
+      return acc.concat(record.updateWhere(where, options)).concat(record.reduceSubtables((acc, recordSet) => {
+        if(recordSet.join.readOnly || (options.joins && options.joins !== '*' && !options.joins.includes(recordSet.join.name))) {
+          return acc;
+        }
+        const newWhere = _.get(where, recordSet.join.name);
+        if(!newWhere) {
+          return acc;
+        }
+        return acc.concat(recordSet.updateWhere(newWhere, options));
+      }, []));
+    }, []);
+  }
+
   Delete(options)
   {
     options = options || {};

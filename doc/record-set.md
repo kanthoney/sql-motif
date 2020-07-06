@@ -73,6 +73,11 @@ parameter of the `reduce` call for the first record. Returns the result of the f
 * `updateKey(key, options)`. Creates a set of `update` statements, excluding the `update` keyword, to update any non-read-only records and subrecords. `key` contains key fields
 that are different from the records.
 
+* `UpdateWhere(where, options)`. Creates a set of `update` statements to update any non-read-only records and subrecords. `where` is used as the `where` clause.
+
+* `updateWhere(where, options)`. Creates a set of `update` statements, excluding the `update` keyword, to update any non-read-only records and subrecords. `where` is used for
+the `where` clause.
+
 * `Delete(options)`. Creates a set of `delete` statements to delete the records including (by default) any non-read-only subrecords.
 
 * `delete(options)`. Creates a set of `delete` statements, excluding the `delete` keyword, to delete the records including (by default) any non-read-only subrecords.

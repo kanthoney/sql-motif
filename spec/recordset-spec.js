@@ -1512,6 +1512,16 @@ describe("record set tests", () => {
         );
       });
 
+      it('should create update statements', () => {
+        const r = new RecordSet(j);
+        r.addSQLResult(lines);
+        expect(JSON.stringify(r.UpdateWhere({ company: 'ACE002' }, { safe: false }))).toBe(
+          '["update \\"stock\\" set \\"stock\\".\\"company\\" = \'ANA191\', \\"stock\\".\\"sku\\" = \'DX676\', \\"stock\\".\\"description\\" = \'Hammer\' ' +
+            'where \\"stock\\".\\"company\\" = \'ACE002\'","update \\"stock\\" set \\"stock\\".\\"company\\" = \'ANA191\', \\"stock\\".\\"sku\\" = \'DX678\', ' +
+            '\\"stock\\".\\"description\\" = \'Chisel\' where \\"stock\\".\\"company\\" = \'ACE002\'"]'
+        );
+      });
+
     });
 
     describe('stock_with_options tests', () => {

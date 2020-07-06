@@ -438,6 +438,16 @@ class Record
     return this.table.update(this.data, this.keyScope(key), { joins: [], safe: true, ...options });
   }
 
+  UpdateWhere(where, options)
+  {
+    return this.table.UpdateWhere(this.data, where, { joins: [], safe: true, ...options });
+  }
+
+  updateWhere(where, options)
+  {
+    return this.table.updateWhere(this.data, where, { joins: [], safe: true, ...options });
+  }
+
   Delete(options)
   {
     return this.table.Delete(this.data, { joins: [], safe: true, ...options });
