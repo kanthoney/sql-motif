@@ -21,14 +21,15 @@ class RecordSet
     this.recordMap = {};
   }
 
-  addSQLResult(line)
+  addSQLResult(line, options)
   {
+    options = options || {};
     if(_.isArray(line)) {
-      line.forEach(line => this.addSQLResult(line));
+      line.forEach(line => this.addSQLResult(line, options));
       return this;
     }
-    let record = Record.fromSQLLine(this, line);
-    const hash = record.hashKey();
+    let record = Record.fromSQLLine(this, line, options);
+    const hash = record.hashKey(options.collate);
     if(!_.isNil(hash) && this.recordMap[hash] !== undefined) {
       record = this.recordMap[hash].merge(record);
     } else if(!record.empty) {
@@ -40,13 +41,14 @@ class RecordSet
     return this;
   }
 
-  addRecord(record)
+  addRecord(record, options)
   {
+    options = options || {};
     if(record instanceof RecordSet) {
-      return this.addRecord(record.records);
+      return this.addRecord(record.records, options);
     }
     if(record instanceof Record) {
-      const hash = record.hashKey();
+      const hash = record.hashKey(options.collate);
       if(hash && record.fullKey) {
         if(this.recordMap[hash]) {
           this.recordMap[hash].merge(record);
@@ -60,7 +62,7 @@ class RecordSet
       return this;
     }
     if(_.isArray(record)) {
-      record.forEach(record => this.addRecord(record));
+      record.forEach(record => this.addRecord(record, options));
       return this;
     }
     const { recordData, joined } = this.join.table.columns.fields().reduce((acc, col) => {
@@ -96,10 +98,17 @@ class RecordSet
           recordSet = new RecordSet(join, Object.assign({}, _.get(r.joined, join.path || join.name)));
           _.set(r.data, join.path || join.name, recordSet);
         }
+        if(options.collate) {
+          let collate = (new Selector(options.collate)).passesJoin(join);
+          if(collate) {
+            recordSet.addRecord(value, { collate });
+            return;
+          }
+        }
         recordSet.addRecord(value);
       }
     });
-    return this.addRecord(r);
+    return this.addRecord(r, options);
   }
 
   validate(options = {})

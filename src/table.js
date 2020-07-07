@@ -1011,10 +1011,10 @@ class Table
     return this.toRecordSet(record).fillAsync(options);
   }
 
-  collate(lines)
+  collate(lines, options)
   {
     const r = new RecordSet(this);
-    return r.addSQLResult(lines);
+    return r.addSQLResult(lines, options);
   }
 
   extend(config)

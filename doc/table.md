@@ -102,7 +102,8 @@ stock.Select(); // select "stock"."sku", "stock"."description"
 
 * `SelectWhere(selector, where)`. Produces a simple `select` statement including the `select` keyword.
 
-* `selectWhereKey(selector, where)`. Produces a simple `select` query (except for the `select` keyword) for the table for the specified columns and the key part of the `where` specification.
+* `selectWhereKey(selector, where)`. Produces a simple `select` query (except for the `select` keyword) for the table for the specified columns and the key part of the `where`
+specification.
 
 * `SelectWhereKey(selector, where)`. Produces a simple `select` statement including the `select` keyword for the key part of the `where` specification.
 
@@ -123,8 +124,8 @@ stock.Select(); // select "stock"."sku", "stock"."description"
 
 ### Where methods
 
-* `where(record, [options])`. Produces a `where` clause for the given record, excluding the `where` keyword. If an array of records is provided, produces a set of clauses for each record
-separated by `or`. `record` is a [record](./table-record.md). Takes an optional [`options`](./table-options) argument.
+* `where(record, [options])`. Produces a `where` clause for the given record, excluding the `where` keyword. If an array of records is provided, produces a set of clauses for each
+record separated by `or`. `record` is a [record](./table-record.md). Takes an optional [`options`](./table-options) argument.
 
 * `Where(record, [options])`. Produces a `where` clause for the given record or records, including the `where` keyword.
 
@@ -135,11 +136,13 @@ separated by `or`. `record` is a [record](./table-record.md). Takes an optional 
 * `whereSafe(record, [options])` (*experimental*). Produces a `where` clause for the key fields of the record. Throws an error if part of the primary key of the main table
 or any joined tables that are not read only is missing. Does not currently check subtables to see if the missing key could be obtained from there.
 
-* `WhereSafe(record, [options])` (*experimental*). Produces a `where` clause for the key fields of the record, including the `where` keyword. Throws error if part of primary key is missing.
+* `WhereSafe(record, [options])` (*experimental*). Produces a `where` clause for the key fields of the record, including the `where` keyword. Throws error if part of primary
+ key is missing.
 
 * `whereKeySafe(record, [options])` (*experimental*). Produces a `where` clause for the key fields of the record. Throws error if part of primary key is missing.
 
-* `WhereKeySafe(record, [options])` (*experimental*). Produces a `where` clause for the key fields of the record, including the `where` keyword. Throws error if part of primary key is missing.
+* `WhereKeySafe(record, [options])` (*experimental*). Produces a `where` clause for the key fields of the record, including the `where` keyword. Throws error if part of
+ primary key is missing.
 
 ### Insert methods
 
@@ -156,8 +159,8 @@ If `record` is an array produces a comma separated list of records.
 
 ### Update methods
 
-* `update(record, [old, options])`. Produces a full `update` query excluding the `update` keyword. If `old` is specified the key fields from `old` are used in the `where` clause, otherwise
-the key fields are taken from the `record`. `record` is a [record](./table-record.md). Takes an optional [`options`](./table-options.md) argument.
+* `update(record, [old, options])`. Produces a full `update` query excluding the `update` keyword. If `old` is specified the key fields from `old` are used in the `where` clause,
+otherwise the key fields are taken from the `record`. `record` is a [record](./table-record.md). Takes an optional [`options`](./table-options.md) argument.
 
 * `Update(record, [old, options])`. Produces a full `update` query including the `update` keyword.
 
@@ -174,23 +177,26 @@ joined tables not marked as read only. Does not currently detect if the missing 
 * `updateWhereSafe(record, where, [options])` (*experimental*). Produces an `update` query, throwing an error if any part of the primary key is missing from either the main table or
 joined tables not marked as read only. Does not currently detect if the missing key can be obtained from one of the subtables.
 
-* `UpdateWhereSafe(record, where, [options])` (*experimental*). Produces an `update` query, including the `update` keyword, throwing an error if the part of the primary key is missing.
+* `UpdateWhereSafe(record, where, [options])` (*experimental*). Produces an `update` query, including the `update` keyword, throwing an error if the part of the primary key
+  is missing.
 
 ### Delete methods
 
-* `delete(record, [options])`. Produces a `delete` statement excluding the `delete` keyword. `record` is a [record](./table-record.md). Takes an optional [`options`](./table-options) argument.
+* `delete(record, [options])`. Produces a `delete` statement excluding the `delete` keyword. `record` is a [record](./table-record.md). Takes an optional
+  [`options`](./table-options) argument.
 
 * `Delete(record, [options])`. Produces a full `delete` statement including the `delete` keyword.
 
-* `deleteSafe(record, [options])` (*experimental*). Produces a `delete` statement excluding the `delete` keyword. Takes an optional [`options`](./table-options) argument. Throws an error
-if part of the primary key of the main table or a joined table not marked as read only is not detected. Does not currently check subtables to see if the missing key can be found there.
+* `deleteSafe(record, [options])` (*experimental*). Produces a `delete` statement excluding the `delete` keyword. Takes an optional [`options`](./table-options) argument.
+  Throws an error if part of the primary key of the main table or a joined table not marked as read only is not detected. Does not currently check subtables to see if the missing
+  key can be found there.
 
 * `DeleteSafe(record, [options])` (*experimental*). Produces a full `delete` statement including the `delete` keyword. Throws an error if the primary key is not complete.
 
 ### Create methods
 
-* `createColumnsArray()` Produces an array of clauses for the columns for use in a `create` statement. The `primary key` option is not included in the column specification - use `createPrimaryKey()`
-instead.
+* `createColumnsArray()` Produces an array of clauses for the columns for use in a `create` statement. The `primary key` option is not included in the column specification -
+  use `createPrimaryKey()` instead.
 
 * `createColumns()` Produces a comma separated list of clauses for the columns for use in a `create` statement.
 
@@ -210,12 +216,13 @@ instead.
 
 ### Group, order and limit
 
-* `groupBy([fields])`. Creates a group by clause without the `group by` keywords. `fields` is an array of column names or aliases. If empty, defaults to the primary key of the main table.
+* `groupBy([fields])`. Creates a group by clause without the `group by` keywords. `fields` is an array of column names or aliases. If empty, defaults to the primary
+key of the main table.
 
 * `GroupBy([fields])`. Creates a group by clause including the `group by` keywords.
 
-* `orderBy([fields])`. Creates an order by clause excluding the `order by` keywords. `fields` is a list of fields in the form `<field_name> [<dir>]`, where dir is either `asc` or `desc`,
-or can be omitted to use the default of `asc`.
+* `orderBy([fields])`. Creates an order by clause excluding the `order by` keywords. `fields` is a list of fields in the form `<field_name> [<dir>]`, where `<dir>`
+  is either `asc` or `desc`, or can be omitted to use the default of `asc`.
 
 * `OrderBy([fields])`. Creates on order by clause including the `order by` keywords.
 
@@ -225,12 +232,12 @@ or can be omitted to use the default of `asc`.
 
 ### Validation
 
-* `validate(record, [options])`. Validates a record or array of records, checking the value for each column against the `validate` entry in the [column specification](./column-spec.md).
-`options` is an object containing [validation options](./validation-options.md). The function will return a validated [`RecordSet`](./record-set.md). You can use the `validationResult`
-method on the record set to turn it into something returnable.
+* `validate(record, [options])`. Validates a record or array of records, checking the value for each column against the `validate` entry in the
+[column specification](./column-spec.md). `options` is an object containing [validation options](./validation-options.md). The function will return a validated
+[`RecordSet`](./record-set.md). You can use the `validationResult` method on the record set to turn it into something returnable.
 
-* `validateAsync(record, [options])`. Validates a record or array of records, returning a promise resolving to a validation result object as in the previous method. Used if the `validate`
-function in any of the [column specifications](./column-spec.md) returns a promise.
+* `validateAsync(record, [options])`. Validates a record or array of records, returning a promise resolving to a validation result object as in the previous method.
+ Used if the `validate` function in any of the [column specifications](./column-spec.md) returns a promise.
 
 ### Filling
 
@@ -241,4 +248,7 @@ function in any of the [column specifications](./column-spec.md) returns a promi
 
 ### SQL result collation
 
-* `collate(lines)`. Takes a set of lines resulting from an SQL query and collates them, packing subrecords into the appropriate locations specified in the join spec.
+* <a name="collate"></a>`collate(lines, [options])`. Takes a set of lines resulting from an SQL query and collates them, packing subrecords into the appropriate locations
+specified in the join spec. `options` is a [collation options](./collation-options.md) object.
+
+

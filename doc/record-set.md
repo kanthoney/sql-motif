@@ -4,9 +4,9 @@ A `RecordSet` is an object returned by the `table.toRecordSet`, `table.fill`, `t
 
 ## Methods
 
-* `addSQLResult(line)`. Adds a line or array of lines from an SQL result to the record set.
+* `addSQLResult(line, options)`. Adds a line or array of lines from an SQL result to the record set. `options` is a [collations options](./collation-options.md) object.
 
-* `addRecord(record)`. Adds a record to the record set.
+* `addRecord(record, options)`. Adds a record to the record set. `options` is a [collations options](./collation-options.md) object.
 
 * `validate([options])`. Validates the record set, setting the `valid` property and the `errors` and `valid` properties on each record. Returns the modified record set.
 `options` is an optional [validation options](./validation-options.md) object.

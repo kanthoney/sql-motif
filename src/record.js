@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const Selector = require('./selector');
 
 class Record
 {
@@ -16,8 +17,9 @@ class Record
     this.empty = false;
   }
   
-  static fromSQLLine(recordSet, line)
+  static fromSQLLine(recordSet, line, options)
   {
+    options = options || {};
     const RecordSet = require('./recordset');
     let empty = true;
     let { recordData, joined } = recordSet.join.table.columns.fields().reduce((acc, col) => {
@@ -46,65 +48,69 @@ class Record
       return acc;
     }, { recordData: {}, joined: {} });
     if(recordSet.subTable) {
-      const subRecord = Record.fromSQLLine(new RecordSet(recordSet.subTable, {}), recordData);
+      const subRecord = Record.fromSQLLine(new RecordSet(recordSet.subTable, {}), recordData, options);
       recordData = subRecord.data;
     }
     const record = new Record(recordSet, empty?{}:recordData);
     record.joined = joined;
     record.empty = empty;
     recordSet.join.table.joins.forEach(join => {
+      let collate;
+      if(options.collate) {
+        collate = new Selector(options.collate).passesJoin(join);
+      }
       let subRecordSet = _.get(record.data, join.path || join.name);
       if(subRecordSet === undefined) {
         subRecordSet = new RecordSet(join, Object.assign({}, _.get(record.joined, join.table.config.path), _.get(recordSet.joined, join.path || join.name)));
-        subRecordSet.addSQLResult(line);
+        subRecordSet.addSQLResult(line, { collate });
         if(subRecordSet.length > 0) {
           record.empty = false;
         }
         _.set(record.data, join.path || join.name, subRecordSet);
       } else {
-        subRecordSet.addSQLResult(line);
+        subRecordSet.addSQLResult(line, { collate });
         record.empty = false;
       }
     });
     return record;
   }
 
-  hashKey()
+  hashKey(collate)
   {
     const RecordSet = require('./recordset');
-    if(this.hash === undefined || this.dirty) {
+    collate = collate || this.collate || (col => col.primaryKey);
+    if(this.hash === undefined || this.dirty || this.collate !== collate) {
+      this.collate = collate;
       let empty = true;
       this.fullKey = true;
-      const hash = this.table.columns.fields().reduce((acc, col) => {
+      const hash = this.table.columns.fields(collate).reduce((acc, col) => {
         const path = col.subTablePath || col.path;
         let value = _.get(this.data, path);
-        if(col.primaryKey || _.has(this.recordSet.joined, col.path)) {
-          if(_.isNil(value)) {
-            value = _.get(this.recordSet.joined, col.path);
-          }
-          const joinedTo = col.joinedTo.concat(col.subTableJoinedTo || []);
-          for(let i = 0; i < joinedTo.length && _.isNil(value); i++) {
-            let path = joinedTo[i];
-            value = this.data;
-            for(let j = 0; j < path.length; j++) {
-              value = _.get(value, path[j]);
-              if(value instanceof RecordSet) {
-                if(value.length > 0) {
-                  value = value.get('[0]').toJSON();
-                } else {
-                  value = null;
-                  break;
-                }
+        if(_.isNil(value)) {
+          value = _.get(this.recordSet.joined, col.path);
+        }
+        const joinedTo = col.joinedTo.concat(col.subTableJoinedTo || []);
+        for(let i = 0; i < joinedTo.length && _.isNil(value); i++) {
+          let path = joinedTo[i];
+          value = this.data;
+          for(let j = 0; j < path.length; j++) {
+            value = _.get(value, path[j]);
+            if(value instanceof RecordSet) {
+              if(value.length > 0) {
+                value = value.get('[0]').toJSON();
+              } else {
+                value = null;
+                break;
               }
             }
           }
-          if(_.isNil(value)) {
-            this.fullKey = false;
-            return acc.concat(null);
-          } else {
-            empty = false;
-            return acc.concat(value);
-          }
+        }
+        if(_.isNil(value)) {
+          this.fullKey = false;
+          return acc.concat(null);
+        } else {
+          empty = false;
+          return acc.concat(value);
         }
         return acc;
       }, []);
@@ -123,33 +129,29 @@ class Record
     if(this.hash !== other.hashKey()) {
       return this;
     }
-    this.table.joins.forEach(join => {
-      const subRecord = _.get(this.data, join.path || join.name);
-      const otherRecord = _.get(other.data, join.path || join.name);
-      if(subRecord instanceof RecordSet) {
-        if(otherRecord) {
-          subRecord.addRecord(otherRecord);
+    let table = this.table;
+    while(table) {
+      table.joins.forEach(join => {
+        let collate;
+        if(this.collate) {
+          collate = (new Selector(this.collate)).passesJoin(join);
         }
-      } else if(otherRecord) {
-        const recordSet = new RecordSet(otherRecord.recordSet.table, otherRecord.recordSet.joined);
-        recordSet.addRecord(otherRecord);
-        _.set(this.data, join.path || join.name, recordSet);
-      }
-    });
-    if(this.table.config.subtable) {
-      this.table.config.subtable.table.joins.forEach(join => {
         const subRecord = _.get(this.data, join.path || join.name);
         const otherRecord = _.get(other.data, join.path || join.name);
         if(subRecord instanceof RecordSet) {
           if(otherRecord) {
-            subRecord.addRecord(otherRecord);
+            subRecord.addRecord(otherRecord, { collate });
           }
         } else if(otherRecord) {
           const recordSet = new RecordSet(otherRecord.recordSet.table, otherRecord.recordSet.joined);
-          recordSet.addRecord(otherRecord);
+          recordSet.addRecord(otherRecord, { collate });
           _.set(this.data, join.path || join.name, recordSet);
         }
       });
+      if(!table.config.subtable) {
+        break;
+      }
+      table = table.config.subtable.table;
     }
     return this;
   }
