@@ -66,16 +66,10 @@ class RecordSet
       return this;
     }
     const { recordData, joined } = this.join.table.columns.fields().reduce((acc, col) => {
-      let path = col.path;
+      const path = col.subTableColPath || col.path;
       let value = _.get(record, path);
-      if(value === undefined && col.subTablePath) {
-        value = _.get(record, col.subTablePath);
-        if(value !== undefined) {
-          path = col.subTablePath;
-        }
-      }
       if(value === undefined) {
-        value = _.get(this.joined, path);
+        value = _.get(this.joined, col.path);
       }
       if(value !== undefined) {
         _.set(acc.recordData, path, value);

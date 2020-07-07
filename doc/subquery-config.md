@@ -30,6 +30,8 @@ The `config` object for the `subquery` method takes the following options:
 
 * `alias`. An alias for the subquery. If not specified, defaults to the table name with `_subquery` concatenated to it.
 
+* `columns`. A set of [columns](./columns-spec.md) to add to the table.
+
 * `query`. The query to use. This can be a string or a function. If a function, this takes an object with the following parameters:
 
   * `table`. The underlying table

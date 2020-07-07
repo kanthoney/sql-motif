@@ -22,7 +22,7 @@ class Record
     options = options || {};
     const RecordSet = require('./recordset');
     let empty = true;
-    let { recordData, joined } = recordSet.join.table.columns.fields().reduce((acc, col) => {
+    let { recordData, joined, subTableRecords } = recordSet.join.table.columns.fields().reduce((acc, col) => {
       const alias = col.table.config.path.concat(col.alias || col.name).join('_');
       let value = _.get(line, alias);
       if(!_.isNil(value)) {
@@ -35,21 +35,46 @@ class Record
         if(_.isFunction(col.format)) {
           value = col.format(value);
         }
-        if(recordSet.subTable) {
-          _.set(acc.recordData, col.alias || col.name, value);
+        if(col.subTablePath && col.subTablePath.length > 0) {
+          if(!acc.subTableRecords) {
+            acc.subTableRecords = {};
+          }
+          _.set(acc.subTableRecords, col.subTableColPath, value);
+          acc.joined = col.subTableJoinedTo.reduce((acc, path) => {
+            _.set(acc, path, value);
+            return acc;
+          }, acc.joined || {});
         } else {
-          _.set(acc.recordData, col.path, value);
+          _.set(acc.recordData, col.subTableColPath || col.path, value);
         }
-        acc.joined = col.joinedToFull.reduce((acc, path) => {
-          _.set(acc, path, value);
+        const joinedTo = col.joinedTo.concat(col.subTableJoinedTo || []);
+        acc.joined = joinedTo.reduce((acc, path) => {
+          _.set(acc, col.table.config.path.concat(path), value);
           return acc;
         }, acc.joined);
       }
       return acc;
     }, { recordData: {}, joined: {} });
-    if(recordSet.subTable) {
-      const subRecord = Record.fromSQLLine(new RecordSet(recordSet.subTable, {}), recordData, options);
-      recordData = subRecord.data;
+    if(subTableRecords) {
+      let table = recordSet.subTable;
+      while(table) {
+        table.joins.forEach(join => {
+          const data = _.get(subTableRecords, join.path || join.name);
+          if(data !== undefined) {
+            let collate;
+            if(options.collate) {
+              collate = (new Selector(options.collate)).passesJoin(join);
+            }
+            const subRecordSet = new RecordSet(join.table, _.get(Object.assign({}, recordSet.joined, joined), join.path || join.name));
+            subRecordSet.addRecord(data, { collate });
+            _.set(recordData, join.path || join.name, subRecordSet);
+          }
+        });
+        if(!table.config.subtable) {
+          break;
+        }
+        table = table.config.subtable.table;
+      }
     }
     const record = new Record(recordSet, empty?{}:recordData);
     record.joined = joined;
@@ -84,23 +109,25 @@ class Record
       let empty = true;
       this.fullKey = true;
       const hash = this.table.columns.fields(collate).reduce((acc, col) => {
-        const path = col.subTablePath || col.path;
+        const path = col.path;
         let value = _.get(this.data, path);
         if(_.isNil(value)) {
           value = _.get(this.recordSet.joined, col.path);
         }
-        const joinedTo = col.joinedTo.concat(col.subTableJoinedTo || []);
-        for(let i = 0; i < joinedTo.length && _.isNil(value); i++) {
-          let path = joinedTo[i];
-          value = this.data;
-          for(let j = 0; j < path.length; j++) {
-            value = _.get(value, path[j]);
-            if(value instanceof RecordSet) {
-              if(value.length > 0) {
-                value = value.get('[0]').toJSON();
-              } else {
-                value = null;
-                break;
+        if(_.isNil(value)) {
+          const joinedTo = col.joinedTo.concat(col.subTableJoinedTo || []);
+          for(let i = 0; i < joinedTo.length && _.isNil(value); i++) {
+            let path = joinedTo[i];
+            value = this.data;
+            for(let j = 0; j < path.length; j++) {
+              value = _.get(value, path[j]);
+              if(value instanceof RecordSet) {
+                if(value.length > 0) {
+                  value = value.get('[0]').toJSON();
+                } else {
+                  value = null;
+                  break;
+                }
               }
             }
           }
@@ -519,12 +546,6 @@ class Record
     let acc = table.columns.fields('*', true).reduce((acc, col) => {
       let path = col.path;
       let value = _.get(this.data, path);
-      if(value === undefined && col.subTablePath) {
-        value = _.get(this.data, col.subTablePath);
-        if(value !== undefined) {
-          path = col.subTablePath;
-        }
-      }
       if(value === undefined && options.mapJoined) {
         value = _.get(this.recordSet.joined, col.path);
       }

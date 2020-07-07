@@ -10,7 +10,8 @@ describe('view specs', () => {
     const v1 = tables.orders.view({
       name: 'order_delivery_addresses',
       schema: 'views',
-      selector: ['company', 'order_id', { delivery: { address: true } }]
+      columns: [ { name: 'count', calc: 'count(*)' } ],
+      selector: ['company', 'order_id', { delivery: { address: true } }, 'count']
     });
 
     const v2 = tables.orders.view({
@@ -23,7 +24,7 @@ describe('view specs', () => {
       expect(v1.Create()).toBe(
         'create view "views"."order_delivery_addresses" as select "s1"."orders"."company", "s1"."orders"."order_id", "s1"."orders"."delivery_address_company", ' +
           '"s1"."orders"."delivery_address_street", "s1"."orders"."delivery_address_locality", "s1"."orders"."delivery_address_city", ' +
-          '"s1"."orders"."delivery_address_region", "s1"."orders"."delivery_address_postalCode", "s1"."orders"."delivery_address_country" from "s1"."orders"'
+          '"s1"."orders"."delivery_address_region", "s1"."orders"."delivery_address_postalCode", "s1"."orders"."delivery_address_country", count(*) as "count" from "s1"."orders"'
       );
     });
 
@@ -185,9 +186,9 @@ describe('view specs', () => {
       ];
 
       expect(JSON.stringify(v1.collate(lines))).toBe(
-        '[{"company":"ASH102","sku":"GNG958","warehouse":[{"company":"ASH102","name":"Mercury","bins":[{"company":"ASH102","warehouse_name":"Mercury","bin":"HA45A",' +
-          '"inventory":[]},{"company":"ASH102","warehouse_name":"Mercury","bin":"T56S","inventory":[]}]},{"company":"ASH102","name":"Gemini","bins":[{"company":"ASH102",' +
-          '"warehouse_name":"Gemini","bin":"HA45A","inventory":[]}]}]}]'
+        '[{"company":"ASH102","sku":"GNG958","warehouse":[{"company":"ASH102","name":"Mercury","bins":[{"company":"ASH102","warehouse_name":"Mercury","bin":"HA45A"},' +
+          '{"company":"ASH102","warehouse_name":"Mercury","bin":"T56S"}]},{"company":"ASH102","name":"Gemini","bins":[{"company":"ASH102",' +
+          '"warehouse_name":"Gemini","bin":"HA45A"}]}]}]'
       );
 
     });
@@ -270,7 +271,7 @@ describe('view specs', () => {
           lines_line_no: 1
         }
       ];
-      expect(JSON.stringify(table.collate(lines))).toBe(
+     expect(JSON.stringify(table.collate(lines))).toBe(
         '[{"id":"a0668fb0-b912-4545-bd72-d9aabf78799d","lines":[{"order_id":"a0668fb0-b912-4545-bd72-d9aabf78799d","line_no":1}]}]'
       );
     });

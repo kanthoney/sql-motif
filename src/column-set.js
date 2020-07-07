@@ -55,12 +55,13 @@ class ColumnSet
       if(col instanceof Column) {
         if(selector.passes(col)) {
           return acc.concat(new Column({
-              ...col.config,
+              ..._.omit(col.config, 'calc'),
             primaryKey: primaryTable && col.primaryKey,
             table,
             name: path.concat(col.alias || col.name).join('_'),
-            subTablePath: col.table.config.path.concat(col.path),
-            subTableJoinedTo: col.joinedTo
+            subTablePath: col.subTablePath || col.table.config.path,
+            subTableColPath: col.subTableColPath || col.table.config.path.concat(col.path),
+            subTableJoinedTo: col.subTableJoinedTo || col.joinedTo
           }));
         }
       } else if(col instanceof ColumnSet) {
@@ -163,12 +164,14 @@ class ColumnSet
         return acc.concat({ col, value });
       } else if(col instanceof Column) {
         if(!options.selector || col.passesSelection(options.selector)) {
-          let value = _.get(record, col.path);
-          if(value !== undefined) {
-            return acc.concat({ col, value });
-          }
-          if(col.subTablePath) {
-            value = _.get(record, col.subTablePath);
+          let value;
+          if(col.subTableColPath) {
+            value = _.get(record, col.subTableColPath);
+            if(value !== undefined) {
+              return acc.concat({ col, value });
+            }
+          } else {
+            value = _.get(record, col.path);
             if(value !== undefined) {
               return acc.concat({ col, value });
             }

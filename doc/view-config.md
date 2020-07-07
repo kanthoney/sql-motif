@@ -36,6 +36,8 @@ The `config` object for the `subquery` method takes the following options:
 
 * `selector`. A [`selector`](./selector.md) specifying which columns of the underlying table(s) should be included in the view.
 
+* `columns`. An optional array of [columns](./column-spec.md) to add to the table.
+
 * `query`. The query to use. This can be a string or a function. If a function, this takes an object with the following parameters:
 
   * `table`. The underlying table

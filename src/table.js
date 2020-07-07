@@ -115,7 +115,6 @@ class Table
           leftCol.joinCol = rightCol;
           const relPath = leftCol.table.config.path.slice(rightCol.table.config.path.length);
           rightCol.joinedTo.push(relPath.concat(leftCol.path));
-          rightCol.joinedToFull.push(leftCol.table.config.path.concat(leftCol.path));
           acc.on = acc.on.concat({ left: leftCol, right: rightCol });
         } else {
           console.warn(
@@ -192,27 +191,29 @@ class Table
   {
     config = config || {};
     const selector = new Selector(config.selector);
-    const subTable = new Table({
+    const subTable = config.columns?this.extend({ columns: config.columns }):this;
+    const table = new Table({
       ...this.config,
       alias: config.alias || `${this.config.alias || this.config.name}_subquery`,
       columns: [],
       joins: [],
       subtable: {
         type: 'subquery',
-        table: this,
+        table: subTable,
         selector,
         query: config.query
       }
     });
-    subTable.columns = this.columns.subTable(selector, subTable, true, true);
-    return subTable;
+    table.columns = subTable.columns.subTable(selector, table, true, true);
+    return table;
   }
 
   view(config)
   {
     config = config || {};
     const selector = new Selector(config.selector);
-    const subTable = new Table({
+    const subTable = config.columns?this.extend({ columns: config.columns }):this;
+    const table = new Table({
       ...this.config,
       name: config.name || `${this.config.name}_view`,
       schema: config.schema || this.config.schema,
@@ -220,15 +221,13 @@ class Table
       joins: [],
       subtable: {
         type: 'view',
-        table: this,
+        table: subTable,
         selector,
         query: config.query
       }
     });
-    global.debug = config.debug;
-    subTable.columns = this.columns.subTable(selector, subTable, true, true);
-    global.debug = false;
-    return subTable;
+    table.columns = subTable.columns.subTable(selector, table, true, true);
+    return table;
   }
 
   from(options)
@@ -1019,6 +1018,7 @@ class Table
 
   extend(config)
   {
+    config = config || {};
     const typeExpander = new TypeExpander(this.config.types);
     return new Table({
       ...this.config,

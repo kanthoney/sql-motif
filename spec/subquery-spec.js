@@ -23,6 +23,23 @@ describe('subquery tests', () => {
         );
       });
 
+      it('should create subquery for table with added columns', () => {
+        const s = t.subquery({
+          alias: "sq1",
+          selector: ['company', 'delivery', 'count'],
+          columns: [{ name: 'count', calc: 'count(*)' }],
+          query: ({ table, selector }) => table.SelectWhere(selector, {})
+        });
+        expect(s.SelectWhere('*', { company: 'ADA001' })).toBe(
+          'select "sq1"."company", "sq1"."delivery_name", "sq1"."delivery_address_company", "sq1"."delivery_address_street", "sq1"."delivery_address_locality", ' +
+            '"sq1"."delivery_address_city", "sq1"."delivery_address_region", "sq1"."delivery_address_postalCode", "sq1"."delivery_address_country", "sq1"."count" ' +
+            'from ( select "s1"."orders"."company", "s1"."orders"."delivery_name", "s1"."orders"."delivery_address_company", "s1"."orders"."delivery_address_street", ' +
+            '"s1"."orders"."delivery_address_locality", "s1"."orders"."delivery_address_city", "s1"."orders"."delivery_address_region", ' +
+            '"s1"."orders"."delivery_address_postalCode", "s1"."orders"."delivery_address_country", count(*) as "count" from "s1"."orders" where 1 = 1 ) as "sq1" ' +
+            'where "sq1"."company" = \'ADA001\''
+        );
+      });
+
     });
 
   });
