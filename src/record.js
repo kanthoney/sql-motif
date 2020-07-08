@@ -49,7 +49,7 @@ class Record
         }
         const joinedTo = col.joinedTo.concat(col.subTableJoinedTo || []);
         acc.joined = joinedTo.reduce((acc, path) => {
-          _.set(acc, col.table.config.path.concat(path), value);
+          _.set(acc, path, value);
           return acc;
         }, acc.joined);
       }
@@ -86,7 +86,7 @@ class Record
       }
       let subRecordSet = _.get(record.data, join.path || join.name);
       if(subRecordSet === undefined) {
-        subRecordSet = new RecordSet(join, Object.assign({}, _.get(record.joined, join.table.config.path), _.get(recordSet.joined, join.path || join.name)));
+        subRecordSet = new RecordSet(join, _.get(Object.assign({}, recordSet.joined, record.joined), join.path || join.name));
         subRecordSet.addSQLResult(line, { collate });
         if(subRecordSet.length > 0) {
           record.empty = false;

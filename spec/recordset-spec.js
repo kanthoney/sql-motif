@@ -1569,6 +1569,38 @@ describe("record set tests", () => {
         );
       });
 
+      it('should import one line for inventory2', () => {
+        const line = {
+          company: 'ANA191',
+          sku: 'DX676',
+          description: 'Hammer',
+          warehouse_company: 'ANA191',
+          warehouse_name: 'Chesterfield',
+          warehouse_description: 'grotty',
+          warehouse_address_company: 'Tools 4 U Ltd',
+          warehouse_address_street: '29 Sudbury Lane',
+          warehouse_address_locality: '',
+          warehouse_address_city: 'Chesterfield',
+          warehouse_address_region: 'Derbyshire',
+          warehouse_address_postalCode: 'S40 9DS',
+          warehouse_address_country: 'GB',
+          warehouse_bins_company: 'ANA191',
+          warehouse_bins_warehouse_name: 'Chesterfield',
+          warehouse_bins_bin: 'FA76D2',
+          warehouse_bins_inventory_sku: 'DX676',
+          warehouse_bins_inventory_bin: 'FA76D2',
+          warehouse_bins_inventory_time: '2019-06-14 09:12:54',
+          warehouse_bins_inventory_qty: 5,
+          warehouse_bins_inventory_cost: 98.34
+        };
+        expect(JSON.stringify(j.collate(line))).toBe(
+          '[{"company":"ANA191","sku":"DX676","description":"Hammer","warehouse":[{"company":"ANA191","name":"Chesterfield","description":"grotty",' +
+            '"address":{"company":"Tools 4 U Ltd","street":"29 Sudbury Lane","locality":"","city":"Chesterfield","region":"Derbyshire","postalCode":"S40 9DS",' +
+            '"country":"GB"},"bins":[{"company":"ANA191","warehouse_name":"Chesterfield","bin":"FA76D2","inventory":[{"company":"ANA191","sku":"DX676",' +
+            '"warehouse_name":"Chesterfield","bin":"FA76D2","time":"2019-06-14 09:12:54","qty":5,"cost":98.34}]}]}]}]'
+        );
+      });
+
       it('should collate lines with null fields', () => {
         const lines = [
           {
@@ -1700,6 +1732,211 @@ describe("record set tests", () => {
         const recordSet = j.collate(lines);
         expect(JSON.stringify(recordSet)).toBe(
           '[{"company":"ACE010","sku":"AA934","description":"Hammer"}]'
+        );
+      });
+
+    });
+
+  });
+
+  describe('tests with subqueries and views', () => {
+
+    const sq1 = joins.orders.view({
+      name: 'orders',
+      schema: 'views',
+      selector: ['company', 'order_id', 'lines'],
+      query: ({ table, selector }) => table.SelectWhere(selector, { company: 'ABC001' })
+    }).subquery({
+      alias: 'sq1'
+    });
+
+    const sq2 = joins.inventory2.view({
+      name: 'inventory',
+      schema: 'views',
+      selector: ['company', 'sku', 'warehouse']
+    }).subquery({
+      alias: 'sq2'
+    });
+
+    describe('j1 tests', () => {
+
+      const j1 = sq1.join({
+        name: 'inventory',
+        table: sq2,
+        on: ['company', 'sku:lines_sku']
+      });
+
+      it('should collate single line', () => {
+        const line = {
+          company: 'ABC001',
+          order_id: '785858bb-8b33-4fe3-bfea-0b2f1d67cfb4',
+          lines_company: 'ABC001',
+          lines_order_id: '785858bb-8b33-4fe3-bfea-0b2f1d67cfb4',
+          lines_line_no: 1,
+          lines_sku: 'ADS134',
+          lines_description: 'Spice Rack',
+          lines_qty: 1,
+          lines_price: 13.65,
+          inventory_sku: 'ADS134',
+          inventory_warehouse_company: 'ABC001',
+          inventory_warehouse_name: 'Mercury',
+          inventory_warehouse_description: 'Warm and cosy',
+          inventory_address_company: 'ABC Ltd',
+          inventory_address_street: '52 Wellington St',
+          inventory_address_locality: 'Angelborough',
+          inventory_address_city: 'Bristol',
+          inventory_address_region: 'Avon',
+          inventory_address_postalCode: 'BS2 5HD',
+          inventory_address_country: 'GB',
+          inventory_warehouse_bins_company: 'ABC001',
+          inventory_warehouse_bins_warehouse_name: 'Mercury',
+          inventory_warehouse_bins_bin: 'F56D',
+          inventory_warehouse_bins_inventory_company: 'ABC001',
+          inventory_warehouse_bins_inventory_sku: 'ADS134',
+          inventory_warehouse_bins_inventory_warehouse_name: 'Mercury',
+          inventory_warehouse_bins_inventory_bin: 'F56D',
+          inventory_warehouse_bins_inventory_time: '2018-06-14 14:32:19',
+          inventory_warehouse_bins_inventory_qty: 200,
+          inventory_warehouse_bins_inventory_cost: 7.46
+        };
+        expect(JSON.stringify(j1.collate(line))).toBe(
+          '[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","inventory":[{"company":"ABC001","sku":"ADS134","warehouse":[{"company":"ABC001",' +
+            '"name":"Mercury","description":"Warm and cosy","address":{"company":"ABC Ltd","street":"52 Wellington St","locality":"Angelborough",' +
+            '"city":"Bristol","region":"Avon","postalCode":"BS2 5HD","country":"GB"},"bins":[{"company":"ABC001","warehouse_name":"Mercury","bin":"F56D",' +
+            '"inventory":[{"company":"ABC001","sku":"ADS134","warehouse_name":"Mercury","bin":"F56D","time":"2018-06-14 14:32:19","qty":200,"cost":7.46}]}]}]}],' +
+            '"lines":[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","line_no":1,"sku":"ADS134","description":"Spice Rack","qty":1,"price":13.65}]}]'
+        );
+      });
+      
+      it('should collate single line with some joined columns missing', () => {
+        const line = {
+          company: 'ABC001',
+          order_id: '785858bb-8b33-4fe3-bfea-0b2f1d67cfb4',
+          lines_company: 'ABC001',
+          lines_order_id: '785858bb-8b33-4fe3-bfea-0b2f1d67cfb4',
+          lines_line_no: 1,
+          lines_sku: 'ADS134',
+          lines_description: 'Spice Rack',
+          lines_qty: 1,
+          lines_price: 13.65,
+          inventory_sku: 'ADS134',
+          inventory_warehouse_name: 'Mercury',
+          inventory_warehouse_description: 'Warm and cosy',
+          inventory_address_company: 'ABC Ltd',
+          inventory_address_street: '52 Wellington St',
+          inventory_address_locality: 'Angelborough',
+          inventory_address_city: 'Bristol',
+          inventory_address_region: 'Avon',
+          inventory_address_postalCode: 'BS2 5HD',
+          inventory_address_country: 'GB',
+          inventory_warehouse_bins_company: 'ABC001',
+          inventory_warehouse_bins_bin: 'F56D',
+          inventory_warehouse_bins_inventory_sku: 'ADS134',
+          inventory_warehouse_bins_inventory_bin: 'F56D',
+          inventory_warehouse_bins_inventory_time: '2018-06-14 14:32:19',
+          inventory_warehouse_bins_inventory_qty: 200,
+          inventory_warehouse_bins_inventory_cost: 7.46
+        };
+        expect(JSON.stringify(j1.collate(line))).toBe(
+          '[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","inventory":[{"company":"ABC001","sku":"ADS134","warehouse":[{"company":"ABC001",' +
+            '"name":"Mercury","description":"Warm and cosy","address":{"company":"ABC Ltd","street":"52 Wellington St","locality":"Angelborough",' +
+            '"city":"Bristol","region":"Avon","postalCode":"BS2 5HD","country":"GB"},"bins":[{"company":"ABC001","warehouse_name":"Mercury","bin":"F56D",' +
+            '"inventory":[{"company":"ABC001","sku":"ADS134","warehouse_name":"Mercury","bin":"F56D","time":"2018-06-14 14:32:19","qty":200,"cost":7.46}]}]}]}],' +
+            '"lines":[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","line_no":1,"sku":"ADS134","description":"Spice Rack","qty":1,"price":13.65}]}]'
+        );
+      });
+    });
+
+    describe('j2 tests', () => {
+
+      const j2 = sq2.join({
+        name: 'orders',
+        table: sq1,
+        on: ['company', 'lines_sku:sku']
+      });
+
+      it('should collate single line', () => {
+        const line = {
+          company: 'ABC001',
+          sku: 'ADS134',
+          warehouse_company: 'ABC001',
+          warehouse_name: 'Mercury',
+          warehouse_description: 'Warm and cosy',
+          address_company: 'ABC Ltd',
+          address_street: '52 Wellington St',
+          address_locality: 'Angelborough',
+          address_city: 'Bristol',
+          address_region: 'Avon',
+          address_postalCode: 'BS2 5HD',
+          address_country: 'GB',
+          warehouse_bins_company: 'ABC001',
+          warehouse_bins_warehouse_name: 'Mercury',
+          warehouse_bins_bin: 'F56D',
+          warehouse_bins_inventory_company: 'ABC001',
+          warehouse_bins_inventory_sku: 'ADS134',
+          warehouse_bins_inventory_warehouse_name: 'Mercury',
+          warehouse_bins_inventory_bin: 'F56D',
+          warehouse_bins_inventory_time: '2018-06-14 14:32:19',
+          warehouse_bins_inventory_qty: 200,
+          warehouse_bins_inventory_cost: 7.46,
+          orders_company: 'ABC001',
+          orders_order_id: '785858bb-8b33-4fe3-bfea-0b2f1d67cfb4',
+          orders_lines_company: 'ABC001',
+          orders_lines_order_id: '785858bb-8b33-4fe3-bfea-0b2f1d67cfb4',
+          orders_lines_line_no: 1,
+          orders_lines_sku: 'ADS134',
+          orders_lines_description: 'Spice Rack',
+          orders_lines_qty: 1,
+          orders_lines_price: 13.65,
+        }
+        expect(JSON.stringify(j2.collate(line))).toBe(
+          '[{"company":"ABC001","sku":"ADS134","orders":[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4",' +
+            '"lines":[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","line_no":1,"sku":"ADS134","description":"Spice Rack","qty":1,"price":13.65}]}],' +
+            '"warehouse":[{"company":"ABC001","name":"Mercury","description":"Warm and cosy","address":{"company":"ABC Ltd","street":"52 Wellington St",' +
+            '"locality":"Angelborough","city":"Bristol","region":"Avon","postalCode":"BS2 5HD","country":"GB"},"bins":[{"company":"ABC001","warehouse_name":"Mercury",' +
+            '"bin":"F56D","inventory":[{"company":"ABC001","sku":"ADS134","warehouse_name":"Mercury","bin":"F56D","time":"2018-06-14 14:32:19","qty":200,"cost":7.46}]}]}]}]'
+        );
+      });
+
+      it('should collate single line with some joined fields missing', () => {
+        const line = {
+          company: 'ABC001',
+          sku: 'ADS134',
+          warehouse_company: 'ABC001',
+          warehouse_name: 'Mercury',
+          warehouse_description: 'Warm and cosy',
+          address_company: 'ABC Ltd',
+          address_street: '52 Wellington St',
+          address_locality: 'Angelborough',
+          address_city: 'Bristol',
+          address_region: 'Avon',
+          address_postalCode: 'BS2 5HD',
+          address_country: 'GB',
+          warehouse_bins_company: 'ABC001',
+          warehouse_bins_warehouse_name: 'Mercury',
+          warehouse_bins_bin: 'F56D',
+          warehouse_bins_inventory_company: 'ABC001',
+          warehouse_bins_inventory_sku: 'ADS134',
+          warehouse_bins_inventory_warehouse_name: 'Mercury',
+          warehouse_bins_inventory_bin: 'F56D',
+          warehouse_bins_inventory_time: '2018-06-14 14:32:19',
+          warehouse_bins_inventory_qty: 200,
+          warehouse_bins_inventory_cost: 7.46,
+          orders_company: 'ABC001',
+          orders_order_id: '785858bb-8b33-4fe3-bfea-0b2f1d67cfb4',
+          orders_lines_company: 'ABC001',
+          orders_lines_line_no: 1,
+          orders_lines_sku: 'ADS134',
+          orders_lines_description: 'Spice Rack',
+          orders_lines_qty: 1,
+          orders_lines_price: 13.65,
+        }
+        expect(JSON.stringify(j2.collate(line))).toBe(
+          '[{"company":"ABC001","sku":"ADS134","orders":[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4",' +
+            '"lines":[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","line_no":1,"sku":"ADS134","description":"Spice Rack","qty":1,"price":13.65}]}],' +
+            '"warehouse":[{"company":"ABC001","name":"Mercury","description":"Warm and cosy","address":{"company":"ABC Ltd","street":"52 Wellington St",' +
+            '"locality":"Angelborough","city":"Bristol","region":"Avon","postalCode":"BS2 5HD","country":"GB"},"bins":[{"company":"ABC001","warehouse_name":"Mercury",' +
+            '"bin":"F56D","inventory":[{"company":"ABC001","sku":"ADS134","warehouse_name":"Mercury","bin":"F56D","time":"2018-06-14 14:32:19","qty":200,"cost":7.46}]}]}]}]'
         );
       });
 
