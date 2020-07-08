@@ -10,7 +10,6 @@ class Record
     this.recordSet = recordSet;
     this.table = this.recordSet.join.table;
     this.data = data;
-    this.valid = true;
     this.errors = {};
     this.dirty = true;
     this.joined = {};

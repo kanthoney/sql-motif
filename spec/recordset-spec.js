@@ -1819,7 +1819,6 @@ describe("record set tests", () => {
           lines_description: 'Spice Rack',
           lines_qty: 1,
           lines_price: 13.65,
-          inventory_sku: 'ADS134',
           inventory_warehouse_name: 'Mercury',
           inventory_warehouse_description: 'Warm and cosy',
           inventory_address_company: 'ABC Ltd',
@@ -1831,7 +1830,6 @@ describe("record set tests", () => {
           inventory_address_country: 'GB',
           inventory_warehouse_bins_company: 'ABC001',
           inventory_warehouse_bins_bin: 'F56D',
-          inventory_warehouse_bins_inventory_sku: 'ADS134',
           inventory_warehouse_bins_inventory_bin: 'F56D',
           inventory_warehouse_bins_inventory_time: '2018-06-14 14:32:19',
           inventory_warehouse_bins_inventory_qty: 200,
@@ -1940,6 +1938,141 @@ describe("record set tests", () => {
         );
       });
 
+    });
+
+  });
+
+  describe('Deep join field test', () => {
+   
+    const j = joins.orders.join({
+      name: 'inventory',
+      table: joins.inventory2,
+      on: ['company', 'sku:lines_sku']
+    });
+
+    it('it should collate one line', () => {
+      const line = {
+        company: 'ABC001',
+        order_id: 'dc3ed191-62ba-4017-893f-8ec86a640cb8',
+        order_date: '2020-07-08',
+        customer: 'PES154',
+        delivery_name: 'Penelope Smith',
+        delivery_address_company: '',
+        delivery_address_street: '4 Eastgate Street',
+        delivery_address_locality: 'Cocklesby',
+        delivery_address_city: 'Warrington',
+        delivery_address_region: 'Cheshire',
+        delivery_address_postalCode: 'WA2 9KL',
+        delivery_address_country: 'GB',
+        invoice_name: 'Penelope Smith',
+        invoice_address_company: '',
+        invoice_address_street: '4 Eastgate Street',
+        invoice_address_locality: 'Cocklesby',
+        invoice_address_city: 'Warrington',
+        invoice_address_region: 'Cheshire',
+        invoice_address_postalCode: 'WA2 9KL',
+        invoice_address_country: 'GB',
+        lines_company: 'ABC001',
+        lines_order_id: 'dc3ed191-62ba-4017-893f-8ec86a640cb8',
+        lines_line_no: 1,
+        lines_sku: 'GTE154',
+        lines_description: 'Hammer',
+        lines_qty: 1,
+        lines_price: 8.59,
+        inventory_company: 'ABC001',
+        inventory_sku: 'GTE154',
+        inventory_description: 'Hammer',
+        inventory_warehouse_company: 'ABC001',
+        inventory_warehouse_name: 'Hermes',
+        inventory_warehouse_description: 'Big and draughty',
+        inventory_warehouse_address_company: 'ABC Ltd',
+        inventory_warehouse_address_street: '10 Hammersmith St',
+        inventory_warehouse_address_locality: 'Penningsbury',
+        inventory_warehouse_address_city: 'Sheffield',
+        inventory_warehouse_address_region: 'South Yorkshire',
+        inventory_warehouse_address_postalCode: 'S12 6TJ',
+        inventory_warehouse_address_country: 'GB',
+        inventory_warehouse_bins_company: 'ABC001',
+        inventory_warehouse_bins_warehouse_name: 'Hermes',
+        inventory_warehouse_bins_bin: 'D43E',
+        inventory_warehouse_bins_inventory_company: 'ABC001',
+        inventory_warehouse_bins_inventory_sku: 'GTE154',
+        inventory_warehouse_bins_inventory_warehouse_name: 'Hermes',
+        inventory_warehouse_bins_inventory_bin: 'D43E',
+        inventory_warehouse_bins_inventory_time: '2019-03-12 16:28:30',
+        inventory_warehouse_bins_inventory_qty: 100,
+        inventory_warehouse_bins_inventory_cost: 4.45
+      };
+      expect(JSON.stringify(j.collate(line))).toBe(
+        '[{"company":"ABC001","order_id":"dc3ed191-62ba-4017-893f-8ec86a640cb8","order_date":"2020-07-08","customer":"PES154","delivery":{"name":"Penelope Smith",' +
+          '"address":{"company":"","street":"4 Eastgate Street","locality":"Cocklesby","city":"Warrington","region":"Cheshire","postalCode":"WA2 9KL","country":"GB"}},' +
+          '"invoice":{"name":"Penelope Smith","address":{"company":"","street":"4 Eastgate Street","locality":"Cocklesby","city":"Warrington","region":"Cheshire",' +
+          '"postalCode":"WA2 9KL","country":"GB"}},"lines":[{"company":"ABC001","order_id":"dc3ed191-62ba-4017-893f-8ec86a640cb8","line_no":1,"sku":"GTE154",' +
+          '"description":"Hammer","qty":1,"price":8.59}],"inventory":[{"company":"ABC001","sku":"GTE154","description":"Hammer","warehouse":[{"company":"ABC001",' +
+          '"name":"Hermes","description":"Big and draughty","address":{"company":"ABC Ltd","street":"10 Hammersmith St","locality":"Penningsbury","city":"Sheffield",' +
+          '"region":"South Yorkshire","postalCode":"S12 6TJ","country":"GB"},"bins":[{"company":"ABC001","warehouse_name":"Hermes","bin":"D43E",' +
+          '"inventory":[{"company":"ABC001","sku":"GTE154","warehouse_name":"Hermes","bin":"D43E","time":"2019-03-12 16:28:30","qty":100,"cost":4.45}]}]}]}]}]'
+      );
+    });
+
+    xit('it should collate one line with some missing join columns', () => {
+      const line = {
+        company: 'ABC001',
+        order_id: 'dc3ed191-62ba-4017-893f-8ec86a640cb8',
+        order_date: '2020-07-08',
+        customer: 'PES154',
+        delivery_name: 'Penelope Smith',
+        delivery_address_company: '',
+        delivery_address_street: '4 Eastgate Street',
+        delivery_address_locality: 'Cocklesby',
+        delivery_address_city: 'Warrington',
+        delivery_address_region: 'Cheshire',
+        delivery_address_postalCode: 'WA2 9KL',
+        delivery_address_country: 'GB',
+        invoice_name: 'Penelope Smith',
+        invoice_address_company: '',
+        invoice_address_street: '4 Eastgate Street',
+        invoice_address_locality: 'Cocklesby',
+        invoice_address_city: 'Warrington',
+        invoice_address_region: 'Cheshire',
+        invoice_address_postalCode: 'WA2 9KL',
+        invoice_address_country: 'GB',
+        lines_order_id: 'dc3ed191-62ba-4017-893f-8ec86a640cb8',
+        lines_line_no: 1,
+        lines_sku: 'GTE154',
+        lines_description: 'Hammer',
+        lines_qty: 1,
+        lines_price: 8.59,
+//        inventory_sku: 'GTE154',
+        inventory_description: 'Hammer',
+        inventory_warehouse_name: 'Hermes',
+        inventory_warehouse_description: 'Big and draughty',
+        inventory_warehouse_address_company: 'ABC Ltd',
+        inventory_warehouse_address_street: '10 Hammersmith St',
+        inventory_warehouse_address_locality: 'Penningsbury',
+        inventory_warehouse_address_city: 'Sheffield',
+        inventory_warehouse_address_region: 'South Yorkshire',
+        inventory_warehouse_address_postalCode: 'S12 6TJ',
+        inventory_warehouse_address_country: 'GB',
+        inventory_warehouse_bins_warehouse_name: 'Hermes',
+        inventory_warehouse_bins_bin: 'D43E',
+        inventory_warehouse_bins_inventory_sku: 'GTE154',
+        inventory_warehouse_bins_inventory_warehouse_name: 'Hermes',
+        inventory_warehouse_bins_inventory_bin: 'D43E',
+        inventory_warehouse_bins_inventory_time: '2019-03-12 16:28:30',
+        inventory_warehouse_bins_inventory_qty: 100,
+        inventory_warehouse_bins_inventory_cost: 4.45
+      };
+      expect(JSON.stringify(j.collate(line))).toBe(
+        '[{"company":"ABC001","order_id":"dc3ed191-62ba-4017-893f-8ec86a640cb8","order_date":"2020-07-08","customer":"PES154","delivery":{"name":"Penelope Smith",' +
+          '"address":{"company":"","street":"4 Eastgate Street","locality":"Cocklesby","city":"Warrington","region":"Cheshire","postalCode":"WA2 9KL","country":"GB"}},' +
+          '"invoice":{"name":"Penelope Smith","address":{"company":"","street":"4 Eastgate Street","locality":"Cocklesby","city":"Warrington","region":"Cheshire",' +
+          '"postalCode":"WA2 9KL","country":"GB"}},"lines":[{"company":"ABC001","order_id":"dc3ed191-62ba-4017-893f-8ec86a640cb8","line_no":1,"sku":"GTE154",' +
+          '"description":"Hammer","qty":1,"price":8.59}],"inventory":[{"company":"ABC001","sku":"GTE154","description":"Hammer","warehouse":[{"company":"ABC001",' +
+          '"name":"Hermes","description":"Big and draughty","address":{"company":"ABC Ltd","street":"10 Hammersmith St","locality":"Penningsbury","city":"Sheffield",' +
+          '"region":"South Yorkshire","postalCode":"S12 6TJ","country":"GB"},"bins":[{"company":"ABC001","warehouse_name":"Hermes","bin":"D43E",' +
+          '"inventory":[{"company":"ABC001","sku":"GTE154","warehouse_name":"Hermes","bin":"D43E","time":"2019-03-12 16:28:30","qty":100,"cost":4.45}]}]}]}]}]'
+      );
     });
 
   });

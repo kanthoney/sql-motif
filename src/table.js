@@ -72,25 +72,26 @@ class Table
     });
     this.joins = [];
     this.onFields = [];
-    this.config.joins.forEach(join => {
-      if(join.table instanceof Table) {
-        join.name = join.name || join.table.config.name;
+    this.config.joins.forEach(spec => {
+      let join = {...spec};
+      if(spec.table instanceof Table) {
+        join.name = spec.name || spec.table.config.name;
         join.table = new Table({
-          ...join.table.config,
-          columns: join.table.columns.concat((join.columns || []).map(col => typeExpander.expand({ ...col, table: join.table }))),
-          alias: join.alias || join.table.config.alias,
-          path: this.config.path.concat(join.path || join.name)
+          ...spec.table.config,
+          columns: spec.table.columns.concat((spec.columns || []).map(col => typeExpander.expand({ ...col, table: spec.table }))),
+          alias: spec.alias || spec.table.config.alias,
+          path: this.config.path.concat(spec.path || join.name)
         });
       } else {
-        join.name = join.name || join.config.name;
+        join.name = spec.name || spec.config.name;
         join.table = new Table({
-          ...join.table,
-          columns: join.table.columns.concat(join.columns || []),
-          alias: join.alias,
-          path: this.config.path.concat(join.path || join.name)
+          ...spec.table,
+          columns: spec.table.columns.concat(spec.columns || []),
+          alias: spec.alias,
+          path: this.config.path.concat(spec.path || join.name || [])
         });
       }
-      let { on, where } = [].concat(join.on || []).reduce((acc, on) => {
+      let { on, where } = [].concat(spec.on || []).reduce((acc, on) => {
         let left, right;
         if(_.isPlainObject(on)) {
           acc.where = Object.assign(acc.where || {}, on);
@@ -115,6 +116,7 @@ class Table
           leftCol.joinCol = rightCol;
           const relPath = leftCol.table.config.path.slice(rightCol.table.config.path.length);
           rightCol.joinedTo.push(relPath.concat(leftCol.subTableColPath || leftCol.path));
+          rightCol.fullJoinedTo.push(leftCol.table.config.path.concat(leftCol.subTableColPath || leftCol.path));
           acc.on = acc.on.concat({ left: leftCol, right: rightCol });
         } else {
           console.warn(
@@ -129,12 +131,6 @@ class Table
       on.forEach(on => {
         on.left.table.onFields.push(on);
       });
-      join.colMap = on.reduce((acc, on) => {
-        if(on.right) {
-          acc[on.right.alias || on.right.name] = on.left;
-        }
-        return acc;
-      }, {});
       this.joins.push(join);
     });
   }
