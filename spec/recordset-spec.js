@@ -413,8 +413,8 @@ describe("record set tests", () => {
           }
         ];
 
-        const r = new RecordSet(j);
-        r.addSQLResult(lines, { collate: [ 'company', { delivery: 'name' }, { lines: 'sku' } ] });
+        const r = new RecordSet(j, { collate: [ 'company', { delivery: 'name' }, { lines: 'sku' } ] });
+        r.addSQLResult(lines);
         expect(JSON.stringify(r)).toBe(
           '[{"company":"ABE081","order_id":12,"order_date":"2020-04-13","customer":"TET001","delivery":{"name":"Terry Test","address":{"company":"",' +
           '"street":"12 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},"invoice":{"name":"Terry Test",' +
@@ -759,7 +759,72 @@ describe("record set tests", () => {
             '"address":{"company":"","street":"18 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},' +
             '"lines":[{"company":"ANE131","order_id":14,"line_no":1,"sku":"GTE941","description":"Soldering iron","qty":5,"price":12.14}]}]'
         );
+      });
 
+      it('should import order record', () => {
+
+        const data = [
+          {
+            company: 'ABE081',
+            order_id: 12,
+            order_date: '2020-04-13',
+            customer: 'TET001',
+            delivery: {
+              name: 'Terry Test',
+              address: {
+                company: '',
+                street: '12 Whitfield Road',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B15 8JX',
+                country: 'GB'
+              }
+            },
+            invoice: {
+              name: 'Terry Test',
+              address: {
+                company: '',
+                street: '12 Whitfield Road',
+                locality: '',
+                city: 'Birmingham',
+                region: '',
+                postalCode: 'B15 8JX',
+                country: 'GB'
+              }
+            },
+            lines: [
+              {
+                company: 'ABE081',
+                order_id: 12,
+                line_no: 1,
+                sku: 'ABA001',
+                description: 'Widget',
+                qty: 1,
+                price: 4.32
+              },
+              {
+                company: 'ABE081',
+                order_id: 12,
+                line_no: 2,
+                sku: 'ABJ994',
+                description: 'Gadget',
+                qty: 100,
+                price: 8.94
+              }
+            ]
+          }
+        ];
+
+        const r = new RecordSet(j);
+        r.addRecord(data);
+        expect(JSON.stringify(r)).toBe(
+          '[{"company":"ABE081","order_id":12,"order_date":"2020-04-13","customer":"TET001","delivery":{"name":"Terry Test","address":{"company":"",' +
+            '"street":"12 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},"invoice":{"name":"Terry Test",' +
+            '"address":{"company":"","street":"12 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},' +
+            '"lines":[{"company":"ABE081","order_id":12,"line_no":1,"sku":"ABA001","description":"Widget","qty":1,"price":4.32},{"company":"ABE081","order_id":12,' +
+            '"line_no":2,"sku":"ABJ994","description":"Gadget","qty":100,"price":8.94}]}]'
+        );
       });
 
       it("should cope with null main table fields as in right join", () => {
@@ -855,9 +920,16 @@ describe("record set tests", () => {
         const r = new RecordSet(j);
         r.addSQLResult(lines);
         expect(JSON.stringify(r)).toBe(
-          '[{"lines":[{"company":"ABE081","order_id":12,"line_no":1,"sku":"ABA001","description":"Widget","qty":1,"price":4.32},' +
-            '{"company":"ABE081","order_id":12,"line_no":2,"sku":"ABJ994","description":"Gadget","qty":100,"price":8.94}]},' +
-            '{"lines":[{"company":"ABE081","order_id":13,"line_no":1,"sku":"ABJ994","description":"Gadget","qty":100,"price":8.94}]}]'
+          '[{"company":null,"order_id":null,"order_date":null,"customer":null,"delivery":{"name":null,"address":{"company":null,"street":null,"locality":null,"city":null,' +
+            '"region":null,"postalCode":null,"country":null}},"invoice":{"name":null,"address":{"company":null,"street":null,"locality":null,"city":null,"region":null,' +
+            '"postalCode":null,"country":null}},"lines":[{"company":"ABE081","order_id":12,"line_no":1,"sku":"ABA001","description":"Widget","qty":1,"price":4.32}]},' +
+            '{"company":null,"order_id":null,"order_date":null,"customer":null,"delivery":{"name":null,"address":{"company":null,"street":null,"locality":null,' +
+            '"city":null,"region":null,"postalCode":null,"country":null}},"invoice":{"name":null,"address":{"company":null,"street":null,"locality":null,"city":null,' +
+            '"region":null,"postalCode":null,"country":null}},"lines":[{"company":"ABE081","order_id":12,"line_no":2,"sku":"ABJ994","description":"Gadget","qty":100,' +
+            '"price":8.94}]},{"company":null,"order_id":null,"order_date":null,"customer":null,"delivery":{"name":null,"address":{"company":null,"street":null,' +
+            '"locality":null,"city":null,"region":null,"postalCode":null,"country":null}},"invoice":{"name":null,"address":{"company":null,"street":null,' +
+            '"locality":null,"city":null,"region":null,"postalCode":null,"country":null}},"lines":[{"company":"ABE081","order_id":13,"line_no":1,"sku":"ABJ994",' +
+            '"description":"Gadget","qty":100,"price":8.94}]}]'
         );
       });
 
@@ -1502,34 +1574,36 @@ describe("record set tests", () => {
         r.addSQLResult(lines);
         expect(JSON.stringify(r.get('[0].warehouse[0].bins[0]'))).toBe(
           '{"company":"ANA191","warehouse_name":"Chesterfield","bin":"FA76D2","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2",' +
-          '"time":"2019-06-14 09:12:54","qty":5,"cost":98.34},{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2","time":"2019-07-16 13:16:29","qty":40,"cost":95.32}]}'
+            '"time":"2019-06-14 09:12:54","qty":5,"cost":98.34},{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2","time":"2019-07-16 13:16:29",' +
+            '"qty":40,"cost":95.32}]}'
         );
         expect(JSON.stringify(r)).toBe(
           '[{"company":"ANA191","sku":"DX676","description":"Hammer","warehouse":[{"company":"ANA191","name":"Chesterfield","description":"grotty",' +
-          '"address":{"company":"Tools 4 U Ltd","street":"29 Sudbury Lane","locality":"","city":"Chesterfield","region":"Derbyshire","postalCode":"S40 9DS","country":"GB"},' +
-          '"bins":[{"company":"ANA191","warehouse_name":"Chesterfield","bin":"FA76D2","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2",' +
-          '"time":"2019-06-14 09:12:54","qty":5,"cost":98.34},{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2","time":"2019-07-16 13:16:29",' +
-          '"qty":40,"cost":95.32}]},{"company":"ANA191","warehouse_name":"Chesterfield","bin":"GA15A3","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield",' +
-          '"bin":"GA15A3","time":"2019-04-30 11:32:19","qty":20,"cost":96.41}]}]},{"company":"ANA191","name":"Wolverhampton","description":"even grottier",' +
-          '"address":{"company":"Hammer Time Ltd","street":"45 Strawberry St","locality":"","city":"Wolverhampton","region":"West Midlands","postalCode":"WV17 9JK","country":"GB"},' +
-          '"bins":[{"company":"ANA191","warehouse_name":"Wolverhampton","bin":"J16X","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Wolverhampton","bin":"J16X",' +
-          '"time":"2020-02-12 08:55:19","qty":200,"cost":84.96}]}]}]},{"company":"ANA191","sku":"DX678","description":"Chisel","warehouse":[{"company":"ANA191","name":"Telford",' +
-          '"description":"quite nice but small","address":{"company":"Chisels Unlimited Ltd","street":"16 Shrewsbury St","locality":"Victoria Business Park","city":"Telford",' +
-          '"region":"Shropshire","postalCode":"TF2 8XD","country":"GB"},"bins":[{"company":"ANA191","warehouse_name":"Telford","bin":"H78D","inventory":[]}]}]}]'
+            '"address":{"company":"Tools 4 U Ltd","street":"29 Sudbury Lane","locality":"","city":"Chesterfield","region":"Derbyshire","postalCode":"S40 9DS","country":"GB"},' +
+            '"bins":[{"company":"ANA191","warehouse_name":"Chesterfield","bin":"FA76D2","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield",' +
+            '"bin":"FA76D2","time":"2019-06-14 09:12:54","qty":5,"cost":98.34},{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2",' +
+            '"time":"2019-07-16 13:16:29","qty":40,"cost":95.32}]},{"company":"ANA191","warehouse_name":"Chesterfield","bin":"GA15A3","inventory":[{"company":"ANA191",' +
+            '"sku":"DX676","warehouse_name":"Chesterfield","bin":"GA15A3","time":"2019-04-30 11:32:19","qty":20,"cost":96.41}]}]},{"company":"ANA191","name":"Wolverhampton",' +
+            '"description":"even grottier","address":{"company":"Hammer Time Ltd","street":"45 Strawberry St","locality":"","city":"Wolverhampton","region":"West Midlands",' +
+            '"postalCode":"WV17 9JK","country":"GB"},"bins":[{"company":"ANA191","warehouse_name":"Wolverhampton","bin":"J16X","inventory":[{"company":"ANA191","sku":"DX676",' +
+            '"warehouse_name":"Wolverhampton","bin":"J16X","time":"2020-02-12 08:55:19","qty":200,"cost":84.96}]}]}]},{"company":"ANA191","sku":"DX678","description":"Chisel",' +
+            '"warehouse":[{"company":"ANA191","name":"Telford","description":"quite nice but small","address":{"company":"Chisels Unlimited Ltd","street":"16 Shrewsbury St",' +
+            '"locality":"Victoria Business Park","city":"Telford","region":"Shropshire","postalCode":"TF2 8XD","country":"GB"},"bins":[{"company":"ANA191",' +
+            '"warehouse_name":"Telford","bin":"H78D","inventory":[]}]}]}]'
         );
         expect(JSON.stringify(j.validate(r).validationResult())).toBe(
           '{"results":[{"record":{"company":"ANA191","sku":"DX676","description":"Hammer","warehouse":[{"company":"ANA191","name":"Chesterfield","description":"grotty",' +
-          '"address":{"company":"Tools 4 U Ltd","street":"29 Sudbury Lane","locality":"","city":"Chesterfield","region":"Derbyshire","postalCode":"S40 9DS","country":"GB"},' +
-          '"bins":[{"company":"ANA191","warehouse_name":"Chesterfield","bin":"FA76D2","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2",' +
-          '"time":"2019-06-14 09:12:54","qty":5,"cost":98.34},{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2","time":"2019-07-16 13:16:29","qty":40,"cost":95.32}]},' +
-          '{"company":"ANA191","warehouse_name":"Chesterfield","bin":"GA15A3","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"GA15A3",' +
-          '"time":"2019-04-30 11:32:19","qty":20,"cost":96.41}]}]},{"company":"ANA191","name":"Wolverhampton","description":"even grottier","address":{"company":"Hammer Time Ltd",' +
-          '"street":"45 Strawberry St","locality":"","city":"Wolverhampton","region":"West Midlands","postalCode":"WV17 9JK","country":"GB"},"bins":[{"company":"ANA191",' +
-          '"warehouse_name":"Wolverhampton","bin":"J16X","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Wolverhampton","bin":"J16X","time":"2020-02-12 08:55:19",' +
-          '"qty":200,"cost":84.96}]}]}]},"valid":true,"errors":{}},{"record":{"company":"ANA191","sku":"DX678","description":"Chisel","warehouse":[{"company":"ANA191","name":"Telford",' +
-          '"description":"quite nice but small","address":{"company":"Chisels Unlimited Ltd","street":"16 Shrewsbury St","locality":"Victoria Business Park","city":"Telford",' +
-          '"region":"Shropshire","postalCode":"TF2 8XD","country":"GB"},"bins":[{"company":"ANA191","warehouse_name":"Telford","bin":"H78D","inventory":[]}]}]},' +
-          '"valid":true,"errors":{}}],"valid":true}'
+            '"address":{"company":"Tools 4 U Ltd","street":"29 Sudbury Lane","locality":"","city":"Chesterfield","region":"Derbyshire","postalCode":"S40 9DS","country":"GB"},' +
+            '"bins":[{"company":"ANA191","warehouse_name":"Chesterfield","bin":"FA76D2","inventory":[{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield",' +
+            '"bin":"FA76D2","time":"2019-06-14 09:12:54","qty":5,"cost":98.34},{"company":"ANA191","sku":"DX676","warehouse_name":"Chesterfield","bin":"FA76D2",' +
+            '"time":"2019-07-16 13:16:29","qty":40,"cost":95.32}]},{"company":"ANA191","warehouse_name":"Chesterfield","bin":"GA15A3","inventory":[{"company":"ANA191",' +
+            '"sku":"DX676","warehouse_name":"Chesterfield","bin":"GA15A3","time":"2019-04-30 11:32:19","qty":20,"cost":96.41}]}]},{"company":"ANA191","name":"Wolverhampton",' +
+            '"description":"even grottier","address":{"company":"Hammer Time Ltd","street":"45 Strawberry St","locality":"","city":"Wolverhampton","region":"West Midlands",' +
+            '"postalCode":"WV17 9JK","country":"GB"},"bins":[{"company":"ANA191","warehouse_name":"Wolverhampton","bin":"J16X","inventory":[{"company":"ANA191","sku":"DX676",' +
+            '"warehouse_name":"Wolverhampton","bin":"J16X","time":"2020-02-12 08:55:19","qty":200,"cost":84.96}]}]}]},"valid":true,"errors":{}},{"record":{"company":"ANA191",' +
+            '"sku":"DX678","description":"Chisel","warehouse":[{"company":"ANA191","name":"Telford","description":"quite nice but small",' +
+            '"address":{"company":"Chisels Unlimited Ltd","street":"16 Shrewsbury St","locality":"Victoria Business Park","city":"Telford","region":"Shropshire",' +
+            '"postalCode":"TF2 8XD","country":"GB"},"bins":[{"company":"ANA191","warehouse_name":"Telford","bin":"H78D","inventory":[]}]}]},"valid":true,"errors":{}}],"valid":true}'
         );
       });
 
@@ -1800,11 +1874,11 @@ describe("record set tests", () => {
           inventory_warehouse_bins_inventory_cost: 7.46
         };
         expect(JSON.stringify(j1.collate(line))).toBe(
-          '[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","inventory":[{"company":"ABC001","sku":"ADS134","warehouse":[{"company":"ABC001",' +
+          '[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","lines":[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4",' +
+            '"line_no":1,"sku":"ADS134","description":"Spice Rack","qty":1,"price":13.65}],"inventory":[{"company":"ABC001","sku":"ADS134","warehouse":[{"company":"ABC001",' +
             '"name":"Mercury","description":"Warm and cosy","address":{"company":"ABC Ltd","street":"52 Wellington St","locality":"Angelborough",' +
             '"city":"Bristol","region":"Avon","postalCode":"BS2 5HD","country":"GB"},"bins":[{"company":"ABC001","warehouse_name":"Mercury","bin":"F56D",' +
-            '"inventory":[{"company":"ABC001","sku":"ADS134","warehouse_name":"Mercury","bin":"F56D","time":"2018-06-14 14:32:19","qty":200,"cost":7.46}]}]}]}],' +
-            '"lines":[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","line_no":1,"sku":"ADS134","description":"Spice Rack","qty":1,"price":13.65}]}]'
+            '"inventory":[{"company":"ABC001","sku":"ADS134","warehouse_name":"Mercury","bin":"F56D","time":"2018-06-14 14:32:19","qty":200,"cost":7.46}]}]}]}]}]'
         );
       });
       
@@ -1836,11 +1910,11 @@ describe("record set tests", () => {
           inventory_warehouse_bins_inventory_cost: 7.46
         };
         expect(JSON.stringify(j1.collate(line))).toBe(
-          '[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","inventory":[{"company":"ABC001","sku":"ADS134","warehouse":[{"company":"ABC001",' +
+          '[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","lines":[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4",' +
+            '"line_no":1,"sku":"ADS134","description":"Spice Rack","qty":1,"price":13.65}],"inventory":[{"company":"ABC001","sku":"ADS134","warehouse":[{"company":"ABC001",' +
             '"name":"Mercury","description":"Warm and cosy","address":{"company":"ABC Ltd","street":"52 Wellington St","locality":"Angelborough",' +
             '"city":"Bristol","region":"Avon","postalCode":"BS2 5HD","country":"GB"},"bins":[{"company":"ABC001","warehouse_name":"Mercury","bin":"F56D",' +
-            '"inventory":[{"company":"ABC001","sku":"ADS134","warehouse_name":"Mercury","bin":"F56D","time":"2018-06-14 14:32:19","qty":200,"cost":7.46}]}]}]}],' +
-            '"lines":[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","line_no":1,"sku":"ADS134","description":"Spice Rack","qty":1,"price":13.65}]}]'
+            '"inventory":[{"company":"ABC001","sku":"ADS134","warehouse_name":"Mercury","bin":"F56D","time":"2018-06-14 14:32:19","qty":200,"cost":7.46}]}]}]}]}]'
         );
       });
     });
@@ -1888,11 +1962,11 @@ describe("record set tests", () => {
           orders_lines_price: 13.65,
         }
         expect(JSON.stringify(j2.collate(line))).toBe(
-          '[{"company":"ABC001","sku":"ADS134","orders":[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4",' +
-            '"lines":[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","line_no":1,"sku":"ADS134","description":"Spice Rack","qty":1,"price":13.65}]}],' +
-            '"warehouse":[{"company":"ABC001","name":"Mercury","description":"Warm and cosy","address":{"company":"ABC Ltd","street":"52 Wellington St",' +
-            '"locality":"Angelborough","city":"Bristol","region":"Avon","postalCode":"BS2 5HD","country":"GB"},"bins":[{"company":"ABC001","warehouse_name":"Mercury",' +
-            '"bin":"F56D","inventory":[{"company":"ABC001","sku":"ADS134","warehouse_name":"Mercury","bin":"F56D","time":"2018-06-14 14:32:19","qty":200,"cost":7.46}]}]}]}]'
+          '[{"company":"ABC001","sku":"ADS134","warehouse":[{"company":"ABC001","name":"Mercury","description":"Warm and cosy","address":{"company":"ABC Ltd",' +
+            '"street":"52 Wellington St","locality":"Angelborough","city":"Bristol","region":"Avon","postalCode":"BS2 5HD","country":"GB"},"bins":[{"company":"ABC001",' +
+            '"warehouse_name":"Mercury","bin":"F56D","inventory":[{"company":"ABC001","sku":"ADS134","warehouse_name":"Mercury","bin":"F56D","time":"2018-06-14 14:32:19",' +
+            '"qty":200,"cost":7.46}]}]}],"orders":[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","lines":[{"company":"ABC001",' +
+            '"order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","line_no":1,"sku":"ADS134","description":"Spice Rack","qty":1,"price":13.65}]}]}]'
         );
       });
 
@@ -1930,149 +2004,14 @@ describe("record set tests", () => {
           orders_lines_price: 13.65,
         }
         expect(JSON.stringify(j2.collate(line))).toBe(
-          '[{"company":"ABC001","sku":"ADS134","orders":[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4",' +
-            '"lines":[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","line_no":1,"sku":"ADS134","description":"Spice Rack","qty":1,"price":13.65}]}],' +
-            '"warehouse":[{"company":"ABC001","name":"Mercury","description":"Warm and cosy","address":{"company":"ABC Ltd","street":"52 Wellington St",' +
-            '"locality":"Angelborough","city":"Bristol","region":"Avon","postalCode":"BS2 5HD","country":"GB"},"bins":[{"company":"ABC001","warehouse_name":"Mercury",' +
-            '"bin":"F56D","inventory":[{"company":"ABC001","sku":"ADS134","warehouse_name":"Mercury","bin":"F56D","time":"2018-06-14 14:32:19","qty":200,"cost":7.46}]}]}]}]'
+          '[{"company":"ABC001","sku":"ADS134","warehouse":[{"company":"ABC001","name":"Mercury","description":"Warm and cosy","address":{"company":"ABC Ltd",' +
+            '"street":"52 Wellington St","locality":"Angelborough","city":"Bristol","region":"Avon","postalCode":"BS2 5HD","country":"GB"},"bins":[{"company":"ABC001",' +
+            '"warehouse_name":"Mercury","bin":"F56D","inventory":[{"company":"ABC001","sku":"ADS134","warehouse_name":"Mercury","bin":"F56D","time":"2018-06-14 14:32:19",' +
+            '"qty":200,"cost":7.46}]}]}],"orders":[{"company":"ABC001","order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","lines":[{"company":"ABC001",' +
+            '"order_id":"785858bb-8b33-4fe3-bfea-0b2f1d67cfb4","line_no":1,"sku":"ADS134","description":"Spice Rack","qty":1,"price":13.65}]}]}]'
         );
       });
 
-    });
-
-  });
-
-  describe('Deep join field test', () => {
-   
-    const j = joins.orders.join({
-      name: 'inventory',
-      table: joins.inventory2,
-      on: ['company', 'sku:lines_sku']
-    });
-
-    it('it should collate one line', () => {
-      const line = {
-        company: 'ABC001',
-        order_id: 'dc3ed191-62ba-4017-893f-8ec86a640cb8',
-        order_date: '2020-07-08',
-        customer: 'PES154',
-        delivery_name: 'Penelope Smith',
-        delivery_address_company: '',
-        delivery_address_street: '4 Eastgate Street',
-        delivery_address_locality: 'Cocklesby',
-        delivery_address_city: 'Warrington',
-        delivery_address_region: 'Cheshire',
-        delivery_address_postalCode: 'WA2 9KL',
-        delivery_address_country: 'GB',
-        invoice_name: 'Penelope Smith',
-        invoice_address_company: '',
-        invoice_address_street: '4 Eastgate Street',
-        invoice_address_locality: 'Cocklesby',
-        invoice_address_city: 'Warrington',
-        invoice_address_region: 'Cheshire',
-        invoice_address_postalCode: 'WA2 9KL',
-        invoice_address_country: 'GB',
-        lines_company: 'ABC001',
-        lines_order_id: 'dc3ed191-62ba-4017-893f-8ec86a640cb8',
-        lines_line_no: 1,
-        lines_sku: 'GTE154',
-        lines_description: 'Hammer',
-        lines_qty: 1,
-        lines_price: 8.59,
-        inventory_company: 'ABC001',
-        inventory_sku: 'GTE154',
-        inventory_description: 'Hammer',
-        inventory_warehouse_company: 'ABC001',
-        inventory_warehouse_name: 'Hermes',
-        inventory_warehouse_description: 'Big and draughty',
-        inventory_warehouse_address_company: 'ABC Ltd',
-        inventory_warehouse_address_street: '10 Hammersmith St',
-        inventory_warehouse_address_locality: 'Penningsbury',
-        inventory_warehouse_address_city: 'Sheffield',
-        inventory_warehouse_address_region: 'South Yorkshire',
-        inventory_warehouse_address_postalCode: 'S12 6TJ',
-        inventory_warehouse_address_country: 'GB',
-        inventory_warehouse_bins_company: 'ABC001',
-        inventory_warehouse_bins_warehouse_name: 'Hermes',
-        inventory_warehouse_bins_bin: 'D43E',
-        inventory_warehouse_bins_inventory_company: 'ABC001',
-        inventory_warehouse_bins_inventory_sku: 'GTE154',
-        inventory_warehouse_bins_inventory_warehouse_name: 'Hermes',
-        inventory_warehouse_bins_inventory_bin: 'D43E',
-        inventory_warehouse_bins_inventory_time: '2019-03-12 16:28:30',
-        inventory_warehouse_bins_inventory_qty: 100,
-        inventory_warehouse_bins_inventory_cost: 4.45
-      };
-      expect(JSON.stringify(j.collate(line))).toBe(
-        '[{"company":"ABC001","order_id":"dc3ed191-62ba-4017-893f-8ec86a640cb8","order_date":"2020-07-08","customer":"PES154","delivery":{"name":"Penelope Smith",' +
-          '"address":{"company":"","street":"4 Eastgate Street","locality":"Cocklesby","city":"Warrington","region":"Cheshire","postalCode":"WA2 9KL","country":"GB"}},' +
-          '"invoice":{"name":"Penelope Smith","address":{"company":"","street":"4 Eastgate Street","locality":"Cocklesby","city":"Warrington","region":"Cheshire",' +
-          '"postalCode":"WA2 9KL","country":"GB"}},"lines":[{"company":"ABC001","order_id":"dc3ed191-62ba-4017-893f-8ec86a640cb8","line_no":1,"sku":"GTE154",' +
-          '"description":"Hammer","qty":1,"price":8.59}],"inventory":[{"company":"ABC001","sku":"GTE154","description":"Hammer","warehouse":[{"company":"ABC001",' +
-          '"name":"Hermes","description":"Big and draughty","address":{"company":"ABC Ltd","street":"10 Hammersmith St","locality":"Penningsbury","city":"Sheffield",' +
-          '"region":"South Yorkshire","postalCode":"S12 6TJ","country":"GB"},"bins":[{"company":"ABC001","warehouse_name":"Hermes","bin":"D43E",' +
-          '"inventory":[{"company":"ABC001","sku":"GTE154","warehouse_name":"Hermes","bin":"D43E","time":"2019-03-12 16:28:30","qty":100,"cost":4.45}]}]}]}]}]'
-      );
-    });
-
-    xit('it should collate one line with some missing join columns', () => {
-      const line = {
-        company: 'ABC001',
-        order_id: 'dc3ed191-62ba-4017-893f-8ec86a640cb8',
-        order_date: '2020-07-08',
-        customer: 'PES154',
-        delivery_name: 'Penelope Smith',
-        delivery_address_company: '',
-        delivery_address_street: '4 Eastgate Street',
-        delivery_address_locality: 'Cocklesby',
-        delivery_address_city: 'Warrington',
-        delivery_address_region: 'Cheshire',
-        delivery_address_postalCode: 'WA2 9KL',
-        delivery_address_country: 'GB',
-        invoice_name: 'Penelope Smith',
-        invoice_address_company: '',
-        invoice_address_street: '4 Eastgate Street',
-        invoice_address_locality: 'Cocklesby',
-        invoice_address_city: 'Warrington',
-        invoice_address_region: 'Cheshire',
-        invoice_address_postalCode: 'WA2 9KL',
-        invoice_address_country: 'GB',
-        lines_order_id: 'dc3ed191-62ba-4017-893f-8ec86a640cb8',
-        lines_line_no: 1,
-        lines_sku: 'GTE154',
-        lines_description: 'Hammer',
-        lines_qty: 1,
-        lines_price: 8.59,
-//        inventory_sku: 'GTE154',
-        inventory_description: 'Hammer',
-        inventory_warehouse_name: 'Hermes',
-        inventory_warehouse_description: 'Big and draughty',
-        inventory_warehouse_address_company: 'ABC Ltd',
-        inventory_warehouse_address_street: '10 Hammersmith St',
-        inventory_warehouse_address_locality: 'Penningsbury',
-        inventory_warehouse_address_city: 'Sheffield',
-        inventory_warehouse_address_region: 'South Yorkshire',
-        inventory_warehouse_address_postalCode: 'S12 6TJ',
-        inventory_warehouse_address_country: 'GB',
-        inventory_warehouse_bins_warehouse_name: 'Hermes',
-        inventory_warehouse_bins_bin: 'D43E',
-        inventory_warehouse_bins_inventory_sku: 'GTE154',
-        inventory_warehouse_bins_inventory_warehouse_name: 'Hermes',
-        inventory_warehouse_bins_inventory_bin: 'D43E',
-        inventory_warehouse_bins_inventory_time: '2019-03-12 16:28:30',
-        inventory_warehouse_bins_inventory_qty: 100,
-        inventory_warehouse_bins_inventory_cost: 4.45
-      };
-      expect(JSON.stringify(j.collate(line))).toBe(
-        '[{"company":"ABC001","order_id":"dc3ed191-62ba-4017-893f-8ec86a640cb8","order_date":"2020-07-08","customer":"PES154","delivery":{"name":"Penelope Smith",' +
-          '"address":{"company":"","street":"4 Eastgate Street","locality":"Cocklesby","city":"Warrington","region":"Cheshire","postalCode":"WA2 9KL","country":"GB"}},' +
-          '"invoice":{"name":"Penelope Smith","address":{"company":"","street":"4 Eastgate Street","locality":"Cocklesby","city":"Warrington","region":"Cheshire",' +
-          '"postalCode":"WA2 9KL","country":"GB"}},"lines":[{"company":"ABC001","order_id":"dc3ed191-62ba-4017-893f-8ec86a640cb8","line_no":1,"sku":"GTE154",' +
-          '"description":"Hammer","qty":1,"price":8.59}],"inventory":[{"company":"ABC001","sku":"GTE154","description":"Hammer","warehouse":[{"company":"ABC001",' +
-          '"name":"Hermes","description":"Big and draughty","address":{"company":"ABC Ltd","street":"10 Hammersmith St","locality":"Penningsbury","city":"Sheffield",' +
-          '"region":"South Yorkshire","postalCode":"S12 6TJ","country":"GB"},"bins":[{"company":"ABC001","warehouse_name":"Hermes","bin":"D43E",' +
-          '"inventory":[{"company":"ABC001","sku":"GTE154","warehouse_name":"Hermes","bin":"D43E","time":"2019-03-12 16:28:30","qty":100,"cost":4.45}]}]}]}]}]'
-      );
     });
 
   });

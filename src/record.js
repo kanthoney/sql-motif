@@ -5,100 +5,17 @@ const Selector = require('./selector');
 
 class Record
 {
-  constructor(recordSet, data)
+  constructor(recordSet, data, joined)
   {
     this.recordSet = recordSet;
-    this.table = this.recordSet.join.table;
-    this.data = data;
+    this.table = this.recordSet.table;
+    this.data = data || {};
     this.errors = {};
     this.dirty = true;
-    this.joined = {};
-    this.empty = false;
+    this.empty = !data;
+    this.joined = joined || {};
   }
   
-  static fromSQLLine(recordSet, line, options)
-  {
-    options = options || {};
-    const RecordSet = require('./recordset');
-    let empty = true;
-    let { recordData, joined, subTableRecords } = recordSet.join.table.columns.fields().reduce((acc, col) => {
-      const alias = col.table.config.path.concat(col.alias || col.name).join('_');
-      let value = _.get(line, alias);
-      if(!_.isNil(value)) {
-        empty = false;
-      }
-      if(value === undefined) {
-        value = _.get(recordSet.joined, col.path);
-      }
-      if(value !== undefined) {
-        if(_.isFunction(col.format)) {
-          value = col.format(value);
-        }
-        if(col.subTablePath && col.subTablePath.length > 0) {
-          if(!acc.subTableRecords) {
-            acc.subTableRecords = {};
-          }
-          _.set(acc.subTableRecords, col.subTableColPath, value);
-          acc.joined = col.subTableJoinedTo.reduce((acc, path) => {
-            _.set(acc, path, value);
-            return acc;
-          }, acc.joined || {});
-        } else {
-          _.set(acc.recordData, col.subTableColPath || col.path, value);
-        }
-        const joinedTo = col.joinedTo.concat(col.subTableJoinedTo || []);
-        acc.joined = joinedTo.reduce((acc, path) => {
-          _.set(acc, path, value);
-          return acc;
-        }, acc.joined);
-      }
-      return acc;
-    }, { recordData: {}, joined: {} });
-    if(subTableRecords) {
-      let table = recordSet.subTable;
-      while(table) {
-        table.joins.forEach(join => {
-          const data = _.get(subTableRecords, join.path || join.name);
-          if(data !== undefined) {
-            let collate;
-            if(options.collate) {
-              collate = (new Selector(options.collate)).passesJoin(join);
-            }
-            const subRecordSet = new RecordSet(join.table, _.get(Object.assign({}, recordSet.joined, joined), join.path || join.name));
-            subRecordSet.addRecord(data, { collate });
-            _.set(recordData, join.path || join.name, subRecordSet);
-          }
-        });
-        if(!table.config.subtable) {
-          break;
-        }
-        table = table.config.subtable.table;
-      }
-    }
-    const record = new Record(recordSet, empty?{}:recordData);
-    record.joined = joined;
-    record.empty = empty;
-    recordSet.join.table.joins.forEach(join => {
-      let collate;
-      if(options.collate) {
-        collate = new Selector(options.collate).passesJoin(join);
-      }
-      let subRecordSet = _.get(record.data, join.path || join.name);
-      if(subRecordSet === undefined) {
-        subRecordSet = new RecordSet(join, _.get(Object.assign({}, recordSet.joined, record.joined), join.path || join.name));
-        subRecordSet.addSQLResult(line, { collate });
-        if(subRecordSet.length > 0) {
-          record.empty = false;
-        }
-        _.set(record.data, join.path || join.name, subRecordSet);
-      } else {
-        subRecordSet.addSQLResult(line, { collate });
-        record.empty = false;
-      }
-    });
-    return record;
-  }
-
   hashKey(collate)
   {
     const RecordSet = require('./recordset');
@@ -111,25 +28,7 @@ class Record
         const path = col.path;
         let value = _.get(this.data, path);
         if(_.isNil(value)) {
-          value = _.get(this.recordSet.joined, col.path);
-        }
-        if(_.isNil(value)) {
-          const joinedTo = col.joinedTo.concat(col.subTableJoinedTo || []);
-          for(let i = 0; i < joinedTo.length && _.isNil(value); i++) {
-            let path = joinedTo[i];
-            value = this.data;
-            for(let j = 0; j < path.length; j++) {
-              value = _.get(value, path[j]);
-              if(value instanceof RecordSet) {
-                if(value.length > 0) {
-                  value = value.get('[0]').toJSON();
-                } else {
-                  value = null;
-                  break;
-                }
-              }
-            }
-          }
+          value = this.getJoined(path);
         }
         if(_.isNil(value)) {
           this.fullKey = false;
@@ -169,7 +68,7 @@ class Record
             subRecord.addRecord(otherRecord, { collate });
           }
         } else if(otherRecord) {
-          const recordSet = new RecordSet(otherRecord.recordSet.table, otherRecord.recordSet.joined);
+          const recordSet = new RecordSet(otherRecord.recordSet.table);
           recordSet.addRecord(otherRecord, { collate });
           _.set(this.data, join.path || join.name, recordSet);
         }
@@ -182,6 +81,15 @@ class Record
     return this;
   }
 
+  getJoined(path)
+  {
+    const value = _.get(this.joined, path);
+    if(value === undefined) {
+      return this.recordSet.getJoined(path);
+    }
+    return value;
+  }
+
   get(path)
   {
     const RecordSet = require('./recordset');
@@ -189,7 +97,15 @@ class Record
     let value = this;
     while(path.length > 0 && value !== undefined) {
       if(value instanceof Record) {
-        value = value.data[path[0]];
+        let v = _.get(value.data, path);
+        if(v !== undefined) {
+          return v;
+        }
+        v = value.getJoined(path);
+        if(v !== undefined) {
+          return v;
+        }
+        value = _.get(value.data, path[0]);
         path = path.slice(1);
       } else if(value instanceof RecordSet) {
         return value.get(path);
@@ -199,6 +115,25 @@ class Record
       }
     }
     return value;
+  }
+
+  set(col, value)
+  {
+    _.set(this.data, col.subTableColPath || col.path, value);
+    if(!_.isNil(value)) {
+      this.empty = false;
+    }
+    this.dirty = true;
+    const joinedTo = col.joinedTo.concat(col.subTableJoinedTo || []);
+    const joined = joinedTo.reduce((acc, path) => {
+      _.set(acc, path, value);
+      return acc;
+    }, {});
+    if(this.table.config.path.length === 0) {
+      _.merge(this.joined, joined);
+    } else {
+      _.merge(this.joined, _.get(joined, this.table.config.path));
+    }
   }
 
   validate(options = {})
@@ -314,14 +249,13 @@ class Record
         _.set(acc.record, join.path || join.name, result.results.map(result => result.record));
       }
       return acc;
-    }, { record: this.toObject({ mapJoined: true, includeJoined: true, noSubRecords: true }), valid: this.valid, errors: this.errors });
+    }, { record: this.toObject({ includeJoined: true, noSubRecords: true }), valid: this.valid, errors: this.errors });
   }
 
   fill(options = {})
   {
     let { context, selector } = options;
     this.dirty = true;
-    Object.assign(this.joined, this.recordSet.joined);
     if(this.table.config.context) {
       if(this.table.config.context instanceof Function) {
         context = this.table.config.context({ record: this, context });
@@ -338,7 +272,6 @@ class Record
       const path = join.path || join.name;
       const recordSet = _.get(this.data, path);
       if(recordSet instanceof RecordSet) {
-        Object.assign(recordSet.joined, _.get(this.joined, path));
         if(join.context) {
           if(join.context instanceof Function) {
             context = join.context({ record: this, recordSet, context: { ...context } });
@@ -357,7 +290,6 @@ class Record
     let { context, selector } = options;
     const RecordSet = require('./recordset');
     this.dirty = true;
-    Object.assign(this.joined, this.recordSet.joined);
     return Promise.resolve(context).then(context => {
       if(this.table.config.context) {
         if(this.table.config.context instanceof Function) {
@@ -382,7 +314,6 @@ class Record
             resolve(context);
           }).then(context => {
             if(recordSet instanceof RecordSet) {
-              Object.assign(recordSet.joined, _.get(this.joined, path));
               if(join.readOnly || (options.joins && options.joins !== '*' && !includes(options.joins(join.name)))) {
                 return recordSet;
               }
@@ -402,7 +333,7 @@ class Record
     this.table.columns.scope(this.scope);
     this.table.joins.forEach(join => {
       const recordSet = _.get(this.data, join.path || join.name);
-      const subScope = Object.assign({}, _.get(this.recordSet.joined, join.path || join.name), _.get(scope, join.path || join.name));
+      const subScope = Object.assign({}, _.get(scope, join.path || join.name));
       if(recordSet) {
         recordSet.scope(subScope);
       }
@@ -422,17 +353,17 @@ class Record
 
   Insert(options)
   {
-    return this.table.Insert(this.data, options);
+    return this.table.Insert(this, options);
   }
 
   insert(options)
   {
-    return this.table.insert(this.data, options);
+    return this.table.insert(this, options);
   }
 
   insertColumns(options)
   {
-    return this.table.insertColumns(this.data, options);
+    return this.table.insertColumns(this, options);
   }
 
   insertValues(options)
@@ -448,42 +379,42 @@ class Record
 
   Update(options)
   {
-    return this.table.Update(this.data, null, { joins: [], safe: true, ...options });
+    return this.table.Update(this, null, { joins: [], safe: true, ...options });
   }
 
   update(options)
   {
-    return this.table.update(this.data, null, { joins: [], safe: true, ...options });
+    return this.table.update(this, null, { joins: [], safe: true, ...options });
   }
 
   UpdateKey(key, options)
   {
-    return this.table.Update(this.data, this.keyScope(key), { joins: [], safe: true, ...options });
+    return this.table.Update(this, key, { joins: [], safe: true, ...options });
   }
 
   updateKey(key, options)
   {
-    return this.table.update(this.data, this.keyScope(key), { joins: [], safe: true, ...options });
+    return this.table.update(this, key, { joins: [], safe: true, ...options });
   }
 
   UpdateWhere(where, options)
   {
-    return this.table.UpdateWhere(this.data, where, { joins: [], safe: true, ...options });
+    return this.table.UpdateWhere(this, where, { joins: [], safe: true, ...options });
   }
 
   updateWhere(where, options)
   {
-    return this.table.updateWhere(this.data, where, { joins: [], safe: true, ...options });
+    return this.table.updateWhere(this, where, { joins: [], safe: true, ...options });
   }
 
   Delete(options)
   {
-    return this.table.Delete(this.data, { joins: [], safe: true, ...options });
+    return this.table.Delete(this, { joins: [], safe: true, ...options });
   }
 
   delete(options)
   {
-    return this.table.delete(this.data, { joins: [], safe: true, ...options });
+    return this.table.delete(this, { joins: [], safe: true, ...options });
   }
 
   reduceSubtables(f, acc)
@@ -499,7 +430,7 @@ class Record
 
   reduceSubtablesAsync(f, acc)
   {
-    const it = this.table.joins[Symbol.iterator]();
+    const it = this.recordSet.joins[Symbol.iterator]();
     const next = acc => {
       const n = it.next();
       if(n.done) {
@@ -519,7 +450,7 @@ class Record
 
   forEachSubtable(f)
   {
-    return this.table.joins.forEach(join => {
+    return this.recordSet.joins.forEach(join => {
       const subRecord = _.get(this.data, join.path || join.name);
       if(subRecord) {
         f(join, subRecord);
@@ -543,49 +474,41 @@ class Record
       table = table.config.subquery.table;
     }
     let acc = table.columns.fields('*', true).reduce((acc, col) => {
-      let path = col.path;
+      let path = col.subTableColPath || col.path;
       let value = _.get(this.data, path);
-      if(value === undefined && options.mapJoined) {
-        value = _.get(this.recordSet.joined, col.path);
+      if(value === undefined) {
+        value = this.getJoined(path);
       }
-      if(value !== undefined && (options.includeJoined || _.isNil(_.get(this.recordSet.joined, col.path)))) {
+      if(value !== undefined && (options.includeJoined || !col.joinCol)) {
         _.set(acc, path, value);
       }
       return acc;
     }, {});
-    table = this.table;
-    while(table) {
-      if(!options.noSubRecords) {
-        acc = table.joins.reduce((acc, join) => {
-          const recordSet = _.get(this.data, join.path || join.name);
-          if(recordSet instanceof RecordSet) {
-            if(join.reducer) {
-              _.set(acc, join.path || join.name, recordSet.reduce(join.reducer));
-            } else if(join.single) {
-              if(recordSet.length === 1) {
-                _.set(acc, join.path || join.name, recordSet.get('[0]').toObject(options));
-              } else if(recordSet.length > 0) {
-                _.set(acc, join.path || join.name, recordSet.toObject(options));
-              }
-            } else {
+    if(!options.noSubRecords) {
+      acc = this.recordSet.joins.reduce((acc, join) => {
+        const recordSet = _.get(this.data, join.path || join.name);
+        if(recordSet instanceof RecordSet) {
+          if(join.reducer) {
+            _.set(acc, join.path || join.name, recordSet.reduce(join.reducer));
+          } else if(join.single) {
+            if(recordSet.length === 1) {
+              _.set(acc, join.path || join.name, recordSet.get('[0]').toObject(options));
+            } else if(recordSet.length > 0) {
               _.set(acc, join.path || join.name, recordSet.toObject(options));
             }
+          } else {
+            _.set(acc, join.path || join.name, recordSet.toObject(options));
           }
-          return acc;
-        }, acc);
-      }
-      if(table.config.subtable) {
-        table = table.config.subtable.table;
-      } else {
-        break;
-      }
+        }
+        return acc;
+      }, acc);
     }
     return acc;
   }
 
   toJSON()
   {
-    return this.toObject({ mapJoined: true, includeJoined: true });
+    return this.toObject({ includeJoined: true });
   }
 
 }

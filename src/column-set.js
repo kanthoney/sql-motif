@@ -35,7 +35,9 @@ class ColumnSet
       table,
       columns: this.config.columns.map(col => {
         if(col instanceof Column) {
-          return new Column({ ...col.config, table });
+          return new Column({
+              ...col,
+            table });
         } else if(col instanceof ColumnSet) {
           return col.reTable(table);
         }
@@ -61,8 +63,7 @@ class ColumnSet
             name: path.concat(col.alias || col.name).join('_'),
             subTablePath: col.subTablePath || col.table.config.path,
             subTableColPath: col.subTableColPath || col.table.config.path.concat(col.path),
-            subTableJoinedTo: col.subTableJoinedTo || col.joinedTo,
-            subTableFullJoinedTo: col.subTableFullJoinedTo || col.fullJoinedTo
+            subTableJoinedTo: col.subTableJoinedTo || col.joinedTo
           }));
         }
       } else if(col instanceof ColumnSet) {
@@ -164,21 +165,14 @@ class ColumnSet
         const value = _.get(record, col.config.path);
         return acc.concat({ col, value });
       } else if(col instanceof Column) {
+        const path = col.subTableColPath || col.path;
         if(!options.selector || col.passesSelection(options.selector)) {
-          let value;
-          if(col.subTableColPath) {
-            value = _.get(record, col.subTableColPath);
-            if(value !== undefined) {
-              return acc.concat({ col, value });
-            }
-          } else {
-            value = _.get(record, col.path);
-            if(value !== undefined) {
-              return acc.concat({ col, value });
-            }
+          const value = _.get(record, path);
+          if(value !== undefined) {
+            return acc.concat({ col, value });
           }
         }
-        if(options.safe && col.primaryKey && !_.get(options.joined, col.path)) {
+        if(options.safe && col.primaryKey && _.get(options.joined, col.path) === undefined) {
           throw new SafetyError(col);
         }
       }
@@ -210,9 +204,9 @@ class ColumnSet
       if(col.calc) {
         return acc;
       }
-      const path = col.path;
+      const path = col.subTablePath || col.path;
       let value = _.get(record.data, path);
-      const joinedValue = _.get(record.recordSet.joined, path);
+      const joinedValue = record.getJoined(path);
       if(!_.isNil(joinedValue) && !_.isNil(value) && joinedValue !== value) {
         _.set(acc.errors, path, `join mismatch. Parent: '${joinedValue}', child: '${value}'`);
         acc.valid = false;
@@ -310,7 +304,7 @@ class ColumnSet
         return null;
       }
       const path = col.path;
-      let joinedValue = _.get(record.recordSet.joined, path);
+      let joinedValue = record.getJoined(path);
       if(!_.isNil(joinedValue) && !_.isNil(value) && joinedValue !== value) {
         return acc.concat({ path, error: `join mismatch. Parent: '${joinedValue}', child: '${value}'` });
       }
@@ -400,8 +394,7 @@ class ColumnSet
       const path = col.path;
       let value = _.get(record.data, path);
       if(value === undefined) {
-        value = _.get(record.recordSet.joined, path);
-        _.set(record.data, path, value);
+        value = record.getJoined(path);
       }
       if(col.default !== undefined && (value === undefined || (col.notNull && value === null))) {
         if(_.isFunction(col.context)) {
@@ -414,10 +407,7 @@ class ColumnSet
         } else {
           value = col.default;
         }
-        _.set(record.data, path, value);
-        col.joinedTo.forEach(path => {
-          _.set(record.joined, path, value);
-        });
+        record.set(col, value);
       }
     });
   }
@@ -440,14 +430,11 @@ class ColumnSet
       }
       const path = col.path;
       let value = _.get(record.data, path);
-      const joinedValue = _.get(record.recordSet.joined, path);
+      const joinedValue = record.getJoined(path);
       if(value === undefined || (col.notNull && value === null)) {
         if(!_.isNil(joinedValue)) {
           value = joinedValue;
-          _.set(record.data, path, value);
-          col.joinedTo.forEach(path => {
-            _.set(record.joined, path, value);
-          });
+          record.set(col, value);
         } else {
           if(_.isFunction(col.context)) {
             context = col.context({ value, context });
@@ -459,17 +446,11 @@ class ColumnSet
               return new Promise(resolve => {
                 resolve(col.default({ context, col }));
               }).then(value => {
-                _.set(record.data, path, value);
-                col.joinedTo.forEach(path => {
-                  _.set(record.joined, path, value);
-                });
+                record.set(col, value);
               });
+            } else {
+              record.set(col, col.default);
             }
-            value = col.default;
-            _.set(record.data, path, value);
-            col.joinedTo.forEach(path => {
-              _.set(record.joined, path, value);
-            });
           });
         }
       }
@@ -485,12 +466,10 @@ class ColumnSet
       if(col.calc) {
         return;
       }
-      let value = _.get(scope, col.path);
+      const path = col.subTableColPath || col.path;
+      let value = _.get(scope, path);
       if(value !== undefined) {
-        _.set(record.data, col.path, data);
-        col.joinedTo.forEach(path => {
-          _.set(record.recordSet.joined, col.path, value);
-        });
+        record.set(col, value);
       }
     });
   }
@@ -513,14 +492,22 @@ class ColumnSet
       if(col instanceof ColumnSet) {
         Object.assign(acc, col.keyScope(record, scope));
       } else if(col.primaryKey) {
-        let value = _.get(scope, col.path);
+        const path = col.subTableColPath || col.path;
+        let value = _.get(scope, path);
         if(value === undefined) {
-          value = _.get(record.data, col.path);
+          value = _.get(record.data, path);
         }
-        _.set(acc, col.path, value);
-        col.joinedTo.forEach(path => {
-          _.set(scope, path, value);
-        });
+        if(value !== undefined) {
+          _.set(acc, path, value);
+          const joined = col.joinedTo.concat(this.subTableJoinedTo || []).reduce((acc, path) => {
+            _.set(acc, path, value);
+            return acc;
+          }, {});
+          if(col.table.config.path.length === 0) {
+            return _.merge(acc, joined);
+          }
+          return _.merge(acc, _.get(joined, col.table.config.path));
+        }
       }
       return acc;
     }, {});
@@ -539,7 +526,7 @@ class ColumnSet
       const path = col.path;
       let value = _.get(record.data, path);
       if(value === undefined) {
-        value = _.get(record.recordSet.joined, path);
+        value = record.getJoined(path);
       }
       if(value === undefined) {
         return acc.concat(dialect.options.insertDefault || 'default');
@@ -628,7 +615,7 @@ class ColumnSet
       if(options.safe) {
         if(!_.isNil(value) || _.get(options.joined, col.path)) {
           col.joinedTo.forEach(path => {
-            _.set(options.joined, path, true);
+            _.set(options.joined, path, value);
           });
         }
       }

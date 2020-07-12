@@ -148,7 +148,7 @@ describe('context tests', () => {
 
   it('should fill records with v4 uuid asynchronously', done => {
     joins.orders.fillAsync(records).then(filled => {
-      expect(filled.reduce((acc, record) => {
+        expect(filled.reduce((acc, record) => {
         const id = record.get('order_id');
         if(!/^v4-/.test(id)) {
           return false;

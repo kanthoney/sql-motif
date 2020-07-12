@@ -114,9 +114,7 @@ class Table
         const rightCol = this.column(right);
         if(leftCol && rightCol) {
           leftCol.joinCol = rightCol;
-          const relPath = leftCol.table.config.path.slice(rightCol.table.config.path.length);
-          rightCol.joinedTo.push(relPath.concat(leftCol.subTableColPath || leftCol.path));
-          rightCol.fullJoinedTo.push(leftCol.table.config.path.concat(leftCol.subTableColPath || leftCol.path));
+          rightCol.joinedTo.push(leftCol.table.config.path.concat(leftCol.subTableColPath || leftCol.path));
           acc.on = acc.on.concat({ left: leftCol, right: rightCol });
         } else {
           console.warn(
@@ -133,6 +131,7 @@ class Table
       });
       this.joins.push(join);
     });
+    this.joinedMap = {};
   }
 
   escape(s, context)
@@ -593,13 +592,13 @@ class Table
       options.joins = [];
     }
     if(old) {
-      const setClause = this.Set(record, options);
+      const setClause = this.Set(record, { ...options, safe: false });
       if(setClause) {
         return `${this.from(options)} ${setClause} ${this.WhereKey(old, options)}`;
       }
       return '';
     }
-    const setClause = this.SetNonKey(record, options);
+    const setClause = this.SetNonKey(record, { ...options, safe: false });
     if(setClause) {
       return `${this.from(options)} ${setClause} ${this.WhereKey(record, options)}`;
     }
@@ -966,12 +965,12 @@ class Table
     return `limit ${this.escape(start)}, ${this.escape(count)}`;
   }
 
-  toRecordSet(record)
+  toRecordSet(record, options)
   {
     if(record instanceof RecordSet) {
       return record;
     }
-    const r = new RecordSet(this);
+    const r = new RecordSet(this, options);
     r.addRecord(record);
     return r;
   }
