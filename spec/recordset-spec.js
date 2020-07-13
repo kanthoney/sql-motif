@@ -428,6 +428,140 @@ describe("record set tests", () => {
         );
       });
 
+      it('should collate order lines with collater', () => {
+        const lines = [
+          {
+            company: 'ABE081',
+            order_id: 12,
+            order_date: '2020-04-13',
+            customer: 'TET001',
+            delivery_name: 'Terry Test',
+            delivery_address_company: '',
+            delivery_address_street: '12 Whitfield Road',
+            delivery_address_locality: '',
+            delivery_address_city: 'Birmingham',
+            delivery_address_region: '',
+            delivery_address_postalCode: 'B15 8JX',
+            delivery_address_country: 'GB',
+            invoice_name: 'Terry Test',
+            invoice_address_company: '',
+            invoice_address_street: '12 Whitfield Road',
+            invoice_address_locality: '',
+            invoice_address_city: 'Birmingham',
+            invoice_address_region: '',
+            invoice_address_postalCode: 'B15 8JX',
+            invoice_address_country: 'GB',
+            lines_company: 'ABE081',
+            lines_order_id: 12,
+            lines_line_no: 1,
+            lines_sku: 'ABA001',
+            lines_description: 'Widget',
+            lines_qty: 1,
+            lines_price: 4.32
+          },
+          {
+            company: 'ABE081',
+            order_id: 12,
+            order_date: '2020-04-13',
+            customer: 'TET001',
+            delivery_name: 'Terry Test',
+            delivery_address_company: '',
+            delivery_address_street: '12 Whitfield Road',
+            delivery_address_locality: '',
+            delivery_address_city: 'Birmingham',
+            delivery_address_region: '',
+            delivery_address_postalCode: 'B15 8JX',
+            delivery_address_country: 'GB',
+            invoice_name: 'Terry Test',
+            invoice_address_company: '',
+            invoice_address_street: '12 Whitfield Road',
+            invoice_address_locality: '',
+            invoice_address_city: 'Birmingham',
+            invoice_address_region: '',
+            invoice_address_postalCode: 'B15 8JX',
+            invoice_address_country: 'GB',
+            lines_company: 'ABE081',
+            lines_order_id: 12,
+            lines_line_no: 2,
+            lines_sku: 'ABJ994',
+            lines_description: 'Gadget',
+            lines_qty: 100,
+            lines_price: 8.94
+          },
+          {
+            company: 'ABE081',
+            order_id: 13,
+            order_date: '2020-04-13',
+            customer: 'TAT001',
+            delivery_name: 'Tabitha Trial',
+            delivery_address_company: '',
+            delivery_address_street: '14 Whitfield Road',
+            delivery_address_locality: '',
+            delivery_address_city: 'Birmingham',
+            delivery_address_region: '',
+            delivery_address_postalCode: 'B15 8JX',
+            delivery_address_country: 'GB',
+            invoice_name: 'Terry Test',
+            invoice_address_company: '',
+            invoice_address_street: '12 Whitfield Road',
+            invoice_address_locality: '',
+            invoice_address_city: 'Birmingham',
+            invoice_address_region: '',
+            invoice_address_postalCode: 'B15 8JX',
+            invoice_address_country: 'GB',
+            lines_company: 'ABE081',
+            lines_order_id: 13,
+            lines_line_no: 1,
+            lines_sku: 'ABJ994',
+            lines_description: 'Gadget',
+            lines_qty: 100,
+            lines_price: 8.94
+          },
+          {
+            company: 'ABE081',
+            order_id: 14,
+            order_date: '2020-04-13',
+            customer: 'THT001',
+            delivery_name: 'Terry Test',
+            delivery_address_company: '',
+            delivery_address_street: '18 Whitfield Road',
+            delivery_address_locality: '',
+            delivery_address_city: 'Birmingham',
+            delivery_address_region: '',
+            delivery_address_postalCode: 'B15 8JX',
+            delivery_address_country: 'GB',
+            invoice_name: 'Thomas Test',
+            invoice_address_company: '',
+            invoice_address_street: '18 Whitfield Road',
+            invoice_address_locality: '',
+            invoice_address_city: 'Birmingham',
+            invoice_address_region: '',
+            invoice_address_postalCode: 'B15 8JX',
+            invoice_address_country: 'GB',
+            lines_company: 'ABE081',
+            lines_order_id: 14,
+            lines_line_no: 1,
+            lines_sku: 'RQ415',
+            lines_description: 'Strimmer',
+            lines_qty: 1,
+            lines_price: 94.12
+          }
+        ];
+
+        const r = j.collate(lines, { collate: [ 'company', { delivery: 'name' }, { lines: 'sku' } ] });
+        expect(JSON.stringify(r)).toBe(
+          '[{"company":"ABE081","order_id":12,"order_date":"2020-04-13","customer":"TET001","delivery":{"name":"Terry Test","address":{"company":"",' +
+          '"street":"12 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},"invoice":{"name":"Terry Test",' +
+          '"address":{"company":"","street":"12 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},' +
+          '"lines":[{"company":"ABE081","order_id":12,"line_no":1,"sku":"ABA001","description":"Widget","qty":1,"price":4.32},{"company":"ABE081","order_id":12,' +
+          '"line_no":2,"sku":"ABJ994","description":"Gadget","qty":100,"price":8.94},{"company":"ABE081","order_id":14,"line_no":1,"sku":"RQ415","description":"Strimmer",' +
+          '"qty":1,"price":94.12}]},{"company":"ABE081","order_id":13,"order_date":"2020-04-13","customer":"TAT001","delivery":{"name":"Tabitha Trial",' +
+          '"address":{"company":"","street":"14 Whitfield Road","locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},' +
+          '"invoice":{"name":"Terry Test","address":{"company":"","street":"12 Whitfield Road","locality":"","city":"Birmingham","region":"",' +
+          '"postalCode":"B15 8JX","country":"GB"}},"lines":[{"company":"ABE081","order_id":13,"line_no":1,"sku":"ABJ994","description":"Gadget","qty":100,"price":8.94}]}]'
+        );
+      });
+
       it('should import order records', () => {
 
         const data = [

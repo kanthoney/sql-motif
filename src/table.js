@@ -1007,8 +1007,8 @@ class Table
 
   collate(lines, options)
   {
-    const r = new RecordSet(this);
-    return r.addSQLResult(lines, options);
+    const r = new RecordSet(this, options);
+    return r.addSQLResult(lines);
   }
 
   extend(config)
