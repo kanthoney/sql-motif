@@ -41,6 +41,9 @@ The constructor takes a configuration object with the following fields:
   it is called for each record in the [record set](./record-set.md) with an object of the form `{ record, context }`, where `record` is the current record and 
   `context` is the context passed to the `fill` or `validate` methods.
 
+* `reducer`. A function which customises output of the `toObject` or `toJSON` methods of any [record set](./record-set.md) for this table. It takes the same form
+  as the `reducer` option in a [collate option](./collate-options.md).
+
 ## Methods
 
 As a general rule, SQL generating methods starting with a capital letter produce keywords whereas those starting with a lower case letter don't. For example:
@@ -249,6 +252,6 @@ key of the main table.
 ### SQL result collation
 
 * <a name="collate"></a>`collate(lines, [options])`. Takes a set of lines resulting from an SQL query and collates them, packing subrecords into the appropriate locations
-specified in the join spec. `options` is a [collation options](./collation-options.md) object.
-
+specified in the join spec. `options` is a [collation options](./collation-options.md) object. The result is a [record set](./record-set.md), unless the `json` option is set
+to `true`, in which case a plain array is returned.
 

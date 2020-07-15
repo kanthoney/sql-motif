@@ -1005,10 +1005,14 @@ class Table
     return this.toRecordSet(record).fillAsync(options);
   }
 
-  collate(lines, options)
+  collate(lines, options = {})
   {
     const r = new RecordSet(this, options);
-    return r.addSQLResult(lines);
+    const result = r.addSQLResult(lines);
+    if(options.json) {
+      return result.toJSON();
+    }
+    return result;
   }
 
   extend(config)

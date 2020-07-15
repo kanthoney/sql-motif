@@ -596,6 +596,12 @@ class RecordSet
 
   toObject(options)
   {
+    if(this.options.reducer) {
+      return this.reduce(this.options.reducer);
+    }
+    if(this.table.config.reducer) {
+      return this.reduce(this.table.config.reducer);
+    }
     return this.records.reduce((acc, record) => record.empty?acc:acc.concat(record.toObject(options)), []);
   }
 

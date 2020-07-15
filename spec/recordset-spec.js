@@ -2150,4 +2150,93 @@ describe("record set tests", () => {
 
   });
 
+  describe('reducer tests', () => {
+
+    const table = tables.company_options;
+    const lines = [
+      {
+        company: 'ABA190',
+        key_id: 'businessType',
+        value: 'Warehousing'
+      },
+      {
+        company: 'ABA190',
+        key_id: 'Managing Director',
+        value: 'Leslie Burnstock'
+      },
+      {
+        company: 'JJE124',
+        key_id: 'businessType',
+        value: 'Retail'
+      },
+      {
+        company: 'JJE124',
+        key_id: 'Managing Director',
+        value: 'Terry Mountford'
+      }
+    ];
+
+    it('should collate table records using reducer', () => {
+      expect(JSON.stringify(table.collate(lines))).toBe(
+        '{"ABA190":{"businessType":"Warehousing","Managing Director":"Leslie Burnstock"},"JJE124":{"businessType":"Retail","Managing Director":"Terry Mountford"}}'
+      );
+    });
+
+    it('should collate table records using reducer, producing plain JSON', () => {
+      expect(table.collate(lines, { json: true })).toEqual(
+        {
+          ABA190: {
+            businessType: 'Warehousing',
+            'Managing Director': 'Leslie Burnstock'
+          },
+          JJE124: {
+            businessType: 'Retail',
+            'Managing Director': 'Terry Mountford'
+          }
+        }
+      );
+    });
+
+    it('should collate table records using a custom reducer, producing plain JSON', () => {
+      expect(table.collate(lines, {
+        json: true,
+        reducer: (acc, record) => {
+          const { company, key_id, value } = record.toJSON();
+          if(acc === undefined) {
+            acc = {};
+          }
+          if(!acc[company]) {
+            acc[company] = [];
+          }
+          acc[company].push({ key: key_id, value });
+          return acc;
+        }
+      })).toEqual(
+        {
+          ABA190: [
+            {
+              key: 'businessType',
+              value: 'Warehousing'
+            },
+            {
+              key: 'Managing Director',
+              value: 'Leslie Burnstock'
+            }
+          ],
+          JJE124: [
+            {
+              key: 'businessType',
+              value: 'Retail'
+            },
+            {
+              key: 'Managing Director',
+              value: 'Terry Mountford'
+            }
+          ]
+        }
+      );
+    });
+
+  });
+
 });

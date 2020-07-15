@@ -115,3 +115,24 @@ module.exports.stock_options = new Table({
   ]
 });
 
+module.exports.company_options = new Table({
+  name: 'company_options',
+  columns: [
+    { name: 'company', type: 'account', notNull: true },
+    { name: 'key_id', type: 'varchar(255)', notNull: true },
+    { name: 'value', type: 'text' }
+  ],
+  primaryKey: ['company', 'key_id'],
+  reducer: (acc, record) => {
+    const { company, key_id, value } = record.toJSON();
+    if(acc === undefined) {
+      acc = {};
+    }
+    if(!acc[company]) {
+      acc[company] = {};
+    }
+    acc[company][key_id] = value;
+    return acc;
+  }
+});
+
