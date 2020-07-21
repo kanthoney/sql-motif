@@ -20,8 +20,8 @@ take a context. `selector` is an optional [selector](./selector.md) if you only 
 
 * `defaults(values)`. This is used to apply default values on records. `values` is an object with the same shape as the record.
 
-* `scope(values)`. This is used to enforce values on records. For example, if the user is logged in with company account of `LON001`, running `scope({ company: 'LON001' })`
-will ensure the record's `company` field is set to that account.
+* `scope(values, defaults)`. This is used to enforce values on records. For example, if the user is logged in with company account of `LON001`, running `scope({ company: 'LON001' })`
+will ensure the record's `company` field is set to that account. If specified, `defaults` are also applied to missing record values.
 
 * `key` Returns an object containing the key fields of the record
 

@@ -273,9 +273,9 @@ class RecordSet
     return this;
   }
 
-  scope(scope)
+  scope(scope, defaults)
   {
-    this.forEach(record => record.scope(scope));
+    this.forEach(record => record.scope(scope, defaults));
     return this;
   }
 

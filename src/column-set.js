@@ -483,7 +483,7 @@ class ColumnSet
     });
   }
 
-  scope(record, scope)
+  scope(record, scope = {}, defaults = {})
   {
     return this.fields().forEach(col => {
       if(col instanceof ColumnSet) {
@@ -504,6 +504,20 @@ class ColumnSet
           _.merge(scope, joined);
         } else {
           _.merge(scope, _.get(joined, col.table.config.path));
+        }
+      } else if(_.get(record.data, path) === undefined) {
+        value = _.get(defaults, path);
+        if(value !== undefined) {
+          record.set(col, value);
+          const joined = col.joinedTo.concat(col.subTableJoinedTo || []).reduce((acc, path) => {
+            _.set(acc, path, value);
+            return acc;
+          }, {});
+          if(col.table.config.path.length === 0) {
+            _.merge(defaults, joined);
+          } else {
+            _.merge(defaults, _.get(joined, col.table.config.path));
+          }
         }
       }
     });

@@ -340,15 +340,16 @@ class Record
     return this;
   }
 
-  scope(scope)
+  scope(scope = {}, defaults = {})
   {
     this.dirty = true;
-    this.table.columns.scope(this, scope);
+    this.table.columns.scope(this, scope, defaults);
     this.table.joins.forEach(join => {
       const recordSet = _.get(this.data, join.path || join.name);
       const subScope = Object.assign({}, _.get(scope, join.path || join.name));
+      const subDefaults = Object.assign({}, _.get(defaults, join.path || join.name));
       if(recordSet) {
-        recordSet.scope(subScope);
+        recordSet.scope(subScope, subDefaults);
       }
     });
     return this;

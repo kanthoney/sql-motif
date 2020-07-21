@@ -51,8 +51,8 @@ parameter of the `reduce` call for the first record. Returns the result of the f
 
 * `defaults(values)`. This applies default values specified in `values` to be applied to each record is the set. 
 
-* `scope(values)`. This will force the values specified in `values` to be applied to each record is the set. For example, if the user is logged in with a company account of
-`LON001` then `scope({ company: 'LON001' })` will ensure the records' `company` fields are all set to `LON001`.
+* `scope(values, defaults)`. This will force the values specified in `values` to be applied to each record is the set. For example, if the user is logged in with a company account of
+`LON001` then `scope({ company: 'LON001' })` will ensure the records' `company` fields are all set to `LON001`. If specified, `defaults` are also applied to missing values.
 
 * `key` Creates an array of objects containing the key fields of each record.
 
