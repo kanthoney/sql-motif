@@ -267,6 +267,12 @@ class RecordSet
     });
   }
 
+  defaults(defaults)
+  {
+    this.forEach(record => record.defaults(defaults));
+    return this;
+  }
+
   scope(scope)
   {
     this.forEach(record => record.scope(scope));

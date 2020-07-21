@@ -457,6 +457,32 @@ class ColumnSet
     }));
   }
 
+  defaults(record, defaults = {})
+  {
+    return this.fields().forEach(col => {
+      if(col instanceof ColumnSet) {
+        return col.defaults(record, defaults);
+      }
+      if(col.calc) {
+        return;
+      }
+      const path = col.subTableColPath || col.path;
+      let value = _.get(record.data, path);
+      if(value === undefined) {
+        record.set(col, _.get(defaults, path));
+        const joined = col.joinedTo.concat(col.subTableJoinedTo || []).reduce((acc, path) => {
+          _.set(acc, path, value);
+          return acc;
+        }, {});
+        if(col.table.config.path.length === 0) {
+          _.merge(defaults, joined);
+        } else {
+          _.merge(defaults, _.get(joined, col.table.config.path));
+        }
+      }
+    });
+  }
+
   scope(record, scope)
   {
     return this.fields().forEach(col => {
@@ -470,6 +496,15 @@ class ColumnSet
       let value = _.get(scope, path);
       if(value !== undefined) {
         record.set(col, value);
+        const joined = col.joinedTo.concat(col.subTableJoinedTo || []).reduce((acc, path) => {
+          _.set(acc, path, value);
+          return acc;
+        }, {});
+        if(col.table.config.path.length === 0) {
+          _.merge(scope, joined);
+        } else {
+          _.merge(scope, _.get(joined, col.table.config.path));
+        }
       }
     });
   }

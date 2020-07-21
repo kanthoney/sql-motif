@@ -327,10 +327,23 @@ class Record
     });
   }
 
+  defaults(defaults)
+  {
+    this.table.columns.defaults(this, defaults);
+    this.table.joins.forEach(join => {
+      const recordSet = _.get(this.data, join.path || join.name);
+      const subDefaults = Object.assign({}, _.get(defaults, join.path || join.name));
+      if(recordSet) {
+        recordSet.defaults(subDefaults);
+      }
+    });
+    return this;
+  }
+
   scope(scope)
   {
     this.dirty = true;
-    this.table.columns.scope(this.scope);
+    this.table.columns.scope(this, scope);
     this.table.joins.forEach(join => {
       const recordSet = _.get(this.data, join.path || join.name);
       const subScope = Object.assign({}, _.get(scope, join.path || join.name));
