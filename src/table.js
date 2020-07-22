@@ -80,7 +80,8 @@ class Table
           ...spec.table.config,
           columns: spec.table.columns.concat((spec.columns || []).map(col => typeExpander.expand({ ...col, table: spec.table }))),
           alias: spec.alias || spec.table.config.alias,
-          path: this.config.path.concat(spec.path || join.name)
+          path: this.config.path.concat(spec.path || join.name),
+          parent: this
         });
       } else {
         join.name = spec.name || spec.config.name;
@@ -88,7 +89,8 @@ class Table
           ...spec.table,
           columns: spec.table.columns.concat(spec.columns || []),
           alias: spec.alias,
-          path: this.config.path.concat(spec.path || join.name || [])
+          path: this.config.path.concat(spec.path || join.name || []),
+          parent: this
         });
       }
       let { on, where } = [].concat(spec.on || []).reduce((acc, on) => {
@@ -115,7 +117,7 @@ class Table
         if(leftCol && rightCol) {
           leftCol.joinCol = rightCol;
           rightCol.joinedTo.push(leftCol.table.config.path.concat(leftCol.subTableColPath || leftCol.path));
-          acc.on = acc.on.concat({ left: leftCol, right: rightCol });
+          acc.on = acc.on.concat({ left: leftCol, right: rightCol, join });
         } else {
           console.warn(
             `Problem creating join for table ${this.config.name} with left column '${left}' and right column '${right}'`
@@ -127,7 +129,7 @@ class Table
         join.table.onWhere = where;
       }
       on.forEach(on => {
-        on.left.table.onFields.push(on);
+        on.right.table.onFields.push(on);
       });
       this.joins.push(join);
     });
@@ -274,20 +276,25 @@ class Table
         clause = 'inner join';
         break;
       }
-      return acc.concat(`${clause} ${join.table.from({ ...options, brackets: true, includeOn: true, where: _.get(where, join.path || join.name) })}`);
-    }, []);
-    if(joins.length > 0 && options.brackets) {
-      clause = `(${[clause].concat(joins).join(' ')})`;
-    } else {
-      clause = [clause].concat(joins).join(' ');
-    }
-    if(options.includeOn) {
-      clause = `${clause} ${this.On(where)}`;
-    } else if(where) {
-      let on = this.columns.whereArray(where);
-      if(on.length > 0) {
-        clause = `${clause} on ${on.join(' and ')}`;
+      acc.clause += ` ${clause} ${join.table.from({ ...options, brackets: true, where: _.get(where, join.path || join.name) })}`;
+      const subWhere = _.get(where, join.path || join.name);
+      if(subWhere) {
+        acc.on = acc.on.concat(join.table.columns.whereArray(subWhere));
       }
+      return acc;
+    }, { clause: '', on: [] });
+    clause += joins.clause;
+    const onArray = this.onFields.reduce((acc, on) => {
+      if(!options.joins || options.joins === '*' || options.joins.includes(on.join.name)) {
+        acc.push(`${on.left.sql.fullName} = ${on.right.sql.fullName}`);
+      }
+      return acc;
+    }, joins.on);
+    if(onArray.length > 0) {
+      clause += ` on ${onArray.join(' and ')}`;
+    }
+    if(options.brackets && joins.clause) {
+      return `(${clause})`;
     }
     return clause;
   }

@@ -20,9 +20,10 @@ describe('join tests', () => {
 
     it('should create a join clause', () => {
       expect(j.from()).toBe(
-        '"stock" inner join "s1"."warehouse" as "w1" on "w1"."company" = "stock"."company" inner join "warehouse_bins" on ' +
-        '"warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name" ' +
-        'left join "inventory" as "i1" on "i1"."company" = "stock"."company" and "i1"."sku" = "stock"."sku" and "i1"."bin" = "warehouse_bins"."bin"');
+        '"stock" inner join "s1"."warehouse" as "w1" on "warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name" inner join ' +
+          '"warehouse_bins" on "i1"."bin" = "warehouse_bins"."bin" left join "inventory" as "i1" on "w1"."company" = "stock"."company" and "i1"."company" = "stock"."company" ' +
+          'and "i1"."sku" = "stock"."sku"'
+        );
     });
 
     it('should create a full field list', () => {
@@ -46,17 +47,17 @@ describe('join tests', () => {
     it('should create a join clause', () => {
       expect(j.From()).toBe(
         'from "stock" inner join ("s1"."warehouse" as "w1" inner join ("warehouse_bins" inner join "inventory" on "inventory"."company" = "warehouse_bins"."company" and ' +
-        '"inventory"."bin" = "warehouse_bins"."bin" and "inventory"."warehouse_name" = "warehouse_bins"."warehouse_name" and "inventory"."sku" = "stock"."sku") on ' +
-        '"warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name") on "w1"."company" = "stock"."company"'
+          '"inventory"."bin" = "warehouse_bins"."bin" and "inventory"."warehouse_name" = "warehouse_bins"."warehouse_name") on "warehouse_bins"."company" = "w1"."company" ' +
+          'and "warehouse_bins"."warehouse_name" = "w1"."name") on "w1"."company" = "stock"."company" and "inventory"."sku" = "stock"."sku"'
       );
     });
 
     it('should create a join clause including values in on clause', () => {
       expect(j.From({ where: { warehouse: { name: 'Mercury', bins: { bin: 'A01A' } } } })).toBe(
         'from "stock" inner join ("s1"."warehouse" as "w1" inner join ("warehouse_bins" inner join "inventory" on "inventory"."company" = "warehouse_bins"."company" and ' +
-          '"inventory"."bin" = "warehouse_bins"."bin" and "inventory"."warehouse_name" = "warehouse_bins"."warehouse_name" and "inventory"."sku" = "stock"."sku") ' +
-          'on "warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name" and "warehouse_bins"."bin" = \'A01A\') ' +
-          'on "w1"."company" = "stock"."company" and "w1"."name" = \'Mercury\''
+          '"inventory"."bin" = "warehouse_bins"."bin" and "inventory"."warehouse_name" = "warehouse_bins"."warehouse_name") on "warehouse_bins"."bin" = \'A01A\' and ' +
+          '"warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name") on "w1"."name" = \'Mercury\' and "w1"."company" = "stock"."company" ' +
+          'and "inventory"."sku" = "stock"."sku"'
       );
     });
   });
@@ -77,17 +78,19 @@ describe('join tests', () => {
 
     it('should create from clause', () => {
       expect(join.From()).toBe(
-        'from "stock" inner join ("s1"."warehouse" as "w1" inner join ("warehouse_bins" inner join "inventory" on "inventory"."company" = "warehouse_bins"."company" and ' +
-          '"inventory"."bin" = "warehouse_bins"."bin" and "inventory"."warehouse_name" = "warehouse_bins"."warehouse_name" and "inventory"."sku" = "stock"."sku" and ' +
-          '"inventory"."sku" = \'AA454\') on "warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name") on "w1"."company" = "stock"."company"'
+        'from "stock" inner join ("s1"."warehouse" as "w1" inner join ("warehouse_bins" inner join "inventory" on "inventory"."sku" = \'AA454\' and ' +
+          '"inventory"."company" = "warehouse_bins"."company" and "inventory"."bin" = "warehouse_bins"."bin" and "inventory"."warehouse_name" = ' +
+          '"warehouse_bins"."warehouse_name") on "warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name") on ' +
+          '"w1"."company" = "stock"."company" and "inventory"."sku" = "stock"."sku"'
       );
     });
 
     it('should create from clause, overriding sku', () => {
       expect(join.From({ where: { warehouse: { bins: { inventory: { sku: 'ME430' } } } } })).toBe(
-        'from "stock" inner join ("s1"."warehouse" as "w1" inner join ("warehouse_bins" inner join "inventory" on "inventory"."company" = "warehouse_bins"."company" and ' +
-          '"inventory"."bin" = "warehouse_bins"."bin" and "inventory"."warehouse_name" = "warehouse_bins"."warehouse_name" and "inventory"."sku" = "stock"."sku" and ' +
-          '"inventory"."sku" = \'ME430\') on "warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name") on "w1"."company" = "stock"."company"'
+        'from "stock" inner join ("s1"."warehouse" as "w1" inner join ("warehouse_bins" inner join "inventory" on "inventory"."sku" = \'ME430\' and "inventory"."company" = ' +
+          '"warehouse_bins"."company" and "inventory"."bin" = "warehouse_bins"."bin" and "inventory"."warehouse_name" = "warehouse_bins"."warehouse_name") on ' +
+          '"warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name") on "w1"."company" = "stock"."company" and "inventory"."sku" = ' +
+          '"stock"."sku"'
       );
     });
 

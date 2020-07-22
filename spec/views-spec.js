@@ -155,10 +155,10 @@ describe('view specs', () => {
 
     it('should create view with default query', () => {
       expect(v1.Create()).toBe(
-        'create view "stock_bins" as select "stock"."company", "stock"."sku", "w1"."name" as "warehouse_name", "warehouse_bins"."bin" as "warehouse_bins_bin" from ' +
-        '"stock" inner join ("s1"."warehouse" as "w1" inner join ("warehouse_bins" inner join "inventory" on "inventory"."company" = "warehouse_bins"."company" and ' +
-        '"inventory"."bin" = "warehouse_bins"."bin" and "inventory"."warehouse_name" = "warehouse_bins"."warehouse_name" and "inventory"."sku" = "stock"."sku") on ' +
-        '"warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name") on "w1"."company" = "stock"."company"'
+        'create view "stock_bins" as select "stock"."company", "stock"."sku", "w1"."name" as "warehouse_name", "warehouse_bins"."bin" as "warehouse_bins_bin" from "stock" ' +
+          'inner join ("s1"."warehouse" as "w1" inner join ("warehouse_bins" inner join "inventory" on "inventory"."company" = "warehouse_bins"."company" and ' +
+          '"inventory"."bin" = "warehouse_bins"."bin" and "inventory"."warehouse_name" = "warehouse_bins"."warehouse_name") on "warehouse_bins"."company" = "w1"."company" and ' +
+          '"warehouse_bins"."warehouse_name" = "w1"."name") on "w1"."company" = "stock"."company" and "inventory"."sku" = "stock"."sku"'
       );
     });
 
