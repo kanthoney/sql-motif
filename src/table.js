@@ -129,7 +129,7 @@ class Table
         join.table.onWhere = where;
       }
       on.forEach(on => {
-        on.right.table.onFields.push(on);
+        this.onFields.push(on);
       });
       this.joins.push(join);
     });

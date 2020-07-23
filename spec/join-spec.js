@@ -20,9 +20,9 @@ describe('join tests', () => {
 
     it('should create a join clause', () => {
       expect(j.from()).toBe(
-        '"stock" inner join "s1"."warehouse" as "w1" on "warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name" inner join ' +
-          '"warehouse_bins" on "i1"."bin" = "warehouse_bins"."bin" left join "inventory" as "i1" on "w1"."company" = "stock"."company" and "i1"."company" = "stock"."company" ' +
-          'and "i1"."sku" = "stock"."sku"'
+        '"stock" inner join "s1"."warehouse" as "w1" inner join "warehouse_bins" left join "inventory" as "i1" on "w1"."company" = "stock"."company" and ' +
+          '"warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name" and "i1"."company" = "stock"."company" and ' +
+          '"i1"."sku" = "stock"."sku" and "i1"."bin" = "warehouse_bins"."bin"'
         );
     });
 
