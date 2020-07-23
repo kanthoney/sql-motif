@@ -62,7 +62,7 @@ class ColumnSet
             table,
             name: path.concat(col.alias || col.name).join('_'),
             subTablePath: col.subTablePath || col.table.config.path,
-            subTableColPath: col.subTableColPath || col.table.config.path.concat(col.path),
+            subTableColPath: col.table.config.path.concat(col.subTableColPath || col.path),
             subTableJoinedTo: col.subTableJoinedTo || col.joinedTo
           }));
         }
