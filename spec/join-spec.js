@@ -10,7 +10,9 @@ describe('join tests', () => {
     const j = joins.orders;
 
     it('should create a join clause', () => {
-      expect(j.from()).toBe('"s1"."orders" inner join "order_lines" as "ol1" on "ol1"."company" = "s1"."orders"."company" and "ol1"."order_id" = "s1"."orders"."order_id"');
+      expect(j.from()).toBe(
+        '"s1"."orders" inner join "order_lines" as "ol1" on "ol1"."company" = "s1"."orders"."company" and "ol1"."order_id" = "s1"."orders"."order_id"'
+      );
     });
 
   });
@@ -20,9 +22,9 @@ describe('join tests', () => {
 
     it('should create a join clause', () => {
       expect(j.from()).toBe(
-        '"stock" inner join "s1"."warehouse" as "w1" inner join "warehouse_bins" left join "inventory" as "i1" on "w1"."company" = "stock"."company" and ' +
-          '"warehouse_bins"."company" = "w1"."company" and "warehouse_bins"."warehouse_name" = "w1"."name" and "i1"."company" = "stock"."company" and ' +
-          '"i1"."sku" = "stock"."sku" and "i1"."bin" = "warehouse_bins"."bin"'
+        '"stock" inner join "s1"."warehouse" as "w1" on "w1"."company" = "stock"."company" inner join "warehouse_bins" on "warehouse_bins"."company" = "w1"."company" ' +
+          'and "warehouse_bins"."warehouse_name" = "w1"."name" left join "inventory" as "i1" on "i1"."company" = "stock"."company" and "i1"."sku" = "stock"."sku" and ' +
+          '"i1"."bin" = "warehouse_bins"."bin"'
         );
     });
 

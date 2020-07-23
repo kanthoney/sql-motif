@@ -277,14 +277,29 @@ class Table
         break;
       }
       acc.clause += ` ${clause} ${join.table.from({ ...options, brackets: true, where: _.get(where, join.path || join.name) })}`;
+      let onArray = [];
       const subWhere = _.get(where, join.path || join.name);
       if(subWhere) {
-        acc.on = acc.on.concat(join.table.columns.whereArray(subWhere));
+        onArray = onArray.concat(join.table.columns.whereArray(subWhere));
+      }
+      const ons = table => {
+        return this.onFields.reduce((acc, on) => {
+          if(on.left.table === table && (!options.joins || options.joins === '*' || options.joins.includes(on.join.name))) {
+            acc.push(`${on.left.sql.fullName} = ${on.right.sql.fullName}`);
+          }
+          return acc;
+        }, []).concat(table.joins.reduce((acc, join) => {
+          return acc.concat(ons(join.table));
+        }, []));
+      }
+      onArray = onArray.concat(ons(join.table));
+      if(onArray.length > 0) {
+        acc.clause += ` on ${onArray.join(' and ')}`;
       }
       return acc;
     }, { clause: '', on: [] });
     clause += joins.clause;
-    const onArray = this.onFields.reduce((acc, on) => {
+    /*const onArray = this.onFields.reduce((acc, on) => {
       if(!options.joins || options.joins === '*' || options.joins.includes(on.join.name)) {
         acc.push(`${on.left.sql.fullName} = ${on.right.sql.fullName}`);
       }
@@ -292,7 +307,7 @@ class Table
     }, joins.on);
     if(onArray.length > 0) {
       clause += ` on ${onArray.join(' and ')}`;
-    }
+    }*/
     if(options.brackets && joins.clause) {
       return `(${clause})`;
     }
