@@ -59,7 +59,7 @@ class RecordSet
         _.set(record.data, path, value);
       }
       if(value !== undefined) {
-        col.joinedTo.concat(col.subTableJoinedTo || []).forEach(path => {
+        col.joinedTo.forEach(path => {
           _.set(newJoined, path, value);
         });
       }
@@ -118,8 +118,7 @@ class RecordSet
       }
       if(value !== undefined) {
         record.empty = false;
-        const joinedTo = col.joinedTo.concat(col.subTableJoinedTo || []);
-        joinedTo.forEach(path => {
+        col.joinedTo.forEach(path => {
           _.set(newJoined, path, value);
         });
       }

@@ -124,8 +124,7 @@ class Record
       this.empty = false;
     }
     this.dirty = true;
-    const joinedTo = col.joinedTo.concat(col.subTableJoinedTo || []);
-    const joined = joinedTo.reduce((acc, path) => {
+    const joined = col.joinedTo.reduce((acc, path) => {
       _.set(acc, path, value);
       return acc;
     }, {});

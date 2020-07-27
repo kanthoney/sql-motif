@@ -278,5 +278,67 @@ describe('view specs', () => {
 
   });
 
+  describe('joined views specs', () => {
+
+    const { Table } = require('../index');
+
+    const table = (new Table({
+      name: 'stock',
+      columns: [
+        { name: 'sku', type: 'sku', primaryKey: true }
+      ]
+    }).join({
+      name: 'orders',
+      table: new Table({
+        name: 'orders',
+        columns: [
+          { name: 'id', type: 'id', primaryKey: true }
+        ]
+      }).join({
+        name: 'lines',
+        table: {
+          name: 'order_lines',
+          columns: [
+            { name: 'order_id', type: 'id', primaryKey: true },
+            { name: 'line_no', type: 'int', primaryKey: true },
+            { name: 'sku', type: 'sku' }
+          ]
+        },
+        on: ['order_id:id']
+      }).view({
+        name: 'orders_with_lines'
+      }),
+      on: 'lines_sku:sku'
+    }));
+
+    it('should collate SQL result', () => {
+
+      const lines = [
+        {
+          sku: 'AA45',
+          orders_id: 'e2857711-d998-4f4a-837a-05e0876d2b14',
+          orders_lines_line_no: 1
+        },
+        {
+          sku: 'GH768',
+          orders_id: 'e2857711-d998-4f4a-837a-05e0876d2b14',
+          orders_lines_line_no: 2
+        },
+        {
+          sku: 'UP325',
+          orders_id: 'a0aa5428-da81-447c-82c8-86aa54298237',
+          orders_lines_line_no: 1
+        }
+      ];
+
+      expect(JSON.stringify(table.collate(lines))).toBe(
+        '[{"sku":"AA45","orders":[{"id":"e2857711-d998-4f4a-837a-05e0876d2b14","lines":[{"order_id":"e2857711-d998-4f4a-837a-05e0876d2b14","line_no":1,"sku":"AA45"}]}]},' +
+          '{"sku":"GH768","orders":[{"id":"e2857711-d998-4f4a-837a-05e0876d2b14","lines":[{"order_id":"e2857711-d998-4f4a-837a-05e0876d2b14","line_no":2,"sku":"GH768"}]}]},' +
+          '{"sku":"UP325","orders":[{"id":"a0aa5428-da81-447c-82c8-86aa54298237","lines":[{"order_id":"a0aa5428-da81-447c-82c8-86aa54298237","line_no":1,"sku":"UP325"}]}]}]'
+      );
+    });
+
+  });
+
 });
 

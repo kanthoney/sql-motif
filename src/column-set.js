@@ -470,7 +470,7 @@ class ColumnSet
       let value = _.get(record.data, path);
       if(value === undefined) {
         record.set(col, _.get(defaults, path));
-        const joined = col.joinedTo.concat(col.subTableJoinedTo || []).reduce((acc, path) => {
+        const joined = col.joinedTo.reduce((acc, path) => {
           _.set(acc, path, value);
           return acc;
         }, {});
@@ -496,7 +496,7 @@ class ColumnSet
       let value = _.get(scope, path);
       if(value !== undefined) {
         record.set(col, value);
-        const joined = col.joinedTo.concat(col.subTableJoinedTo || []).reduce((acc, path) => {
+        const joined = col.joinedTo.reduce((acc, path) => {
           _.set(acc, path, value);
           return acc;
         }, {});
@@ -509,7 +509,7 @@ class ColumnSet
         value = _.get(defaults, path);
         if(value !== undefined) {
           record.set(col, value);
-          const joined = col.joinedTo.concat(col.subTableJoinedTo || []).reduce((acc, path) => {
+          const joined = col.joinedTo.reduce((acc, path) => {
             _.set(acc, path, value);
             return acc;
           }, {});
@@ -548,7 +548,7 @@ class ColumnSet
         }
         if(value !== undefined) {
           _.set(acc, path, value);
-          const joined = col.joinedTo.concat(this.subTableJoinedTo || []).reduce((acc, path) => {
+          const joined = col.joinedTo.reduce((acc, path) => {
             _.set(acc, path, value);
             return acc;
           }, {});
