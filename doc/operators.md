@@ -54,11 +54,13 @@ The operators are:
 
 ## Values
 
-As well as regular values, you can pass a function to the operator. This will be called with the arguments `(col, tag)`, where `col` is the column of the `where` or `set`
-clause being processed and `tag` is a template string tag which escapes the template entries. For example:
+As well as regular values, you can pass a function to the operator. This will be called with the arguments `({ col, table, context, sql })`, where `col` is the column of the `where`
+or `set` clause being processed, `table` is the main table, `context` is a user supplied value passed in via the [table options](./table-options.md) and `sql` is a template
+string tag which escapes the template entries. For example:
 
 ```
-orders.where({ delivery_date: ops.lt((col, sql) => tag`${orders.column(order_date)} + interval 3 day`) }); // "orders"."delivery_date" < "orders"."order_date" + interval 3 day
+orders.where({ delivery_date: ops.lt(({ col, table, sql }) => sql`${table.column('order_date')} + interval 3 day`) });
+// "orders"."delivery_date" < "orders"."order_date" + interval 3 day
 ```
 
 ## Operator class

@@ -10,22 +10,22 @@ class Operator
     this.value = value;
   }
 
-  clause(dialect, rhs, context = {})
+  clause(dialect, lhs, table, context = {})
   {
     let value;
     if(this.value instanceof Function) {
-      value = this.value({ col: rhs, sql: dialect.template(context), context });
+      value = this.value({ table, col: lhs, sql: dialect.template(context), context });
     } else {
       value = this.value;
     }
     if(this.name instanceof Function) {
-      if(rhs) {
-        return `${dialect.escape(rhs, context)} ${this.name(value)} ${dialect.escape(this.value, context)}`;
+      if(lhs) {
+        return `${dialect.escape(lhs, context)} ${this.name(value)} ${dialect.escape(this.value, context)}`;
       }
       return `${this.name(value)} ${dialect.escape(this.value)}`;
     }
-    if(rhs) {
-      return `${dialect.escape(rhs, context)} ${this.name} ${dialect.escape(value, context)}`;
+    if(lhs) {
+      return `${dialect.escape(lhs, context)} ${this.name} ${dialect.escape(value, context)}`;
     }
     return `${this.name} ${dialect.escape(value, context)}`;
   }

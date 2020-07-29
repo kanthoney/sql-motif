@@ -446,9 +446,9 @@ class Table
     return `select ${this.selectWhereMainKey(selector, where, options)}`;
   }
 
-  setArray(record, options)
+  setArray(record, options = {})
   {
-    options = options || {};
+    options.table = options.table || this;
     return this.columns.setArray(record, options).concat(this.joins.reduce((acc, join) => {
       if(join.readOnly || (options.joins && options.joins !== '*' && !options.joins.includes(join.name))) {
         return acc;
@@ -538,8 +538,9 @@ class Table
     return this.dialect.insertIgnore(this, record);
   }
 
-  whereArray(record, options)
+  whereArray(record, options = {})
   {
+    options.table = options.table || this;
     return this.columns.whereArray(record, options).concat(this.joins.reduce((acc, join) => {
       if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
         return acc;

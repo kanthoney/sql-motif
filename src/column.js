@@ -31,13 +31,13 @@ class Column
     return selector.passes(this);
   }
 
-  SQL(as, context = {})
+  SQL(as, context = {}, table)
   {
     if(_.isString(this.calc)) {
       return as?`${this.calc} as ${this.table.dialect.escapeId(this.fullAlias)}`:this.calc;
     } else if(_.isFunction(this.calc)) {
       return as?`${this.calc({ table: this.table, sql: this.table.dialect.template(context), context })} as ${this.table.dialect.escapeId(this.fullAlias)}`:
-      this.calc({ table: this.table, sql: this.table.dialect.template(context), context });
+      this.calc({ table: table || this.table, sql: this.table.dialect.template(context), context });
     }
     return as?this.sql.fullNameAs:this.sql.fullName;
   }
