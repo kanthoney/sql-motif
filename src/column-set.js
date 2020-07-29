@@ -63,7 +63,7 @@ class ColumnSet
             name: path.concat(col.alias || col.name).join('_'),
             subTablePath: col.subTablePath || col.table.config.path,
             subTableColPath: col.table.config.path.concat(col.subTableColPath || col.path),
-            joinedTo: col.joinedTo
+            subTableJoinedTo: col.joinedTo
           }));
         }
       } else if(col instanceof ColumnSet) {

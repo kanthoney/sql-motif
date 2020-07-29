@@ -20,7 +20,7 @@ class Column
       fullNameAs: fullName + (this.fullAlias !== this.name?` as ${this.table.dialect.escapeId(this.fullAlias)}`:''),
       as: this.fullAlias?this.table.dialect.escapeId(this.fullAlias):fullName
     }
-    this.joinedTo = (this.joinedTo || []).map(path => this.table.config.path.concat(path));
+    this.joinedTo = (this.subTableJoinedTo || []).map(path => this.table.config.path.concat(path));
   }
 
   passesSelection(selector)
