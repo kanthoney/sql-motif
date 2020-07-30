@@ -44,7 +44,7 @@ class RecordSet
     this.table.columns.fields(this.options.selector).forEach(col => {
       let value = _.get(line, col.fullAlias);
       const path = col.subTableColPath || col.path;
-       if(value !== undefined && col.format instanceof Function) {
+       if(!_.isNil(value) && col.format instanceof Function) {
         value = col.format(value);
       }
       if(value === undefined) {
