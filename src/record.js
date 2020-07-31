@@ -502,7 +502,13 @@ class Record
         const recordSet = _.get(this.data, join.path || join.name);
         if(recordSet instanceof RecordSet) {
           if(join.reducer) {
-            _.set(acc, join.path || join.name, recordSet.reduce(join.reducer));
+            let reduceInit = join.reduceInit;
+            if(reduceInit instanceof Function) {
+              reduceInit = reduceInit();
+            } else {
+              reduceInit = _.clone(reduceInit);
+            }
+            _.set(acc, join.path || join.name, recordSet.reduce(join.reducer, reduceInit));
           } else if(join.single) {
             if(recordSet.length === 1) {
               _.set(acc, join.path || join.name, recordSet.get('[0]').toObject(options));

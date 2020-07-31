@@ -44,6 +44,8 @@ The constructor takes a configuration object with the following fields:
 * `reducer`. A function which customises output of the `toObject` or `toJSON` methods of any [record set](./record-set.md) for this table. It takes the same form
   as the `reducer` option in a [collate option](./collate-options.md).
 
+* `reduceInit`. An initial value for the `reducer`. If a function, is called with no arguments to produce an initial value.
+
 ## Methods
 
 As a general rule, SQL generating methods starting with a capital letter produce keywords whereas those starting with a lower case letter don't. For example:

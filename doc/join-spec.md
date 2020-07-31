@@ -32,8 +32,10 @@ The join specification object can take the following parameters:
  methods.
 
 * `reducer`. A function used to convert the [record set](./record-set.md) of subrecords into an arbitrary value when the top-level record set is converted to a plain object
-  via the `toObject` or `toJSON` methods. The function takes the arguments `(acc, record)` where `acc` is initially `undefined` and `record` is a [record](./record.md) from
+  via the `toObject` or `toJSON` methods. The function takes the arguments `(acc, record)` where `acc` is initially `reduceInit` and `record` is a [record](./record.md) from
   the joined subrecords. The function is called for each record and returns the `acc` to be passed to the next invocation. The result is the final `acc` returned.
+
+* `reduceInit`. An initial value for the `reducer` function. If a function, is called with no arguments to produce an initial value.
 
 Example:
 

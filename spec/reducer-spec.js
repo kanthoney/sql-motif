@@ -26,12 +26,10 @@ describe('reducer tests', () => {
     table: stock_attributes,
     on: ['sku'],
     reducer: (acc, record) => {
-      if(acc === undefined) {
-        acc = {};
-      }
       acc[record.get('attr')] = record.get('value');
       return acc;
-    }
+    },
+    reduceInit: {}
   });
 
   it('should consolidate lines, applying the reducer to create the attributes subrecord', () => {

@@ -44,7 +44,7 @@ class RecordSet
     this.table.columns.fields(this.options.selector).forEach(col => {
       let value = _.get(line, col.fullAlias);
       const path = col.subTableColPath || col.path;
-       if(!_.isNil(value) && col.format instanceof Function) {
+      if(!_.isNil(value) && col.format instanceof Function) {
         value = col.format(value);
       }
       if(value === undefined) {
@@ -599,13 +599,15 @@ class RecordSet
     return;
   }
 
-  toObject(options)
+  toObject(options = {})
   {
-    if(this.options.reducer) {
-      return this.reduce(this.options.reducer);
-    }
-    if(this.table.config.reducer) {
-      return this.reduce(this.table.config.reducer);
+    let reducer = options.reducer || this.options.reducer || this.table.config.reducer;
+    if(reducer) {
+      let reduceInit = options.reduceInit || this.options.reduceInit || this.table.config.reduceInit;
+      if(reduceInit instanceof Function) {
+        reduceInit = reduceInit();
+      }
+      return this.reduce(reducer, _.clone(reduceInit));
     }
     return this.records.reduce((acc, record) => record.empty?acc:acc.concat(record.toObject(options)), []);
   }
