@@ -494,7 +494,7 @@ class Table
   insertValues(record)
   {
     if(record instanceof RecordSet) {
-      return this.insertValues(record.toObject({ noSubrecords: true, mapJoined: true, includeJoined: true }));
+      return this.insertValues(record.toObject({ noSubrecords: true, mapJoined: true, includeJoined: true, noReducer: true }));
     }
     if(record instanceof Record) {
       return record.insertValues();

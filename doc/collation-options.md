@@ -12,3 +12,5 @@ The `options` argument in [table.collate](./table.md#collate) method is an objec
 
 * `reduceInit`. An initial value for the `reducer` function. If a function, is called with no arguments to produce an initial value.
 
+* `noReducer`. If set to `true` does not call any reducers and instead return arrays.
+

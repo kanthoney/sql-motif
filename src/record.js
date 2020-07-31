@@ -501,7 +501,7 @@ class Record
       acc = this.recordSet.joins.reduce((acc, join) => {
         const recordSet = _.get(this.data, join.path || join.name);
         if(recordSet instanceof RecordSet) {
-          if(join.reducer) {
+          if(join.reducer && !options.noReducer) {
             let reduceInit = join.reduceInit;
             if(reduceInit instanceof Function) {
               reduceInit = reduceInit();

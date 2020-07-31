@@ -588,10 +588,10 @@ class ColumnSet
   {
     const table = this.config.table;
     if(record instanceof RecordSet) {
-      return this.setArray(record.toObject({ includeJoined: true }), options, table);
+      return this.setArray(record.toObject({ includeJoined: true, noReducer: true }), options, table);
     }
     if(record instanceof Record) {
-      return this.setArray(record.toObject({ includeJoined: true }), options, table);
+      return this.setArray(record.toObject({ includeJoined: true, noReducer: true }), options, table);
     }
     options = options || {};
     if(options.joins && options.joins !== '*') {
@@ -621,10 +621,10 @@ class ColumnSet
   {
     const table = this.config.table;
     if(record instanceof RecordSet) {
-      return this.whereArray(record.toObject({ includeJoined: true }), options);
+      return this.whereArray(record.toObject({ includeJoined: true, noReducer: true }), options);
     }
     if(record instanceof Record) {
-      return this.whereArray(record.toObject({ includeJoined: true }), options);
+      return this.whereArray(record.toObject({ includeJoined: true, noReducer: true }), options);
     }
     options = _.defaults(options || {}, { default: '', joined: {} });
     if(options.joins && options.joins !== '*') {
