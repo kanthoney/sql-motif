@@ -671,8 +671,9 @@ class Table
     return this.UpdateWhere(record, where, { ...options, safe: true });
   }
 
-  delete(record, options = {})
+  delete(record, options)
   {
+    options = { selector: col => col.primaryKey, ...options };
     if(this.dialect.options.singleTableDelete) {
       options.joins = [];
       return `${this.From(options)} ${this.Where(record, options)}`;
@@ -686,20 +687,19 @@ class Table
     return `delete ${this.delete(record, options)}`;
   }
 
-  deleteKey(record, options)
+  deleteWhere(record, options = {})
   {
-    options = { selector: col => col.primaryKey, ...options };
     if(this.dialect.options.singleTableDelete) {
       options.joins = [];
-      return `${this.From(options)} ${this.WhereKey(record, options)}`;
+      return `${this.From(options)} ${this.Where(record, options)}`;
     }
     const tables = this.tables({ ...options, writeable: true }).map(table => table.as()).join(', ');
-    return `${tables} ${this.From(options)} ${this.WhereKey(record, options)}`;
+    return `${tables} ${this.From(options)} ${this.Where(record, options)}`;
   }
 
-  DeleteKey(record, options)
+  DeleteWhere(record, options)
   {
-    return `delete ${this.delete(record, options)}`;
+    return `delete ${this.deleteWhere(record, options)}`;
   }
 
   deleteSafe(record, options)
@@ -710,16 +710,6 @@ class Table
   DeleteSafe(record, options)
   {
     return `delete ${this.deleteSafe(record, options)}`;
-  }
-
-  deleteKeySafe(record, options)
-  {
-    return this.deleteKey(record, { ...options, safe: true });
-  }
-
-  DeleteKeySafe(record, options)
-  {
-    return `delete ${this.deleteKeySafe(record, options)}`;
   }
 
   createColumnsArray()

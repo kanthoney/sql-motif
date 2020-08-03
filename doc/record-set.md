@@ -80,14 +80,15 @@ that are different from the records.
 * `updateWhere(where, options)`. Creates a set of `update` statements, excluding the `update` keyword, to update any non-read-only records and subrecords. `where` is used for
 the `where` clause.
 
-* `Delete(options)`. Creates a set of `delete` statements to delete the records including (by default) any non-read-only subrecords.
+* `Delete(options)`. Creates a set of `delete` statements to delete the records including (by default) any non-read-only subrecords. Uses the primary key by default, unless
+a `selector` is specified in the [`options`](./table-options.md) argument.
 
 * `delete(options)`. Creates a set of `delete` statements, excluding the `delete` keyword, to delete the records including (by default) any non-read-only subrecords.
 
-* `DeleteKey(options)`. Creates a set of `delete` statements using the primary key fields of each record, to delete the records including (by default) any non-read-only subrecords.
+* `DeleteWhere(options)`. Creates a set of `delete` statements to delete the records including (by default) any non-read-only subrecords. If a `selector` isn't specified
+in the [`options`](./table-options.md) argument uses all existing fields in each record.
 
-* `deleteKey(options)`. Creates a set of `delete` statements using the primary key fields of each record, excluding the `delete` keyword, to delete the records including
-(by default) any non-read-only subrecords.
+* `deleteWhere(options)`. Creates a set of `delete` statements, excluding the `delete` keyword, to delete the records including (by default) any non-read-only subrecords.
 
 * `toObject(options)`. Creates a plain object. `options` can have the following settings:
 

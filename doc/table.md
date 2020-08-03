@@ -187,28 +187,21 @@ joined tables not marked as read only. Does not currently detect if the missing 
 
 ### Delete methods
 
-* `delete(record, [options])`. Produces a `delete` statement excluding the `delete` keyword. `record` is a [record](./table-record.md). Takes an optional
-  [`options`](./table-options) argument.
+* `delete(record, [options])`. Produces a `delete` statement excluding the `delete` keyword. The `where` clause is taken from the primary key fields of the record by default, which 
+can be changed using the options. `record` is a [record](./table-record.md). Takes an optional [`options`](./table-options) argument.
 
 * `Delete(record, [options])`. Produces a full `delete` statement including the `delete` keyword.
+
+* `deleteWhere(record, [options])`. Produces a `delete` statement using all supplied fields of the record, excluding the `delete` keyword.
+`record` is a [record](./table-record.md). Takes an optional [`options`](./table-options) argument.
+
+* `DeleteWhere(record, [options])`. Produces a full `delete` statement, using the supplied fields of the record, including the `delete` keyword.
 
 * `deleteSafe(record, [options])` (*experimental*). Produces a `delete` statement excluding the `delete` keyword. Takes an optional [`options`](./table-options) argument.
   Throws an error if part of the primary key of the main table or a joined table not marked as read only is not detected. Does not currently check subtables to see if the missing
   key can be found there.
 
 * `DeleteSafe(record, [options])` (*experimental*). Produces a full `delete` statement including the `delete` keyword. Throws an error if the primary key is not complete.
-
-* `deleteKey(record, [options])`. Produces a `delete` statement using the primary key fields of the record, excluding the `delete` keyword.
-`record` is a [record](./table-record.md). Takes an optional [`options`](./table-options) argument.
-
-* `DeleteKey(record, [options])`. Produces a full `delete` statement, using the primary key fields of the record, including the `delete` keyword.
-
-* `deleteKeySafe(record, [options])` (*experimental*). Produces a `delete` statement using the key fields of the record, excluding the `delete` keyword. Takes an optional
-[`options`](./table-options) argument. Throws an error if part of the primary key of the main table or a joined table not marked as read only is not detected.
-Does not currently check subtables to see if the missing key can be found there.
-
-* `DeleteKeySafe(record, [options])` (*experimental*). Produces a full `delete` statement using the key fields of the record, including the `delete` keyword.
- Throws an error if the primary key is not complete.
 
 ### Create methods
 

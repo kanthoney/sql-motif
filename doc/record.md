@@ -50,13 +50,15 @@ Does not include subrecords.
 
 * `updateWhere(where, options)`. Produces an `update` statement for this record, excluding the `update` keyword. `where` is used for the where clause.
 
-* `Delete(options)`. Produces a `delete` statement for this record.
+* `Delete(options)`. Produces a `delete` statement for this record. The `where` clause is taken from the primary key unless a `selector` is specified in the 
+[`options`](./table-options.md).
 
 * `delete(options)`. Produces a `delete` statement for this record, excluding the `delete` keyword.
 
-* `DeleteKey(options)`. Produces a `delete` statement for this record, using the primary key of the record.
+* `DeleteWhere(options)`. Produces a `delete` statement for this record, using all the supplied fields in the record (unless a `selector` is supplied in the
+[`options`](./table-options.md) argument).
 
-* `deleteKey(options)`. Produces a `delete` statement for this record using the primary key of the record, excluding the `delete` keyword.
+* `deleteWhere(options)`. Produces a `delete` statement for this record using the fields supplied in the record, excluding the `delete` keyword.
 
 * `reduceSubtables(f, acc)`. Performs a reduction of each of the subtables connected to this record. `f` is called with the parameters `(acc, join, recordSet)` where `acc` is the result
 of the last call, `join` is the [join specification](./join-spec.md) associated with this subtable and `recordSet` is the [`RecordSet`](./record-set) containing the subrecords.

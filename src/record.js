@@ -430,14 +430,14 @@ class Record
     return this.table.delete(this, { joins: [], ...options });
   }
 
-  DeleteKey(options)
+  DeleteWhere(options)
   {
-    return this.table.DeleteKey(this, { joins: [], safe: true, ...options });
+    return this.table.DeleteWhere(this, { joins: [], safe: true, ...options });
   }
 
-  deleteKey(options)
+  deleteWhere(options)
   {
-    return this.table.deleteKey(this, { joins: [], safe: true, ...options });
+    return this.table.deleteWhere(this, { joins: [], safe: true, ...options });
   }
 
   reduceSubtables(f, acc)

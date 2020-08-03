@@ -586,11 +586,11 @@ class RecordSet
     }, []);
   };
 
-  DeleteKey(options)
+  DeleteWhere(options)
   {
     options = options || {};
     return this.reduce((acc, record) => {
-      return acc.concat(record.DeleteKey(options)).concat(record.reduceSubtables((acc, recordSet) => {
+      return acc.concat(record.DeleteWhere(options)).concat(record.reduceSubtables((acc, recordSet) => {
         if(recordSet.options.readOnly) {
           return acc;
         }
@@ -601,16 +601,16 @@ class RecordSet
             return acc;
           }
         }
-        return acc.concat(recordSet.DeleteKey({ ...options, selector }));
+        return acc.concat(recordSet.DeleteWhere({ ...options, selector }));
       }, []));
     }, []);
   };
 
-  deleteKey(options)
+  deleteWhere(options)
   {
     options = options || {};
     return this.reduce((acc, record) => {
-      return acc.concat(record.deleteKey(options)).concat(record.reduceSubtables((acc, recordSet) => {
+      return acc.concat(record.deleteWhere(options)).concat(record.reduceSubtables((acc, recordSet) => {
         if(recordSet.options.readOnly) {
           return acc;
         }
@@ -621,7 +621,7 @@ class RecordSet
             return acc;
           }
         }
-        return acc.concat(recordSet.deleteKey({ ...options, selector }));
+        return acc.concat(recordSet.deleteWhere({ ...options, selector }));
       }, []));
     }, []);
   };
