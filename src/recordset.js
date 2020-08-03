@@ -586,6 +586,46 @@ class RecordSet
     }, []);
   };
 
+  DeleteKey(options)
+  {
+    options = options || {};
+    return this.reduce((acc, record) => {
+      return acc.concat(record.DeleteKey(options)).concat(record.reduceSubtables((acc, recordSet) => {
+        if(recordSet.options.readOnly) {
+          return acc;
+        }
+        let selector;
+        if(options.selector && recordSet.options.join) {
+          selector = (new Selector(options.selector)).passesJoin(recordSet.options.join);
+          if(!selector) {
+            return acc;
+          }
+        }
+        return acc.concat(recordSet.DeleteKey({ ...options, selector }));
+      }, []));
+    }, []);
+  };
+
+  deleteKey(options)
+  {
+    options = options || {};
+    return this.reduce((acc, record) => {
+      return acc.concat(record.deleteKey(options)).concat(record.reduceSubtables((acc, recordSet) => {
+        if(recordSet.options.readOnly) {
+          return acc;
+        }
+        let selector;
+        if(options.selector && recordSet.options.join) {
+          selector = (new Selector(options.selector)).passesJoin(recordSet.options.join);
+          if(!selector) {
+            return acc;
+          }
+        }
+        return acc.concat(recordSet.deleteKey({ ...options, selector }));
+      }, []));
+    }, []);
+  };
+
   get(path)
   {
     path = _.toPath(path);

@@ -54,6 +54,10 @@ Does not include subrecords.
 
 * `delete(options)`. Produces a `delete` statement for this record, excluding the `delete` keyword.
 
+* `DeleteKey(options)`. Produces a `delete` statement for this record, using the primary key of the record.
+
+* `deleteKey(options)`. Produces a `delete` statement for this record using the primary key of the record, excluding the `delete` keyword.
+
 * `reduceSubtables(f, acc)`. Performs a reduction of each of the subtables connected to this record. `f` is called with the parameters `(acc, join, recordSet)` where `acc` is the result
 of the last call, `join` is the [join specification](./join-spec.md) associated with this subtable and `recordSet` is the [`RecordSet`](./record-set) containing the subrecords.
 Returns the result of the last call.

@@ -676,13 +676,29 @@ class Table
     options = { selector: col => col.primaryKey, ...options };
     if(this.dialect.options.singleTableDelete) {
       options.joins = [];
+      return `${this.From(options)} ${this.Where(record, options)}`;
+    }
+    const tables = this.tables({ ...options, writeable: true }).map(table => table.as()).join(', ');
+    return `${tables} ${this.From(options)} ${this.Where(record, options)}`;
+  }
+
+  Delete(record, options)
+  {
+    return `delete ${this.delete(record, options)}`;
+  }
+
+  deleteKey(record, options)
+  {
+    options = { selector: col => col.primaryKey, ...options };
+    if(this.dialect.options.singleTableDelete) {
+      options.joins = [];
       return `${this.From(options)} ${this.WhereKey(record, options)}`;
     }
     const tables = this.tables({ ...options, writeable: true }).map(table => table.as()).join(', ');
     return `${tables} ${this.From(options)} ${this.WhereKey(record, options)}`;
   }
 
-  Delete(record, options)
+  DeleteKey(record, options)
   {
     return `delete ${this.delete(record, options)}`;
   }
@@ -695,6 +711,16 @@ class Table
   DeleteSafe(record, options)
   {
     return `delete ${this.deleteSafe(record, options)}`;
+  }
+
+  deleteKeySafe(record, options)
+  {
+    return this.deleteKey(record, { ...options, safe: true });
+  }
+
+  DeleteKeySafe(record, options)
+  {
+    return `delete ${this.deleteKeySafe(record, options)}`;
   }
 
   createColumnsArray()

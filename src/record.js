@@ -422,12 +422,22 @@ class Record
 
   Delete(options)
   {
-    return this.table.Delete(this, { joins: [], safe: true, ...options });
+    return this.table.Delete(this, { joins: [], ...options });
   }
 
   delete(options)
   {
-    return this.table.delete(this, { joins: [], safe: true, ...options });
+    return this.table.delete(this, { joins: [], ...options });
+  }
+
+  DeleteKey(options)
+  {
+    return this.table.DeleteKey(this, { joins: [], safe: true, ...options });
+  }
+
+  deleteKey(options)
+  {
+    return this.table.deleteKey(this, { joins: [], safe: true, ...options });
   }
 
   reduceSubtables(f, acc)

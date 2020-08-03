@@ -84,6 +84,11 @@ the `where` clause.
 
 * `delete(options)`. Creates a set of `delete` statements, excluding the `delete` keyword, to delete the records including (by default) any non-read-only subrecords.
 
+* `DeleteKey(options)`. Creates a set of `delete` statements using the primary key fields of each record, to delete the records including (by default) any non-read-only subrecords.
+
+* `deleteKey(options)`. Creates a set of `delete` statements using the primary key fields of each record, excluding the `delete` keyword, to delete the records including
+(by default) any non-read-only subrecords.
+
 * `toObject(options)`. Creates a plain object. `options` can have the following settings:
 
   * `noSubRecords` Set to `true` to exclude subrecords from the output.
