@@ -671,9 +671,8 @@ class Table
     return this.UpdateWhere(record, where, { ...options, safe: true });
   }
 
-  delete(record, options)
+  delete(record, options = {})
   {
-    options = { selector: col => col.primaryKey, ...options };
     if(this.dialect.options.singleTableDelete) {
       options.joins = [];
       return `${this.From(options)} ${this.Where(record, options)}`;
