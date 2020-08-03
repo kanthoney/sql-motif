@@ -712,20 +712,34 @@ class Table
     return `delete ${this.deleteSafe(record, options)}`;
   }
 
+  columnDataType(col)
+  {
+    let s = `${col.type}`;
+    if(col.notNull) {
+      s += ' not null';
+    }
+    if(col.default !== undefined && !_.isFunction(col.default)) {
+      s += ` default ${this.escape(col.default)}`;
+    }
+    return s;
+  }
+
+  createColumn(col)
+  {
+    if(col.calc) {
+      return null;
+    }
+    return `${col.sql.name} ${this.columnDataType(col)}`;
+  }
+
   createColumnsArray()
   {
     return this.columns.fields(col => col.table === this).reduce((acc, col) => {
-      if(col.calc) {
-        return acc;
+      let s = this.createColumn(col);
+      if(s) {
+        return acc.concat(s);
       }
-      let s = `${col.sql.name} ${col.type}`;
-      if(col.notNull) {
-        s += ' not null';
-      }
-      if(col.default !== undefined && !_.isFunction(col.default)) {
-        s += ` default ${this.escape(col.default)}`;
-      }
-      return acc.concat(s);
+      return acc;
     }, []);
   }
 
@@ -923,6 +937,104 @@ class Table
   DropIfExists()
   {
     return `drop table if exists ${this.drop()}`;
+  }
+
+  dropPrimaryKey()
+  {
+    return `${this.fullName()} drop primary key`;
+  }
+
+  DropPrimaryKey()
+  {
+    return `alter table ${this.dropPrimaryKey()}`;
+  }
+
+  addPrimaryKey()
+  {
+    return `${this.fullName()} add ${this.createPrimaryKey()}`;
+  }
+
+  AddPrimaryKey()
+  {
+    return `alter table ${this.addPrimaryKey()}`;
+  }
+
+  addColumn(name)
+  {
+    const column = this.column(name);
+    if(column) {
+      return this.dialect.addColumn(this, column);
+    }
+  }
+
+  AddColumn(name)
+  {
+    const s = this.addColumn(name);
+    if(s) {
+      return `alter table ${s}`;
+    }
+  }
+
+  dropColumn(name)
+  {
+    return `${this.fullName()} drop column ${this.escapeId(name)}`;
+  }
+
+  DropColumn(name)
+  {
+    return `alter table ${this.dropColumn(name)}`;
+  }
+
+  renameColumn(oldName, name)
+  {
+    const column = this.column(name);
+    if(column) {
+      return this.dialect.renameColumn(this, column, oldName);
+    }
+    return;
+  }
+
+  RenameColumn(oldName, name)
+  {
+    const s = this.renameColumn(oldName, name);
+    if(s instanceof Array) {
+      return s.map(s => `alter table ${s}`);
+    } else if(s) {
+      return `alter table ${s}`;
+    }
+  }
+
+  changeColumn(name, options = {})
+  {
+    const column = this.column(name);
+    if(column) {
+      return this.dialect.changeColumn(this, column, options);
+    }
+  }
+
+  ChangeColumn(name, options)
+  {
+    const s = this.changeColumn(name, options);
+    if(s instanceof Array) {
+      return s.map(s => `alter table ${s}`);
+    } else if(s) {
+      return `alter table ${s}`;
+    }
+  }
+
+  rename(oldName, schema)
+  {
+    return this.dialect.rename(this, oldName, schema);
+  }
+
+  Rename(oldName, schema)
+  {
+    const s = this.rename(oldName, schema);
+    if(s instanceof Array) {
+      return s.map(s => `alter table ${s}`);
+    } else if(s) {
+      return `alter table ${s}`;
+    }
   }
 
   groupBy(fields)

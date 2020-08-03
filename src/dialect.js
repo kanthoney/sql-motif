@@ -162,6 +162,44 @@ class Dialect
     return '';
   }
 
+  addColumn(table, col)
+  {
+    let spec = table.createColumn(col);
+    if(spec) {
+      return `${table.fullName()} add column ${spec}`;
+    }
+  }
+
+  renameColumn(table, col, oldName)
+  {
+    return `${table.fullName()} rename column ${this.escapeId(oldName)} to ${col.sql.name}`;
+  }
+
+  changeColumn(table, col, options)
+  {
+    let q = [];
+    if(col.calc) {
+      return q;
+    }
+    if(options.oldName) {
+      q.push(this.RenameColumn(table, col, options.oldName));
+    }
+    q.push(`${table.fullName()} alter ${col.sql.name} type ${table.columnDataType(col)}`);
+    if(q.length === 1) {
+      return q[0];
+    }
+    return q;
+  }
+
+  rename(table, oldName, schema)
+  {
+    if(schema === undefined) {
+      schema = table.config.schema;
+    }
+    const name = schema?`${this.escapeId(schema)}.${this.escapeId(oldName)}`:this.escapeId(oldName);
+    return `${name} rename to ${table.name()}`;
+  }
+
   template(context = {})
   {
     return (strings, ...args) => {

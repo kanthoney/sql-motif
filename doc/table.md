@@ -224,6 +224,38 @@ can be changed using the options. `record` is a [record](./table-record.md). Tak
 
 * `CreateTempIfNotExists()` Produces a full `create` statement for a temporary table if it doesn't exists.
 
+### Alter table methods
+
+The alter table methods assume that the table config is the up-to-date version, not an old version you're changing from.
+
+* `addPrimaryKey()`. Creates an `alter table` statement to add the primary key, without the `alter table` keywords
+
+* `AddPrimaryKey()`. Creates an `alter table` statement to add the primary key
+
+* `dropPrimaryKey()`. Creates an `alter table` statement to drop the primary key, without the `alter table` keywords.
+
+* `DropPrimaryKey()`. Creates an `alter table` statement to drop the primary key
+
+* `addColumn(column)`. Creates an `alter table` statement to add `column`, without the `alter table` keywords, where `column` is the name of a column in the config.
+
+* `AddColumn(column)`. Creates an `alter table` statement to add `column`, where `column` is the name of a column in the config.
+
+* `dropColumn(column)`. Creates an `alter table` statement to drop `column`, without the `alter table` keywords, where `column` is the name of a column.
+
+* `DropColumn(column)`. Creates an `alter table` statement to drop `column`, where `column` is the name of a column.
+
+* `changeColumn(column, options)`. Creates an `alter table` statement, without the `alter table` keywords, to update the spec of an existing column. `options` contains a set
+of options. Currently, the only option available is `oldName` which is the old name of the column. May return an array of statements.
+
+* `ChangeColumn(column, options)`. Creates an `alter table` statement to update the spec of an existing column. `options` contains a set of options. Currently, the
+only option available is `oldName` which is the old name of the column. May return an array of statements.
+
+* `rename(oldName, schema)`. Creates an `alter table` statement, without the `alter table` keywords, to rename the table from `oldName`. The old schema can be specified in
+`schema`. This defaults to the schema specified in the schema table. If you need to specify no schema, pass `null`. May return an array of statements.
+
+* `Rename(oldName, schema)`. Creates an `alter table` statement to rename the table from `oldName`. The old schema can be specified in `schema`. This defaults to the schema
+specified in the schema table. If you need to specify no schema, pass `null`. May return an array of statements.
+
 ### Group, order and limit
 
 * `groupBy([fields])`. Creates a group by clause without the `group by` keywords. `fields` is an array of column names or aliases. If empty, defaults to the primary
