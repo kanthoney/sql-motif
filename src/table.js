@@ -764,35 +764,44 @@ class Table
     return '';
   }
 
+  createIndex(index)
+  {
+    let s = 'index';
+    if(index.unique) {
+      s = 'unique ' + s;
+    }
+    if(index.name) {
+      s += ` ${this.escapeId(index.name)}`;
+    }
+    let cols = index.columns.reduce((acc, name) => {
+      const col = this.column(name);
+      if(col) {
+        return acc.concat(col.sql.name);
+      }
+      return acc;
+    }, []);
+    if(cols.length === 0) {
+      return null;
+    }
+    s += `(${cols.join(', ')})`;
+    return s;
+  }
+
   createIndexesArray()
   {
     if(this.dialect.options.noIndexesInCreate) {
       return [];
     }
     return this.indexes.reduce((acc, index) => {
-      let s = 'index';
-      if(index.unique) {
-        s = 'unique ' + s;
+      const s = this.createIndex(index);
+      if(s) {
+        return acc.concat(s);
       }
-      if(index.name) {
-        s += ` ${this.escapeId(index.name)}`;
-      }
-      let cols = index.columns.reduce((acc, name) => {
-        const col = this.column(name);
-        if(col) {
-          return acc.concat(col.sql.name);
-        }
-        return acc;
-      }, []);
-      if(cols.length === 0) {
-        return acc;
-      }
-      s += `(${cols.join(', ')})`;
-      return acc.concat(s);
+      return acc;
     }, []);
   }
 
-  createIndexes()
+  createTableIndexes()
   {
     return this.createIndexesArray().join(', ');
   }
@@ -951,7 +960,11 @@ class Table
 
   addPrimaryKey()
   {
-    return `${this.fullName()} add ${this.createPrimaryKey()}`;
+    let s = this.createPrimaryKey();
+    if(s) {
+      return `${this.fullName()} add ${s}`;
+    }
+    return this.dropPrimaryKey(options);
   }
 
   AddPrimaryKey()
@@ -959,44 +972,44 @@ class Table
     return `alter table ${this.addPrimaryKey()}`;
   }
 
-  addColumn(name)
+  addColumn(name, options)
   {
     const column = this.column(name);
     if(column) {
-      return this.dialect.addColumn(this, column);
+      return this.dialect.addColumn(this, column, options);
     }
   }
 
-  AddColumn(name)
+  AddColumn(name, options)
   {
-    const s = this.addColumn(name);
+    const s = this.addColumn(name, options);
     if(s) {
       return `alter table ${s}`;
     }
   }
 
-  dropColumn(name)
+  dropColumn(name, options)
   {
-    return `${this.fullName()} drop column ${this.escapeId(name)}`;
+    return this.dialect.dropColumn(this, name, options);
   }
 
-  DropColumn(name)
+  DropColumn(name, options)
   {
-    return `alter table ${this.dropColumn(name)}`;
+    return this.dialect.DropColumn(this, name, options);
   }
 
-  renameColumn(oldName, name)
+  renameColumn(oldName, name, options)
   {
     const column = this.column(name);
     if(column) {
-      return this.dialect.renameColumn(this, column, oldName);
+      return this.dialect.renameColumn(this, column, oldName, options);
     }
     return;
   }
 
-  RenameColumn(oldName, name)
+  RenameColumn(oldName, name, options)
   {
-    const s = this.renameColumn(oldName, name);
+    const s = this.renameColumn(oldName, name, options);
     if(s instanceof Array) {
       return s.map(s => `alter table ${s}`);
     } else if(s) {
@@ -1012,7 +1025,7 @@ class Table
     }
   }
 
-  ChangeColumn(name, options)
+  ChangeColumn(name, options = {})
   {
     const s = this.changeColumn(name, options);
     if(s instanceof Array) {
@@ -1022,19 +1035,39 @@ class Table
     }
   }
 
-  rename(oldName, schema)
+  rename(oldName, options)
   {
-    return this.dialect.rename(this, oldName, schema);
+    return this.dialect.rename(this, oldName, options);
   }
 
-  Rename(oldName, schema)
+  Rename(oldName, options)
   {
-    const s = this.rename(oldName, schema);
+    const s = this.rename(oldName, options);
     if(s instanceof Array) {
       return s.map(s => `alter table ${s}`);
     } else if(s) {
       return `alter table ${s}`;
     }
+  }
+
+  dropIndex(name)
+  {
+    return this.dialect.dropIndex(this, name, options);
+  }
+
+  DropIndex(name, options)
+  {
+    return this.dialect.DropIndex(this, name, options);
+  }
+
+  addIndex(spec, options)
+  {
+    return this.dialect.addIndex(this, spec, options);
+  }
+
+  AddIndex(spec, options)
+  {
+    return this.dialect.AddIndex(this, spec, options);
   }
 
   groupBy(fields)

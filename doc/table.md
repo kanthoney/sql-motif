@@ -35,6 +35,10 @@ The constructor takes a configuration object with the following fields:
 
 * `dialect`. An SQL dialect to use. Can be a string such as `mysql` or a Dialect object. If omitted uses the default dialect.
 
+* `indexes`. An [index specification](./index-spec.md) for the indexes of the table.
+
+* `references`. A [reference specification](./reference-spec.md) for the foreign keys of the table.
+
 * `joins`. An optional array of join specifications.
 
 * `context`. A user defined object or function to provide a `context` object for `default` or `validate` functions in the [column specifications](./columnspec.md). If a function,
@@ -226,35 +230,44 @@ can be changed using the options. `record` is a [record](./table-record.md). Tak
 
 ### Alter table methods
 
-The alter table methods assume that the table config is the up-to-date version, not an old version you're changing from.
+The alter table methods assume that the table config is the up-to-date version, not an old version you're changing from. The `options` object in these has an `ignore` flag, which
+include clauses such as `ignore` or `if exists` where appropriate to try and reduce errors, plus other options specific to the method.
 
-* `addPrimaryKey()`. Creates an `alter table` statement to add the primary key, without the `alter table` keywords
+* `addPrimaryKey(options)`. Creates an `alter table` statement to add the primary key, without the `alter table` keywords.
 
-* `AddPrimaryKey()`. Creates an `alter table` statement to add the primary key
+* `AddPrimaryKey(options)`. Creates an `alter table` statement to add the primary key
 
-* `dropPrimaryKey()`. Creates an `alter table` statement to drop the primary key, without the `alter table` keywords.
+* `dropPrimaryKey(options)`. Creates an `alter table` statement to drop the primary key, without the `alter table` keywords.
 
-* `DropPrimaryKey()`. Creates an `alter table` statement to drop the primary key
+* `DropPrimaryKey(options)`. Creates an `alter table` statement to drop the primary key
 
-* `addColumn(column)`. Creates an `alter table` statement to add `column`, without the `alter table` keywords, where `column` is the name of a column in the config.
+* `addColumn(column, options)`. Creates an `alter table` statement to add `column`, without the `alter table` keywords, where `column` is the name of a column in the config.
 
-* `AddColumn(column)`. Creates an `alter table` statement to add `column`, where `column` is the name of a column in the config.
+* `AddColumn(column, options)`. Creates an `alter table` statement to add `column`, where `column` is the name of a column in the config.
 
-* `dropColumn(column)`. Creates an `alter table` statement to drop `column`, without the `alter table` keywords, where `column` is the name of a column.
+* `dropColumn(column, options)`. Creates an `alter table` statement to drop `column`, without the `alter table` keywords, where `column` is the name of a column.
 
-* `DropColumn(column)`. Creates an `alter table` statement to drop `column`, where `column` is the name of a column.
+* `DropColumn(column, options)`. Creates an `alter table` statement to drop `column`, where `column` is the name of a column.
 
 * `changeColumn(column, options)`. Creates an `alter table` statement, without the `alter table` keywords, to update the spec of an existing column. `options` contains a set
 of options. Currently, the only option available is `oldName` which is the old name of the column. May return an array of statements.
 
-* `ChangeColumn(column, options)`. Creates an `alter table` statement to update the spec of an existing column. `options` contains a set of options. Currently, the
-only option available is `oldName` which is the old name of the column. May return an array of statements.
+* `ChangeColumn(column, options)`. Creates an `alter table` statement to update the spec of an existing column. The `oldName` option is the old name of the column.
+May return an array of statements.
 
-* `rename(oldName, schema)`. Creates an `alter table` statement, without the `alter table` keywords, to rename the table from `oldName`. The old schema can be specified in
-`schema`. This defaults to the schema specified in the schema table. If you need to specify no schema, pass `null`. May return an array of statements.
+* `rename(oldName, options)`. Creates an `alter table` statement, without the `alter table` keywords, to rename the table from `oldName`. The schema can be specified in
+the `schema` attribute in `options`. This defaults to the schema specified in the schema table. If you need to specify no schema, pass `null`. May return an array of statements.
 
-* `Rename(oldName, schema)`. Creates an `alter table` statement to rename the table from `oldName`. The old schema can be specified in `schema`. This defaults to the schema
-specified in the schema table. If you need to specify no schema, pass `null`. May return an array of statements.
+* `Rename(oldName, options)`. Creates an `alter table` statement to rename the table from `oldName`. The old schema can be specified in the `schema` attribute of `options`.
+This defaults to the schema specified in the schema table. If you need to specify no schema, pass `null`. May return an array of statements.
+
+* `dropIndex(name, options)`. Creates a `drop index` statement, without the `drop` keyword, for the index `name`.
+
+* `DropIndex(name, options)`. Creates a `drop index` statement for the index `name`.
+
+* `addIndex(spec, options)`. Creates a statement to add an index defined by [`spec`](./index-spec.md), without the `create` or `alter table` keywords.
+
+* `AddIndex(spec, options)`. Creates a statement to add an index defined by [`spec`](./index-spec.md).
 
 ### Group, order and limit
 

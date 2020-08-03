@@ -28,51 +28,151 @@ module.exports = class PostgreSQLDialect extends Dialect
     return '';
   }
 
-  addColumn(table, col)
+  addPrimaryKey(options = {})
+  {
+    let s = super.addPrimaryKey(options);
+    if(options.ignore) {
+      return `if exists ${s}`;
+    }
+    return s;
+  }
+
+  dropPrimaryKey(options = {})
+  {
+    let s = super.dropPrimaryKey(options);
+    if(options.ignore) {
+      return `if exists ${s}`;
+    }
+    return s;
+  }
+
+  addColumn(table, col, options = {})
   {
     const spec = table.createColumn(col);
     if(spec) {
-      return `${table.fullName()} add column ${spec}`;
+      let s = `${table.fullName()} add column ${spec}`;
+      if(options.ignore) {
+        return `if exists ${s}`;
+      }
+      return s;
     }
   }
 
-  renameColumn(table, col, oldName)
+  dropColumn(table, name, options = {})
   {
-    return `${table.fullName()} rename column ${this.escapeId(oldName)} to ${col.sql.name}`;
+    let s = super.dropColumn(table, name, options);
+    if(options.ignore) {
+      return `if exists ${s}`;
+    }
+    return s;
   }
 
-  changeColumn(table, col, options)
+  renameColumn(table, col, oldName, options = {})
+  {
+    let s = `${table.fullName()} rename column ${this.escapeId(oldName)} to ${col.sql.name}`;
+    if(options.ignore) {
+      return `if exists ${s}`;
+    }
+    return s;
+  }
+
+  changeColumn(table, col, options = {})
   {
     let q = [];
     if(col.calc) {
       return q;
     }
     if(options.oldName) {
-      q.push(this.RenameColumn(table, col, options.oldName));
+      let s = this.RenameColumn(table, col, options.oldName);
+      if(options.ignore) {
+        q.push(`if exists ${s}`);
+      } else {
+        q.push(s);
+      }
     }
-    q.push(`${table.fullName()} alter ${col.sql.name} type ${table.columnDataType(col)}`);
+    let s = `${table.fullName()} alter ${col.sql.name} type ${table.columnDataType(col)}`;
+    if(options.ignore) {
+      q.push(`if exists ${s}`);
+    } else {
+      q.push(s);
+    }
     if(q.length === 1) {
       return q[0];
     }
     return q;
   }
 
-  rename(table, oldName, schema)
+  rename(table, oldName, options = {})
   {
     let q = [];
-    if(schema === undefined) {
-      schema = table.config.schema;
+    if(options.schema === undefined) {
+      options.schema = table.config.schema;
     }
-    let name = schema?`${this.escapeId(schema)}.${this.escapeId(oldName)}`:this.escapeId(oldName);
-    if(schema !== table.config.schema) {
-      q.push(`${name} set schema ${this.escapeId(table.config.schema)}`);
+    let name = options.schema?`${this.escapeId(options.schema)}.${this.escapeId(oldName)}`:this.escapeId(oldName);
+    if(options.schema !== table.config.schema) {
+      let s = `${name} set schema ${this.escapeId(table.config.schema)}`;
+      if(options.ignore) {
+        q.push(`if exists ${s}`);
+      } else {
+        q.push(s)
+      }
       name = table.config.schema?`${this.escapeId(table.config.schema)}.${this.escapeId(oldName)}`:this.escapeId(oldName);
     }
-    q.push(`${name} rename to ${table.name()}`);
+    let s = `${name} rename to ${table.name()}`;
+    if(options.ignore) {
+      q.push(`if exists ${s}`);
+    } else {
+      q.push(s);
+    }
     if(q.length === 1) {
       return q[0];
     }
     return q;
+  }
+
+  addIndex(table, index, options = {})
+  {
+    let s = 'index';
+    if(index.unique) {
+      s = 'unique ' + s;
+    }
+    if(options.ignore) {
+      s += ' if not exists';
+    }
+    if(index.name) {
+      s += ` ${this.escapeId(index.name)}`;
+    }
+    s += ` on ${table.fullName()}`;
+    let cols = index.columns.reduce((acc, name) => {
+      const col = table.column(name);
+      if(col) {
+        return acc.concat(col.sql.name);
+      }
+      return acc;
+    }, []);
+    if(cols.length === 0) {
+      return null;
+    }
+    s += `(${cols.join(', ')})`;
+    return s;
+  }
+
+  AddIndex(table, index, options)
+  {
+    return `create ${this.addIndex(table, index, options)}`;
+  }
+
+  dropIndex(table, index, options = {})
+  {
+    if(options.ignore) {
+      return `index if exists ${this.escapeId(index)}`;
+    }
+    return `index ${this.escapeId(index)}`;
+  }
+
+  DropIndex(table, index, options)
+  {
+    return `drop ${this.dropIndex(table, index, options)}`;
   }
 
 }

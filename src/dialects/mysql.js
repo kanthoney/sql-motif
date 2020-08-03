@@ -45,32 +45,98 @@ try {
       return s.slice(1, s.length - 2);
     }
 
-    addColumn(table, col)
+    addPrimaryKey(options = {})
+    {
+      let s = super.addPrimaryKey(options);
+      if(options.ignore) {
+        return `ignore ${s}`;
+      }
+      return s;
+    }
+
+    dropPrimaryKey(options = {})
+    {
+      let s = super.dropPrimaryKey(options);
+      if(options.ignore) {
+        return `ignore ${s}`;
+      }
+      return s;
+    }
+
+    addColumn(table, col, options = {})
     {
       const spec = table.createColumn(col);
       if(spec) {
-        return `${table.fullName()} add column ${spec}`;
+        const s = `${table.fullName()} add column ${spec}`;
+        if(options.ignore) {
+          return `ignore ${s}`;
+        }
+        return s;
       }
     }
 
-    renameColumn(table, col, oldName)
+    renameColumn(table, col, oldName, options = {})
     {
-      return `${table.fullName()} change column ${this.escapeId(oldName)} ${table.createColumn(col)}`;
+      const s = `${table.fullName()} change column ${this.escapeId(oldName)} ${table.createColumn(col)}`;
+      if(options.ignore) {
+        return `ignore ${s}`;
+      }
+      return s;
     }
 
     changeColumn(table, col, options = {})
     {
-      return this.renameColumn(table, col, options.oldName || col.name);
+      const s = `${table.fullName()} modify column ${table.createColumn(col)}`;
+      if(options.ignore) {
+        return `ignore ${s}`;
+      }
+      return s;
     }
 
-    rename(table, oldName, schema)
+    rename(table, oldName, options = {})
     {
-      if(schema === undefined) {
-        schema = table.config.schema;
+      if(options.schema === undefined) {
+        options.schema = table.config.schema;
       }
-      const name = schema?`${this.escapeId(schema)}.${this.escapeId(oldName)}`:this.escapeId(oldName);
-      return `${name} rename to ${table.fullName()}`;
+      const name = options.schema?`${this.escapeId(options.schema)}.${this.escapeId(oldName)}`:this.escapeId(oldName);
+      const s = `${name} rename to ${table.fullName()}`;
+      if(options.ignore) {
+        return `ignore ${s}`;
+      }
+      return s;
     }
+
+    dropColumn(table, name, options = {})
+    {
+      let s = super.dropColumn(table, name, options);
+      if(options.ignore) {
+        return `ignore ${s}`;
+      }
+      return s;
+    }
+
+    AddIndex(table, index, options = {})
+    {
+      if(options.ignore) {
+        return `alter table ignore ${this.addIndex(table, index, options)}`;
+      }
+      return `alter table ${this.addIndex(table, index, options)}`;
+    }
+
+    dropIndex(table, index, options = {})
+    {
+      const s = `${table.fullName()} drop index ${this.escapeId(index)}`;
+      if(options.ignore) {
+        return `ignore ${s}`;
+      }
+      return s;
+    }
+
+    DropIndex(table, index, options)
+    {
+      return `alter table ${this.dropIndex(table, index, options)}`;
+    }
+
   }
 
   module.exports = MySQLDialect;

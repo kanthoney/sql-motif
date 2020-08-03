@@ -162,7 +162,31 @@ class Dialect
     return '';
   }
 
-  addColumn(table, col)
+  dropPrimaryKey(options)
+  {
+    return `${this.fullName()} drop primary key`;
+  }
+
+  DropPrimaryKey(options)
+  {
+    return `alter table ${this.dropPrimaryKey(options)}`;
+  }
+
+  addPrimaryKey(options)
+  {
+    let s = this.createPrimaryKey(options);
+    if(s) {
+      return `${this.fullName()} add ${s}`;
+    }
+    return this.dropPrimaryKey(options);
+  }
+
+  AddPrimaryKey()
+  {
+    return `alter table ${this.addPrimaryKey()}`;
+  }
+
+  addColumn(table, col, options)
   {
     let spec = table.createColumn(col);
     if(spec) {
@@ -170,7 +194,17 @@ class Dialect
     }
   }
 
-  renameColumn(table, col, oldName)
+  dropColumn(table, name, options = {})
+  {
+    return `${table.fullName()} drop column ${this.escapeId(name)}`;
+  }
+
+  DropColumn(table, name, options)
+  {
+    return `alter table ${this.dropColumn(table, name, options)}`;
+  }
+
+  renameColumn(table, col, oldName, options)
   {
     return `${table.fullName()} rename column ${this.escapeId(oldName)} to ${col.sql.name}`;
   }
@@ -182,7 +216,7 @@ class Dialect
       return q;
     }
     if(options.oldName) {
-      q.push(this.RenameColumn(table, col, options.oldName));
+      q.push(this.RenameColumn(table, col, options.oldName, options));
     }
     q.push(`${table.fullName()} alter ${col.sql.name} type ${table.columnDataType(col)}`);
     if(q.length === 1) {
@@ -191,13 +225,36 @@ class Dialect
     return q;
   }
 
-  rename(table, oldName, schema)
+  rename(table, oldName, schema, options)
   {
     if(schema === undefined) {
       schema = table.config.schema;
     }
     const name = schema?`${this.escapeId(schema)}.${this.escapeId(oldName)}`:this.escapeId(oldName);
     return `${name} rename to ${table.name()}`;
+  }
+
+  addIndex(table, index, options)
+  {
+    const s = table.createIndex(index, options);
+    if(s) {
+      return `${table.fullName()} add ${s}`;
+    }
+  }
+
+  AddIndex(table, index, options)
+  {
+    return `alter table ${this.addIndex(table, index, options)}`;
+  }
+
+  dropIndex(table, name, options)
+  {
+    return `index ${this.escapeId(name)}`;
+  }
+
+  DropIndex(table, name, options)
+  {
+    return `drop ${this.dropIndex(table, name, options)}`;
   }
 
   template(context = {})
