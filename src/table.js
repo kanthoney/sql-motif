@@ -806,72 +806,19 @@ class Table
     return this.createIndexesArray().join(', ');
   }
 
+  createForeignKey(ref)
+  {
+    return this.dialect.createForeignKey(this, ref);
+  }
+
   createForeignKeysArray()
   {
     return this.references.reduce((acc, ref) => {
-      if(!ref.table || !ref.columns) {
-        return acc;
+      const s = this.createForeignKey(ref);
+      if(s) {
+        return acc.concat(s);
       }
-      let tableName;
-      if(ref.table instanceof Table) {
-        tableName = ref.table.fullName();
-      } else {
-        if(_.isString(ref.table)) {
-          tableName = this.escapeId(ref.table);
-        } else if(table.name === undefined) {
-          return acc;
-        } else if(table.schema) {
-          tableName = `${this.escapeId(table.schema)}.${this.escapeId(table.name)}`;
-        } else {
-          tableName = this.escapeId(table.name);
-        }
-      }
-      const cols = ref.columns.reduce((acc, cols) => {
-        if(_.isString(cols)) {
-          const m = /([^:]+):([^:]+)/.exec(cols);
-          if(m) {
-            cols = [m[1], m[2]];
-          } else {
-            cols = [cols, cols];
-          }
-        } else if(cols.length === 1) {
-          cols = [cols[0], cols[0]];
-        }
-        let leftCol, rightCol;
-        leftCol = this.columns.fieldFromName(cols[0]);
-        if(!leftCol) {
-          return acc;
-        }
-        leftCol = leftCol.sql.name;
-        if(ref.table instanceof Table) {
-          rightCol = ref.table.columns.fieldFromName(cols[1]);
-          if(!rightCol) {
-            return acc;
-          }
-          rightCol = rightCol.sql.name;
-        } else {
-          rightCol = this.escapeId(cols[1]);
-        }
-        return acc.concat({ left: leftCol, right: rightCol });
-      }, []);
-      if(cols.length === 0) {
-        return acc;
-      }
-      let s = 'foreign key';
-      if(ref.name) {
-        s += ` ${this.escapeId(ref.name)}`;
-      }
-      s += ` (${cols.map(col => col.left).join(', ')}) references ${tableName} (${cols.map(col => col.right).join(', ')})`;
-      if(ref.onUpdate) {
-        s += ` on update ${ref.onUpdate}`;
-      }
-      if(ref.onDelete) {
-        s += ` on delete ${ref.onDelete}`;
-      }
-      if(ref.match) {
-        s += ` match ${ref.match}`;
-      }
-      return acc.concat(s);
+      return acc;
     }, []);
   }
 
@@ -1068,6 +1015,26 @@ class Table
   AddIndex(spec, options)
   {
     return this.dialect.AddIndex(this, spec, options);
+  }
+
+  addReference(spec, options)
+  {
+    return this.dialect.addReference(this, spec, options);
+  }
+
+  AddReference(spec, options)
+  {
+    return this.dialect.AddReference(this, spec, options);
+  }
+
+  dropReference(name, options)
+  {
+    return this.dialect.dropReference(this, name, options);
+  }
+
+  DropReference(name, options)
+  {
+    return this.dialect.DropReference(this, name, options);
   }
 
   groupBy(fields)

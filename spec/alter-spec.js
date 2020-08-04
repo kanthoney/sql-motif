@@ -54,6 +54,18 @@ describe('alter tests', () => {
       );
     });
 
+    it('should add a foreign key', () => {
+      expect(table.AddReference({ table: 'customers', columns: ['company', 'customer:account'], name: 'customer_ref', onDelete: 'cascade', onUpdate: 'restrict' })).toBe(
+        'alter table "s1"."orders" add foreign key "customer_ref" ("company", "customer") references "customers" ("company", "account") on update restrict on delete cascade'
+      );
+    });
+
+    it('should drop a foreign key', () => {
+      expect(table.DropReference('customer_ref')).toBe(
+        'alter table "s1"."orders" drop foreign key "customer_ref"'
+      );
+    });
+
   });
 
   describe('dialects tests', () => {
@@ -125,6 +137,18 @@ describe('alter tests', () => {
         );
       });
       
+      it('should add a foreign key', () => {
+        expect(table.AddReference({ table: 'customers', columns: ['company', 'customer:account'], name: 'customer_ref', onDelete: 'cascade', onUpdate: 'restrict' })).toBe(
+          'alter table `s1`.`orders` add foreign key `customer_ref` (`company`, `customer`) references `customers` (`company`, `account`) on update restrict on delete cascade'
+        );
+      });
+      
+      it('should drop a foreign key', () => {
+        expect(table.DropReference('customer_ref')).toBe(
+          'alter table `s1`.`orders` drop foreign key `customer_ref`'
+        );
+      });
+
       describe('ignore tests', () => {
 
         it('should rename column from created_date to order_date', () => {
@@ -165,6 +189,24 @@ describe('alter tests', () => {
           );
         });
         
+        it('should add a foreign key', () => {
+          expect(table.AddReference({
+            table: 'customers',
+            columns: ['company', 'customer:account'],
+            name: 'customer_ref', onDelete: 'cascade', onUpdate: 'restrict'
+          }, {
+            ignore: true
+          })).toBe(
+            'alter table ignore `s1`.`orders` add foreign key `customer_ref` (`company`, `customer`) references `customers` (`company`, `account`) on update restrict on delete cascade'
+          );
+        });
+        
+        it('should drop a foreign key', () => {
+          expect(table.DropReference('customer_ref', { ignore: true })).toBe(
+            'alter table ignore `s1`.`orders` drop foreign key `customer_ref`'
+          );
+        });
+
       });
 
     });
@@ -238,6 +280,18 @@ describe('alter tests', () => {
         );
       });
 
+      it('should add a foreign key', () => {
+        expect(table.AddReference({ table: 'customers', columns: ['company', 'customer:account'], name: 'customer_ref', onDelete: 'cascade', onUpdate: 'restrict' })).toBe(
+          'alter table "s1"."orders" add constraint "customer_ref" foreign key ("company", "customer") references "customers" ("company", "account") on update restrict on delete cascade'
+        );
+      });
+      
+      it('should drop a foreign key', () => {
+        expect(table.DropReference('customer_ref')).toBe(
+          'alter table "s1"."orders" drop constraint "customer_ref"'
+        );
+      });
+
       describe('ignore tests', () => {
 
         it('should rename column from created_date to order_date', () => {
@@ -280,6 +334,26 @@ describe('alter tests', () => {
           );
         });
                 
+        it('should add a foreign key', () => {
+          expect(table.AddReference({
+            table: 'customers',
+            columns: ['company', 'customer:account'],
+            name: 'customer_ref',
+            onDelete: 'cascade',
+            onUpdate: 'restrict'
+          }, {
+            ignore: true
+          })).toBe(
+            'alter table if exists "s1"."orders" add constraint "customer_ref" foreign key ("company", "customer") references "customers" ("company", "account") on update restrict on delete cascade'
+          );
+        });
+        
+        it('should drop a foreign key', () => {
+          expect(table.DropReference('customer_ref', { ignore: true })).toBe(
+            'alter table if exists "s1"."orders" drop constraint if exists "customer_ref"'
+          );
+        });
+
       });
       
     });

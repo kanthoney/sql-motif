@@ -11,3 +11,5 @@ The `references` option in the [table](./table.md) configuration is an object or
 
 * `onUpdate`. An optional string for an `on update` clause, e.g. `restrict`.
 
+* `match`. An optional string for a `match` clause.
+

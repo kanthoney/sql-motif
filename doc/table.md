@@ -269,6 +269,15 @@ This defaults to the schema specified in the schema table. If you need to specif
 
 * `AddIndex(spec, options)`. Creates a statement to add an index defined by [`spec`](./index-spec.md).
 
+* `addReference(spec, options)`. Creates a statement to add a reference without the `alter table` keywords. (foreign key) for the table. `spec` is a
+[reference specification](./reference-spec.md).
+
+* `AddReference(spec, options)`. Creates a statement to add a reference to the table, including the `alter table` keywords.
+
+* `dropReference(name, options)`. Creates a statement to drop a reference (foreign key), without the `alter table` keywords.
+
+* `DropReference(name, options)`. Creates a statement to drop a reference (foreign key), including the `alter table` keywords.
+
 ### Group, order and limit
 
 * `groupBy([fields])`. Creates a group by clause without the `group by` keywords. `fields` is an array of column names or aliases. If empty, defaults to the primary

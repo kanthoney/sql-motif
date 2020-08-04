@@ -257,6 +257,100 @@ class Dialect
     return `drop ${this.dropIndex(table, name, options)}`;
   }
 
+  addReference(table, spec, options)
+  {
+    const s = table.createForeignKey(spec);
+    if(s) {
+      return `${table.fullName()} add ${s}`;
+    }
+  } 
+
+  AddReference(table, spec, options)
+  {
+    const s = this.addReference(table, spec, options);
+    if(s) {
+      return `alter table ${s}`;
+    }
+  }
+
+  createForeignKey(table, ref)
+  {
+    const Table= require('./table');
+    if(!ref.table || !ref.columns) {
+      return null;
+    }
+    let tableName;
+    if(ref.table instanceof Table) {
+      tableName = ref.table.fullName();
+    } else {
+      if(_.isString(ref.table)) {
+        tableName = this.escapeId(ref.table);
+      } else if(table.name === undefined) {
+        return null;
+      } else if(table.schema) {
+        tableName = `${this.escapeId(table.schema)}.${this.escapeId(table.name)}`;
+      } else {
+        tableName = this.escapeId(table.name);
+      }
+    }
+    const cols = ref.columns.reduce((acc, cols) => {
+      if(_.isString(cols)) {
+        const m = /([^:]+):([^:]+)/.exec(cols);
+        if(m) {
+          cols = [m[1], m[2]];
+        } else {
+          cols = [cols, cols];
+        }
+      } else if(cols.length === 1) {
+        cols = [cols[0], cols[0]];
+      }
+      let leftCol, rightCol;
+      leftCol = table.columns.fieldFromName(cols[0]);
+      if(!leftCol) {
+        return acc;
+      }
+      leftCol = leftCol.sql.name;
+      if(ref.table instanceof Table) {
+        rightCol = ref.table.columns.fieldFromName(cols[1]);
+        if(!rightCol) {
+          return acc;
+        }
+        rightCol = rightCol.sql.name;
+      } else {
+        rightCol = this.escapeId(cols[1]);
+      }
+      return acc.concat({ left: leftCol, right: rightCol });
+    }, []);
+    if(cols.length === 0) {
+      return null;
+    }
+    let s = 'foreign key';
+    if(ref.name) {
+      s += ` ${this.escapeId(ref.name)}`;
+    }
+    s += ` (${cols.map(col => col.left).join(', ')}) references ${tableName} (${cols.map(col => col.right).join(', ')})`;
+    if(ref.onUpdate) {
+      s += ` on update ${ref.onUpdate}`;
+    }
+    if(ref.onDelete) {
+      s += ` on delete ${ref.onDelete}`;
+    }
+    if(ref.match) {
+      s += ` match ${ref.match}`;
+    }
+    return s;
+  }
+
+  dropReference(table, name, options)
+  {
+    return `${table.fullName()} drop foreign key ${this.escapeId(name)}`;
+  }
+
+  DropReference(table, name, options)
+  {
+    return `alter table ${this.dropReference(table, name, options)}`;
+  }
+
   template(context = {})
   {
     return (strings, ...args) => {

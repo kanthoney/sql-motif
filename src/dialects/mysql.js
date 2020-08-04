@@ -137,6 +137,24 @@ try {
       return `alter table ${this.dropIndex(table, index, options)}`;
     }
 
+    addReference(table, spec, options = {})
+    {
+      let s = super.addReference(table, spec, options);
+      if(s && options.ignore) {
+        return `ignore ${s}`;
+      }
+      return s;
+    }
+
+    dropReference(table, name, options = {})
+    {
+      let s = super.dropReference(table, name, options);
+      if(s && options.ignore) {
+        return `ignore ${s}`;
+      }
+      return s;
+    }
+
   }
 
   module.exports = MySQLDialect;

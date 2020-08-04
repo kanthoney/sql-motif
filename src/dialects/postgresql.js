@@ -1,6 +1,7 @@
 'use strict';
 
 const Dialect = require('../dialect');
+const _ = require('lodash');
 
 module.exports = class PostgreSQLDialect extends Dialect
 {
@@ -175,4 +176,86 @@ module.exports = class PostgreSQLDialect extends Dialect
     return `drop ${this.dropIndex(table, index, options)}`;
   }
 
+  createForeignKey(table, ref)
+  {
+    const Table = require('../table');
+    if(!ref.table || !ref.columns) {
+      return null;
+    }
+    let tableName;
+    if(ref.table instanceof Table) {
+      tableName = ref.table.fullName();
+    } else {
+      if(_.isString(ref.table)) {
+        tableName = this.escapeId(ref.table);
+      } else if(table.name === undefined) {
+        return null;
+      } else if(table.schema) {
+        tableName = `${this.escapeId(table.schema)}.${this.escapeId(table.name)}`;
+      } else {
+        tableName = this.escapeId(table.name);
+      }
+    }
+    const cols = ref.columns.reduce((acc, cols) => {
+      if(_.isString(cols)) {
+        const m = /([^:]+):([^:]+)/.exec(cols);
+        if(m) {
+          cols = [m[1], m[2]];
+        } else {
+          cols = [cols, cols];
+        }
+      } else if(cols.length === 1) {
+        cols = [cols[0], cols[0]];
+      }
+      let leftCol, rightCol;
+      leftCol = table.columns.fieldFromName(cols[0]);
+      if(!leftCol) {
+        return acc;
+      }
+      leftCol = leftCol.sql.name;
+      if(ref.table instanceof Table) {
+        rightCol = ref.table.columns.fieldFromName(cols[1]);
+        if(!rightCol) {
+          return acc;
+        }
+        rightCol = rightCol.sql.name;
+      } else {
+        rightCol = this.escapeId(cols[1]);
+      }
+      return acc.concat({ left: leftCol, right: rightCol });
+    }, []);
+    if(cols.length === 0) {
+      return null;
+    }
+    let s = '';
+    if(ref.name) {
+      s += `constraint ${this.escapeId(ref.name)}`;
+    }
+    s += ` foreign key (${cols.map(col => col.left).join(', ')}) references ${tableName} (${cols.map(col => col.right).join(', ')})`;
+    if(ref.onUpdate) {
+      s += ` on update ${ref.onUpdate}`;
+    }
+    if(ref.onDelete) {
+      s += ` on delete ${ref.onDelete}`;
+    }
+    if(ref.match) {
+      s += ` match ${ref.match}`;
+    }
+    return s;
+  }
+
+  addReference(table, spec, options = {})
+  {
+    let s = super.addReference(table, spec, options);
+    if(s && options.ignore) {
+      return `if exists ${s}`;
+    }
+    return s;
+  }
+  
+  dropReference(table, name, options = {})
+  {
+    return (options.ignore?'if exists ':'') + `${table.fullName()} drop constraint ` + (options.ignore?'if exists ':'') + this.escapeId(name);
+  }
+  
 }
