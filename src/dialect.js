@@ -312,7 +312,7 @@ class Dialect
 
   addReference(table, spec, options)
   {
-    const s = table.createForeignKey(spec);
+    const s = this.createForeignKey(table, spec);
     if(s) {
       return `add ${s}`;
     }
@@ -346,7 +346,7 @@ class Dialect
         tableName = this.escapeId(table.name);
       }
     }
-    const cols = ref.columns.reduce((acc, cols) => {
+    const cols = ((ref.columns instanceof Array)?ref.columns:[ref.columns]).reduce((acc, cols) => {
       if(_.isString(cols)) {
         const m = /([^:]+):([^:]+)/.exec(cols);
         if(m) {
