@@ -48,7 +48,7 @@ try {
     alterTable(table, options = {})
     {
       if(options.ignore) {
-        return `alter table ignore ${table.fullName()}`;
+        return `alter ignore table ${table.fullName()}`;
       }
       return `alter table ${table.fullName()}`;
     }
@@ -78,12 +78,20 @@ try {
         options.schema = table.config.schema;
       }
       const name = options.schema?`${this.escapeId(options.schema)}.${this.escapeId(oldName)}`:this.escapeId(oldName);
-      const s = `${name} rename to ${table.fullName()}`;
-      if(options.ignore) {
-        return `ignore ${s}`;
-      }
-      return s;
+      return `${name} rename to ${table.fullName()}`;
     }
+
+    Rename(table, oldName, options = {})
+    {
+      let s = this.rename(table, oldName, options);
+      if(s) {
+        if(options.ignore) {
+          return `alter ignore table ${s}`;
+        } else {
+          return `alter table ${s}`;
+        }
+      }
+  }
 
   }
 

@@ -267,20 +267,23 @@ class Dialect
     }
   }
 
-  rename(table, oldName, schema, options)
+  rename(table, oldName, options = {})
   {
-    if(schema === undefined) {
-      schema = table.config.schema;
+    if(options.schema === undefined) {
+      options.schema = table.config.schema;
     }
-    const name = schema?`${this.escapeId(schema)}.${this.escapeId(oldName)}`:this.escapeId(oldName);
+    const name = options.schema?`${this.escapeId(options.schema)}.${this.escapeId(oldName)}`:this.escapeId(oldName);
     return `${name} rename to ${table.name()}`;
   }
 
-  Rename(table, oldName, schema, options)
+  Rename(table, oldName, options)
   {
-    let s = this.rename(table, oldName, schema, options);
+    let s = this.rename(table, oldName, options);
     if(s) {
-      return `${this.alterTable(table, options)} ${s}`;
+      if(s instanceof Array) {
+        return s.map(s => `alter table ${s}`);
+      }
+      return `alter table ${s}`;
     }
   }
 

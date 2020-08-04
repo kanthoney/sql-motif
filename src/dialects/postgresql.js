@@ -68,23 +68,31 @@ module.exports = class PostgreSQLDialect extends Dialect
     let name = options.schema?`${this.escapeId(options.schema)}.${this.escapeId(oldName)}`:this.escapeId(oldName);
     if(options.schema !== table.config.schema) {
       let s = `${name} set schema ${this.escapeId(table.config.schema)}`;
-      if(options.ignore) {
-        q.push(`if exists ${s}`);
-      } else {
+      if(s) {
         q.push(s)
       }
       name = table.config.schema?`${this.escapeId(table.config.schema)}.${this.escapeId(oldName)}`:this.escapeId(oldName);
     }
     let s = `${name} rename to ${table.name()}`;
-    if(options.ignore) {
-      q.push(`if exists ${s}`);
-    } else {
+    if(s) {
       q.push(s);
     }
     if(q.length === 1) {
       return q[0];
     }
     return q;
+  }
+
+  Rename(table, oldName, options = {})
+  {
+    let s = this.rename(table, oldName, options);
+    let at = options.ignore?'alter table if exists':'alter table';
+    if(s) {
+      if(s instanceof Array) {
+        return s.map(s => `${at} ${s}`);
+      }
+      return `${at} ${s}`;
+    }
   }
 
   addIndex(table, index, options = {})

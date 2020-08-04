@@ -965,12 +965,7 @@ class Table
 
   Rename(oldName, options)
   {
-    const s = this.rename(oldName, options);
-    if(s instanceof Array) {
-      return s.map(s => `alter table ${s}`);
-    } else if(s) {
-      return `alter table ${s}`;
-    }
+    return this.dialect.Rename(this, oldName, options);
   }
 
   dropIndex(name)
