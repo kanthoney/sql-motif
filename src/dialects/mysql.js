@@ -45,52 +45,31 @@ try {
       return s.slice(1, s.length - 2);
     }
 
-    addPrimaryKey(options = {})
+    alterTable(table, options = {})
     {
-      let s = super.addPrimaryKey(options);
       if(options.ignore) {
-        return `ignore ${s}`;
+        return `alter table ignore ${table.fullName()}`;
       }
-      return s;
+      return `alter table ${table.fullName()}`;
     }
-
-    dropPrimaryKey(options = {})
+    
+    renameColumn(table, oldName, name, options)
     {
-      let s = super.dropPrimaryKey(options);
-      if(options.ignore) {
-        return `ignore ${s}`;
-      }
-      return s;
-    }
-
-    addColumn(table, col, options = {})
-    {
-      const spec = table.createColumn(col);
-      if(spec) {
-        const s = `${table.fullName()} add column ${spec}`;
-        if(options.ignore) {
-          return `ignore ${s}`;
+      const col = table.column(name);
+      if(col) {
+        let s = table.createColumn(col);
+        if(s) {
+          return `change column ${this.escapeId(oldName)} ${s}`;
         }
-        return s;
       }
-    }
-
-    renameColumn(table, col, oldName, options = {})
-    {
-      const s = `${table.fullName()} change column ${this.escapeId(oldName)} ${table.createColumn(col)}`;
-      if(options.ignore) {
-        return `ignore ${s}`;
-      }
-      return s;
     }
 
     changeColumn(table, col, options = {})
     {
-      const s = `${table.fullName()} modify column ${table.createColumn(col)}`;
-      if(options.ignore) {
-        return `ignore ${s}`;
+      if(col.calc) {
+        return;
       }
-      return s;
+      return `modify column ${table.createColumn(col)}`;
     }
 
     rename(table, oldName, options = {})
@@ -101,55 +80,6 @@ try {
       const name = options.schema?`${this.escapeId(options.schema)}.${this.escapeId(oldName)}`:this.escapeId(oldName);
       const s = `${name} rename to ${table.fullName()}`;
       if(options.ignore) {
-        return `ignore ${s}`;
-      }
-      return s;
-    }
-
-    dropColumn(table, name, options = {})
-    {
-      let s = super.dropColumn(table, name, options);
-      if(options.ignore) {
-        return `ignore ${s}`;
-      }
-      return s;
-    }
-
-    AddIndex(table, index, options = {})
-    {
-      if(options.ignore) {
-        return `alter table ignore ${this.addIndex(table, index, options)}`;
-      }
-      return `alter table ${this.addIndex(table, index, options)}`;
-    }
-
-    dropIndex(table, index, options = {})
-    {
-      const s = `${table.fullName()} drop index ${this.escapeId(index)}`;
-      if(options.ignore) {
-        return `ignore ${s}`;
-      }
-      return s;
-    }
-
-    DropIndex(table, index, options)
-    {
-      return `alter table ${this.dropIndex(table, index, options)}`;
-    }
-
-    addReference(table, spec, options = {})
-    {
-      let s = super.addReference(table, spec, options);
-      if(s && options.ignore) {
-        return `ignore ${s}`;
-      }
-      return s;
-    }
-
-    dropReference(table, name, options = {})
-    {
-      let s = super.dropReference(table, name, options);
-      if(s && options.ignore) {
         return `ignore ${s}`;
       }
       return s;

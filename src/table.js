@@ -905,34 +905,24 @@ class Table
     return `alter table ${this.dropPrimaryKey()}`;
   }
 
-  addPrimaryKey()
+  addPrimaryKey(options)
   {
-    let s = this.createPrimaryKey();
-    if(s) {
-      return `${this.fullName()} add ${s}`;
-    }
-    return this.dropPrimaryKey(options);
+    return this.dialect.addPrimaryKey(this, options);
   }
 
-  AddPrimaryKey()
+  AddPrimaryKey(options = {})
   {
-    return `alter table ${this.addPrimaryKey()}`;
+    return this.dialect.AddPrimaryKey(this, options);
   }
 
   addColumn(name, options)
   {
-    const column = this.column(name);
-    if(column) {
-      return this.dialect.addColumn(this, column, options);
-    }
+    return this.dialect.addColumn(this, name, options);
   }
 
   AddColumn(name, options)
   {
-    const s = this.addColumn(name, options);
-    if(s) {
-      return `alter table ${s}`;
-    }
+    return this.dialect.AddColumn(this, name, options);
   }
 
   dropColumn(name, options)
@@ -947,21 +937,12 @@ class Table
 
   renameColumn(oldName, name, options)
   {
-    const column = this.column(name);
-    if(column) {
-      return this.dialect.renameColumn(this, column, oldName, options);
-    }
-    return;
+    return this.dialect.renameColumn(this, column, oldName, options);
   }
 
   RenameColumn(oldName, name, options)
   {
-    const s = this.renameColumn(oldName, name, options);
-    if(s instanceof Array) {
-      return s.map(s => `alter table ${s}`);
-    } else if(s) {
-      return `alter table ${s}`;
-    }
+    return this.dialect.RenameColumn(this, oldName, name, options);
   }
 
   changeColumn(name, options = {})
@@ -974,12 +955,7 @@ class Table
 
   ChangeColumn(name, options = {})
   {
-    const s = this.changeColumn(name, options);
-    if(s instanceof Array) {
-      return s.map(s => `alter table ${s}`);
-    } else if(s) {
-      return `alter table ${s}`;
-    }
+    return this.dialect.ChangeColumn(this, name, options);
   }
 
   rename(oldName, options)

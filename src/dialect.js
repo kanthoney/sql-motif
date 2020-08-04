@@ -162,54 +162,83 @@ class Dialect
     return '';
   }
 
+  alterTable(table, options)
+  {
+    return `alter table ${table.fullName()}`;
+  }
+
   dropPrimaryKey(options)
   {
-    return `${this.fullName()} drop primary key`;
+    return `drop primary key`;
   }
 
   DropPrimaryKey(options)
   {
-    return `alter table ${this.dropPrimaryKey(options)}`;
+    return `${this.alterTable(table, options)} ${this.dropPrimaryKey(options)}`;
   }
 
-  addPrimaryKey(options)
+  addPrimaryKey(table, options)
   {
-    let s = this.createPrimaryKey(options);
+    let s = table.createPrimaryKey(options);
     if(s) {
-      return `${this.fullName()} add ${s}`;
+      return `add ${s}`;
     }
     return this.dropPrimaryKey(options);
   }
 
-  AddPrimaryKey()
+  AddPrimaryKey(table, options)
   {
-    return `alter table ${this.addPrimaryKey()}`;
+    return `${this.alterTable(table, options)} ${this.addPrimaryKey(table, options)}`;
   }
 
-  addColumn(table, col, options)
+  addColumn(table, name, options)
   {
-    let spec = table.createColumn(col);
-    if(spec) {
-      return `${table.fullName()} add column ${spec}`;
+    const col = table.column(name);
+    if(col) {
+      let spec = table.createColumn(col);
+      if(spec) {
+        return `add column ${spec}`;
+      }
     }
   }
 
+  AddColumn(table, name, options)
+  {
+    let s = this.addColumn(table, name, options);
+    if(s) {
+      return `${this.alterTable(table, options)} ${s}`;
+    }
+  }
+  
   dropColumn(table, name, options = {})
   {
-    return `${table.fullName()} drop column ${this.escapeId(name)}`;
+    return `drop column ${this.escapeId(name)}`;
   }
 
   DropColumn(table, name, options)
   {
-    return `alter table ${this.dropColumn(table, name, options)}`;
+    return `${this.alterTable(table, options)} ${this.dropColumn(table, name, options)}`;
   }
 
-  renameColumn(table, col, oldName, options)
+  renameColumn(table, oldName, name, options)
   {
-    return `${table.fullName()} rename column ${this.escapeId(oldName)} to ${col.sql.name}`;
+    const col = table.column(name);
+    if(col) {
+      return `rename column ${this.escapeId(oldName)} to ${col.sql.name}`;
+    }
   }
 
-  changeColumn(table, col, options)
+  RenameColumn(table, oldName, name, options)
+  {
+    const s = this.renameColumn(table, oldName, name, options);
+    if(s instanceof Array) {
+      return s.map(s => `${this.alterTable(table, options)} ${s}`);
+    } else if(s) {
+      return `${this.alterTable(table, options)} ${s}`;
+    }
+  }
+
+  changeColumn(table, col, options = {})
   {
     let q = [];
     if(col.calc) {
@@ -218,11 +247,24 @@ class Dialect
     if(options.oldName) {
       q.push(this.RenameColumn(table, col, options.oldName, options));
     }
-    q.push(`${table.fullName()} alter ${col.sql.name} type ${table.columnDataType(col)}`);
+    q.push(`alter ${col.sql.name} type ${table.columnDataType(col)}`);
     if(q.length === 1) {
       return q[0];
     }
     return q;
+  }
+
+  ChangeColumn(table, name, options = {})
+  {
+    const col = table.column(name);
+    if(col) {
+      const s = this.changeColumn(table, col, options);
+      if(s instanceof Array) {
+        return s.map(s => `${this.alterTable(table, options)} ${s}`);
+      } else if(s) {
+        return `${this.alterTable(table, options)} ${s}`;
+      }
+    }
   }
 
   rename(table, oldName, schema, options)
@@ -234,17 +276,28 @@ class Dialect
     return `${name} rename to ${table.name()}`;
   }
 
+  Rename(table, oldName, schema, options)
+  {
+    let s = this.rename(table, oldName, schema, options);
+    if(s) {
+      return `${this.alterTable(table, options)} ${s}`;
+    }
+  }
+
   addIndex(table, index, options)
   {
     const s = table.createIndex(index, options);
     if(s) {
-      return `${table.fullName()} add ${s}`;
+      return `add ${s}`;
     }
   }
 
   AddIndex(table, index, options)
   {
-    return `alter table ${this.addIndex(table, index, options)}`;
+    let s = this.addIndex(table, index, options);
+    if(s) {
+      return `${this.alterTable(table, options)} ${s}`;
+    }
   }
 
   dropIndex(table, name, options)
@@ -254,14 +307,14 @@ class Dialect
 
   DropIndex(table, name, options)
   {
-    return `drop ${this.dropIndex(table, name, options)}`;
+    return `${this.alterTable(table, options)} drop ${this.dropIndex(table, name, options)}`;
   }
 
   addReference(table, spec, options)
   {
     const s = table.createForeignKey(spec);
     if(s) {
-      return `${table.fullName()} add ${s}`;
+      return `add ${s}`;
     }
   } 
 
@@ -269,7 +322,7 @@ class Dialect
   {
     const s = this.addReference(table, spec, options);
     if(s) {
-      return `alter table ${s}`;
+      return `${this.alterTable(table, options)} ${s}`;
     }
   }
 
@@ -343,12 +396,15 @@ class Dialect
 
   dropReference(table, name, options)
   {
-    return `${table.fullName()} drop foreign key ${this.escapeId(name)}`;
+    return `drop foreign key ${this.escapeId(name)}`;
   }
 
   DropReference(table, name, options)
   {
-    return `alter table ${this.dropReference(table, name, options)}`;
+    let s = this.dropReference(table, name, options);
+    if(s) {
+      return `${this.alterTable(table, options)} ${s}`;
+    }
   }
 
   template(context = {})

@@ -28,53 +28,13 @@ module.exports = class PostgreSQLDialect extends Dialect
     }
     return '';
   }
-
-  addPrimaryKey(options = {})
+  
+  alterTable(table, options = {})
   {
-    let s = super.addPrimaryKey(options);
     if(options.ignore) {
-      return `if exists ${s}`;
+      return `alter table if exists ${table.fullName()}`;
     }
-    return s;
-  }
-
-  dropPrimaryKey(options = {})
-  {
-    let s = super.dropPrimaryKey(options);
-    if(options.ignore) {
-      return `if exists ${s}`;
-    }
-    return s;
-  }
-
-  addColumn(table, col, options = {})
-  {
-    const spec = table.createColumn(col);
-    if(spec) {
-      let s = `${table.fullName()} add column ${spec}`;
-      if(options.ignore) {
-        return `if exists ${s}`;
-      }
-      return s;
-    }
-  }
-
-  dropColumn(table, name, options = {})
-  {
-    let s = super.dropColumn(table, name, options);
-    if(options.ignore) {
-      return `if exists ${s}`;
-    }
-    return s;
-  }
-
-  renameColumn(table, col, oldName, options = {})
-  {
-    let s = `${table.fullName()} rename column ${this.escapeId(oldName)} to ${col.sql.name}`;
-    if(options.ignore) {
-      return `if exists ${s}`;
-    }
-    return s;
+    return `alter table ${table.fullName()}`;
   }
 
   changeColumn(table, col, options = {})
@@ -85,16 +45,12 @@ module.exports = class PostgreSQLDialect extends Dialect
     }
     if(options.oldName) {
       let s = this.RenameColumn(table, col, options.oldName);
-      if(options.ignore) {
-        q.push(`if exists ${s}`);
-      } else {
+      if(s) {
         q.push(s);
       }
     }
-    let s = `${table.fullName()} alter ${col.sql.name} type ${table.columnDataType(col)}`;
-    if(options.ignore) {
-      q.push(`if exists ${s}`);
-    } else {
+    let s = `alter ${col.sql.name} type ${table.columnDataType(col)}`;
+    if(s) {
       q.push(s);
     }
     if(q.length === 1) {
@@ -244,18 +200,9 @@ module.exports = class PostgreSQLDialect extends Dialect
     return s;
   }
 
-  addReference(table, spec, options = {})
-  {
-    let s = super.addReference(table, spec, options);
-    if(s && options.ignore) {
-      return `if exists ${s}`;
-    }
-    return s;
-  }
-  
   dropReference(table, name, options = {})
   {
-    return (options.ignore?'if exists ':'') + `${table.fullName()} drop constraint ` + (options.ignore?'if exists ':'') + this.escapeId(name);
+    return 'drop constraint ' + (options.ignore?'if exists ':'') + this.escapeId(name);
   }
   
 }
