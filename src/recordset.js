@@ -107,17 +107,20 @@ class RecordSet
   importRecord(data, joined = {})
   {
     const record = new Record(this, {}, joined);
+    record.empty = true;
     const newJoined = {};
     this.table.columns.fields().forEach(col => {
       const path = col.subTableColPath || col.path;
       let value = _.get(data, path);
       if(value !== undefined) {
+        if(value !== null) {
+          record.empty = false;
+        }
         _.set(record.data, path, value);
       } else {
         value = record.getJoined(path);
       }
       if(value !== undefined) {
-        record.empty = false;
         col.joinedTo.forEach(path => {
           _.set(newJoined, path, value);
         });
