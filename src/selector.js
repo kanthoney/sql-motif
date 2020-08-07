@@ -104,7 +104,7 @@ module.exports = class Selector
   passesJoin(join)
   {
     if(_.isArray(this.selector)) {
-      return new Selector(this.selector.reduce((acc, s) => {
+      const newSelector = this.selector.reduce((acc, s) => {
         if(_.isArray(acc)) {
           if(s.selector === `@${join.alias}` || s.selector === `@${join.name}`) {
             return new Selector('*');
@@ -115,7 +115,11 @@ module.exports = class Selector
           }
         }
         return acc;
-      }, []));
+      }, []);
+      if(newSelector.length === 0) {
+        return false;
+      }
+      return new Selector(newSelector);
     } else if(_.isPlainObject(this.selector)) {
       const newSelector = _.get(this.selector, join.alias) || _.get(this.selector, join.name);
       if(newSelector) {

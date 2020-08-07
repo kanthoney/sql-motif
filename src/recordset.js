@@ -72,7 +72,7 @@ class RecordSet
     this.joins.forEach(join => {
       let collate, selector;
       if(this.options.collate) {
-        collate = (new Selector(this.options.collate)).passesJoin(join);
+        collate = (new Selector(this.options.collate)).passesJoin(join) || undefined;
       }
       if(this.options.selector) {
         selector = (new Selector(this.options.selector)).passesJoin(join);
