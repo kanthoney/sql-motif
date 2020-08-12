@@ -103,23 +103,27 @@ stock.Select(); // select "stock"."sku", "stock"."description"
 
 * `select([selector, options])`. Produces a field list from the given [selector](./selector.md). Takes an optional [`options`](./table-options) argument.
 
-* `Select([selector, options])`. Produces a select clause, including the `select` keyword, with a field list from the given [selector](./selector.md).
+* `Select([selector, options])`. Produces a select clause, including the `select` keyword, with a field list from the given [selector](./selector.md). `options` is a
+set of [table options](./table-options.md).
 
-* `selectArray([selector, options])`. Produces an array of columns selected according to the given selector.
+* `selectArray([selector, options])`. Produces an array of columns selected according to the given selector. `options` is a set of [table options](./table-options.md).
 
-* `selectWhere(selector, where)`. Produces a simple `select` query (except for the `select` keyword) for the table for the specified columns and `where` specification.
+* `selectWhere(selector, where, options)`. Produces a simple `select` query (except for the `select` keyword) for the table for the specified columns and `where` specification.
+`options` is a set of [table options](./table-options.md).
 
-* `SelectWhere(selector, where)`. Produces a simple `select` statement including the `select` keyword.
+* `SelectWhere(selector, where, options)`. Produces a simple `select` statement including the `select` keyword. `options` is a set of [table options](./table-options.md).
 
-* `selectWhereKey(selector, where)`. Produces a simple `select` query (except for the `select` keyword) for the table for the specified columns and the key part of the `where`
-specification.
+* `selectWhereKey(selector, where, options)`. Produces a simple `select` query (except for the `select` keyword) for the table for the specified columns and the key part
+of the `where` specification. `options` is a set of [table options](./table-options.md).
 
-* `SelectWhereKey(selector, where)`. Produces a simple `select` statement including the `select` keyword for the key part of the `where` specification.
+* `SelectWhereKey(selector, where, options)`. Produces a simple `select` statement including the `select` keyword for the key part of the `where` specification.
+`options` is a set of [table options](./table-options.md).
 
-* `selectWhereMainKey(selector, where)`. Produces a simple `select` query (except for the `select` keyword) for the table for the specified columns and the key part for the main table
-(i.e. excluding joins) of the `where` specification.
+* `selectWhereMainKey(selector, where, options)`. Produces a simple `select` query (except for the `select` keyword) for the table for the specified columns and the key part
+for the main table (i.e. excluding joins) of the `where` specification. `options` is a set of [table options](./table-options.md).
 
-* `SelectWhereMainKey(selector, where)`. Produces a simple `select` statement including the `select` keyword for the key part for the main table of the `where` specification.
+* `SelectWhereMainKey(selector, where, options)`. Produces a simple `select` statement including the `select` keyword for the key part for the main table of the `where`
+specification. `options` is a set of [table options](./table-options.md).
 
 ### Set methods
 
