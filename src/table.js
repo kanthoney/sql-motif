@@ -1070,20 +1070,17 @@ class Table
       if(start === undefined) {
         return '';
       }
-      return this.escape(start);
+      return this.escape(parseInt(start));
     }
-    return `${this.escape(start)}, ${this.escape(count)}`;
+    return `${this.escape(parseInt(start))}, ${this.escape(parseInt(count))}`;
   }
 
   Limit(start, count)
   {
-    if(count === undefined) {
-      if(start === undefined) {
-        return '';
-      }
-      return `limit ${this.escape(start)}`;
+    let s = this.limit(start, count);
+    if(s) {
+      return `limit ${s}`;
     }
-    return `limit ${this.escape(start)}, ${this.escape(count)}`;
   }
 
   toRecordSet(record, options)
