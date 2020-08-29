@@ -41,7 +41,7 @@ class RecordSet
     }
     const record = new Record(this);
     const newJoined = {};
-    this.table.columns.fields(this.options.selector).forEach(col => {
+    this.table.columns.fields(this.options.selector, !this.options.selector).forEach(col => {
       let value = _.get(line, col.fullAlias);
       const path = col.subTableColPath || col.path;
       if(!_.isNil(value) && col.format instanceof Function) {
@@ -109,7 +109,7 @@ class RecordSet
     const record = new Record(this, {}, joined);
     record.empty = true;
     const newJoined = {};
-    this.table.columns.fields().forEach(col => {
+    this.table.columns.fields('*', true).forEach(col => {
       const path = col.subTableColPath || col.path;
       let value = _.get(data, path);
       if(value !== undefined) {
