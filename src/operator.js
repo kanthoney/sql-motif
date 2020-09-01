@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const Verbatim = require('./verbatim');
 
 class Operator
 {
@@ -14,7 +15,7 @@ class Operator
   {
     let value;
     if(this.value instanceof Function) {
-      value = this.value({ table, col: lhs, sql: dialect.template(context), context });
+      value = Verbatim(this.value({ table, col: lhs, sql: dialect.template(context), context }));
     } else {
       value = this.value;
     }
