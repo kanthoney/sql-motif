@@ -39,7 +39,7 @@ module.exports = class Selector
             return true;
           }
           if(m[1] === '.') {
-            if(col.tags && !col.hidden && col.tags.split(/\s+/g).includes(m[2])) {
+            if(col.tags && col.tags.split(/\s+/g).includes(m[2])) {
               return true;
             }
           }
@@ -70,7 +70,7 @@ module.exports = class Selector
               return this;
             }
           }
-          if(!col.config.hidden && m[1] === '.') {
+          if(m[1] === '.') {
             if(col.config.tags && col.config.tags.split(/\s+/g).includes(m[2])) {
               return new Selector('*');
             } else {
