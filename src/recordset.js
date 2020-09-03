@@ -85,7 +85,9 @@ class RecordSet
         selector,
         path: join.path || join.name,
         join,
-        parent: record
+        parent: record,
+        readOnly: join.readOnly,
+        single: join.single
       });
       const subRecord = _.get(record.data, join.path || join.name);
       if(subRecord) {
@@ -149,7 +151,9 @@ class RecordSet
           selector,
           join,
           path: join.path || join.name,
-          parent: record
+          parent: record,
+          readOnly: join.readOnly,
+          single: join.single
         });
         const subjoined = _.merge({}, _.get(record.joined, join.path || join.name), _.get(newJoined, join.table.config.path));
         if(_.isArray(subRecord)) {
@@ -308,7 +312,7 @@ class RecordSet
 
   filter(f)
   {
-    const recordSet = new RecordSet(this.tale, this.options);
+    const recordSet = new RecordSet(this.table, this.options);
     if(this.valid !== undefined) {
       recordSet.valid = true;
     }
@@ -654,7 +658,11 @@ class RecordSet
         return this.reduce(reducer, _.clone(reduceInit));
       }
     }
-    return this.records.reduce((acc, record) => record.empty?acc:acc.concat(record.toObject(options)), []);
+    const records = this.records.reduce((acc, record) => record.empty?acc:acc.concat(record.toObject(options)), []);
+    if(this.options.single && records.length === 1) {
+      return records[0];
+    }
+    return records;
   }
 
   toJSON()

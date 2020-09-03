@@ -9,3 +9,6 @@ An object containing options for validation. The options are:
 * `ignoreMissing` A boolean - if set ignores any columns that are undefined (but not columns that are `null`).
 
 * `ignoreMissingNonKey` A boolean that, if set, ignores any non-key columns that are undefined (but not columns set to `null`).
+
+* `includeReadOnly` By default, subrecords for read only joins are not validated. Set to `true` if you want to validate those too.
+

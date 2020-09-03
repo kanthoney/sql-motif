@@ -137,7 +137,7 @@ class Record
 
   validate(options = {})
   {
-    let { context, selector, ignoreMissing, ignoreMissingNonKey } = options;
+    let { context, selector, ignoreMissing, ignoreMissingNonKey, includeReadOnly } = options;
     this.valid = true;
     this.errors = {};
     if(this.table.config.context) {
@@ -150,9 +150,15 @@ class Record
     const RecordSet = require('./recordset');
     this.table.columns.validateRecord(this, options);
     this.table.joins.forEach(join => {
+      if(!includeReadOnly && join.readOnly) {
+        return;
+      }
       const path = join.path || join.name;
       const subRecord = _.get(this.data, path);
       if(subRecord instanceof RecordSet) {
+        if(!includeReadOnly && subRecord.options.readOnly) {
+          return;
+        }
         if(join.context) {
           if(join.context instanceof Function) {
             context = join.context({ record: this, recordSet: subRecord, context: { ...context } });
@@ -176,7 +182,7 @@ class Record
 
   validateAsync(options = {})
   {
-    let { context, selector, ignoreMissing, ignoreMissingNonKey } = options;
+    let { context, selector, ignoreMissing, ignoreMissingNonKey, includeReadOnly } = options;
     const RecordSet = require('./recordset');
     this.valid = true;
     this.errors = {};
@@ -192,22 +198,29 @@ class Record
     }).then(context => {
       return this.table.columns.validateAsync(this, { ...options, context }).then(results => {
         return Promise.all(results.concat(this.table.joins.reduce((acc, join) => {
+          if(!includeReadOnly && join.readOnly) {
+            return acc;
+          }
           const path = join.path || join.name;
           const recordSet = _.get(this.data, path);
-          return acc.concat(new Promise(resolve => {
-            if(join.context) {
-              if(join.context instanceof Function) {
-                context = join.context({ record: this, recordSet, context: { ...context } });
-              } else {
-                context = { ...join.context, ...context };
+          if(recordSet instanceof RecordSet) {
+            if(!includeReadOnly && recordSet.options.readOnly) {
+              return acc;
+            }
+            return acc.concat(new Promise(resolve => {
+              if(join.context) {
+                if(join.context instanceof Function) {
+                  context = join.context({ record: this, recordSet, context: { ...context } });
+                } else {
+                  context = { ...join.context, ...context };
+                }
               }
-            }
-            resolve(context);
-          }).then(context => {
-            if(recordSet instanceof RecordSet) {
+              resolve(context);
+            }).then(context => {
               return recordSet.validateAsync({ ...options, context });
-            }
-          }));
+            }));
+          }
+          return acc;
         }, [])));
       });
     }).then(result => {
@@ -253,7 +266,7 @@ class Record
 
   fill(options = {})
   {
-    let { context, selector } = options;
+    let { context, selector, includeReadOnly } = options;
     this.dirty = true;
     if(this.table.config.context) {
       if(this.table.config.context instanceof Function) {
@@ -265,12 +278,15 @@ class Record
     this.table.columns.fill(this, options);
     const RecordSet = require('./recordset');
     this.table.joins.forEach(join => {
-      if(join.readOnly || (options.joins && options.joins !== '*' && !includes(options.joins(join.name)))) {
+      if((!includeReadOnly && join.readOnly) || (options.joins && options.joins !== '*' && !includes(options.joins(join.name)))) {
         return;
       }
       const path = join.path || join.name;
       const recordSet = _.get(this.data, path);
       if(recordSet instanceof RecordSet) {
+        if(!includeReadOnly && recordSet.options.readOnly) {
+          return;
+        }
         if(join.context) {
           if(join.context instanceof Function) {
             context = join.context({ record: this, recordSet, context: { ...context } });
@@ -286,7 +302,7 @@ class Record
 
   fillAsync(options = {})
   {
-    let { context, selector } = options;
+    let { context, selector, includeReadOnly } = options;
     const RecordSet = require('./recordset');
     this.dirty = true;
     return Promise.resolve(context).then(context => {
@@ -300,6 +316,9 @@ class Record
     }).then(context => {
       return this.table.columns.fillAsync(this, options).then(() => {
         return Promise.all(this.table.joins.map(join => {
+          if(!includeReadOnly && join.readOnly) {
+            return;
+          }
           const path = join.path || join.name;
           const recordSet = _.get(this.data, path);
           return new Promise(resolve => {
@@ -313,7 +332,7 @@ class Record
             resolve(context);
           }).then(context => {
             if(recordSet instanceof RecordSet) {
-              if(join.readOnly || (options.joins && options.joins !== '*' && !includes(options.joins(join.name)))) {
+              if((!includeReadOnly && (join.readOnly || recordSet.options.readOnly)) || (options.joins && options.joins !== '*' && !includes(options.joins(join.name)))) {
                 return recordSet;
               }
               return recordSet.fillAsync({ ...options, context });
