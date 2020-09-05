@@ -21,9 +21,9 @@ class Operator
     }
     if(this.name instanceof Function) {
       if(lhs) {
-        return `${dialect.escape(lhs, context)} ${this.name(value)} ${dialect.escape(this.value, context)}`;
+        return `${dialect.escape(lhs, context)} ${this.name(value)} ${dialect.escape(value, context)}`;
       }
-      return `${this.name(value)} ${dialect.escape(this.value)}`;
+      return `${this.name(value)} ${dialect.escape(value)}`;
     }
     if(lhs) {
       return `${dialect.escape(lhs, context)} ${this.name} ${dialect.escape(value, context)}`;
