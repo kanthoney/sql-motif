@@ -773,7 +773,7 @@ class Table
     if(index.name) {
       s += ` ${this.escapeId(index.name)}`;
     }
-    let cols = index.columns.reduce((acc, name) => {
+    let cols = [].concat(index.columns).reduce((acc, name) => {
       const col = this.column(name);
       if(col) {
         return acc.concat(col.sql.name);
