@@ -251,8 +251,8 @@ class Table
       }
     }
     let where;
-    if(options.where || this.onWhere) {
-      where = Object.assign({}, this.onWhere, options.where);
+    if(options.onWhere || this.onWhere) {
+      where = Object.assign({}, this.onWhere, options.onWhere);
     }
     const joins = this.joins.reduce((acc, join) => {
       if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
@@ -276,7 +276,7 @@ class Table
         clause = 'inner join';
         break;
       }
-      acc.clause += ` ${clause} ${join.table.from({ ...options, brackets: true, where: _.get(where, join.path || join.name) })}`;
+      acc.clause += ` ${clause} ${join.table.from({ ...options, brackets: true, onWhere: _.get(where, join.path || join.name) })}`;
       let onArray = [];
       const subWhere = _.get(where, join.path || join.name);
       if(subWhere) {
@@ -407,7 +407,7 @@ class Table
     return `select ${this.select(selector, options)}`;
   }
 
-  selectWhere(selector, where, options)
+  selectWhere(selector, where, options = {})
   {
     if(where) {
       return `${this.select(selector, options)} ${this.From(options)} ${this.Where(where, options)}`;
@@ -420,7 +420,7 @@ class Table
     return `select ${this.selectWhere(selector, where, options)}`;
   }
 
-  selectWhereKey(selector, where, options)
+  selectWhereKey(selector, where, options = {})
   {
     if(where) {
       return `${this.select(selector, options)} ${this.From(options)} ${this.WhereKey(where, options)}`;
@@ -433,7 +433,7 @@ class Table
     return `select ${this.selectWhereKey(selector, where, options)}`;
   }
 
-  selectWhereMainKey(selector, where, options)
+  selectWhereMainKey(selector, where, options = {})
   {
     if(where) {
       return `${this.select(selector, options)} ${this.From(options)} ${this.WhereKey(where, { ...options, joins: [] })}`;
