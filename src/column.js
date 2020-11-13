@@ -12,7 +12,7 @@ class Column
     this.alias = this.alias || this.name;
     this.path = this.path || this.alias;
     const name = this.table.dialect.escapeId(this.name);
-    const fullName = `${this.table.as()}.${name}`;
+    const fullName = this.config.calc?name:`${this.table.as()}.${name}`;
     this.fullAlias = this.table.config.path.concat(this.alias).join('_');
     this.sql = {
       name,
