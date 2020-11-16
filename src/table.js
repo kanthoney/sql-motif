@@ -488,7 +488,7 @@ class Table
 
   insertColumns()
   {
-    return this.columns.fields().map(col => col.sql.name).join(', ');
+    return this.columns.fields().reduce((acc, col) => col.calc?acc:acc.concat(col.sql.name), []).join(', ');
   }
 
   insertValues(record)
