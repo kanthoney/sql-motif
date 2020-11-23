@@ -97,7 +97,7 @@ describe('operator tests', () => {
 
       it(`should produce regexp for values containing '${value}'`, () => {
         const op = operators.contains;
-        expect(dialect.escape(op(value))).toBe(`regexp ${dialect.escape('^' + _.escapeRegExp(value) + '$')}`);
+        expect(dialect.escape(op(value))).toBe(`regexp ${dialect.escape(_.escapeRegExp(value))}`);
       });
 
       it(`should produce regexp for values not starting with '${value}'`, () => {
@@ -112,7 +112,7 @@ describe('operator tests', () => {
 
       it(`should produce regexp for values not containing '${value}'`, () => {
         const op = operators.notContains;
-        expect(dialect.escape(op(value))).toBe(`not regexp ${dialect.escape('^' + _.escapeRegExp(value) + '$')}`);
+        expect(dialect.escape(op(value))).toBe(`not regexp ${dialect.escape(_.escapeRegExp(value))}`);
       });
 
     });

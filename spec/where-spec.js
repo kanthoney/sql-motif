@@ -124,7 +124,7 @@ describe('where tests', () => {
 
       it("should select orders where sku does not contain 'DF^G'", () => {
         expect(j.where({ lines: { sku: op.notContains('DF^G') } })).toBe(
-          '"ol1"."sku" not regexp \'^DF\\^G$\''
+          '"ol1"."sku" not regexp \'DF\\^G\''
         );
       });
 
