@@ -236,12 +236,18 @@ class ColumnSet
         const validate = v => {
           if(_.isString(v)) {
             if(`${value}` !== v) {
+              if(col.nullifyInvalid && !col.notNull) {
+                return { path, value: null };
+              }
               return { path, error: col.validationError || 'Field is not valid' };
             }
             return null;
           }
           if(_.isRegExp(v)) {
             if(!v.test(value)) {
+              if(col.nullifyInvalid && !col.notNull) {
+                return { path, value: null };
+              }
               return { path, error: col.validationError || `Field did not conform to regular expression '${v.toString()}'` }
             }
             return null;
@@ -252,8 +258,14 @@ class ColumnSet
               if(result === true) {
                 return null;
               }
+              if(col.nullifyInvalid && !col.notNull) {
+                return { path, value: null };
+              }
               return { path, error: result || col.validationError || 'Field failed function validation' }
             } catch(error) {
+              if(col.nullifyInvalid && !col.notNull) {
+                return { path, value: null };
+              }
               return { path, error: (error instanceof Error?error.message:error) || col.validationError || 'Field failed function validation' };
             }
           }
@@ -267,13 +279,23 @@ class ColumnSet
                 return null;
               }
               return acc;
-            }, { path, error: col.validationError || 'Field did not match any validator' });
+            }, (col.nullifyInvalid && !col.notNull)?{
+              path,
+              value: null
+            }:{
+              path,
+              error: col.validationError || 'Field did not match any validator'
+            });
           }
         }
         const result = validate(col.validate);
         if(result) {
-          acc.valid = false;
-          _.set(acc.errors, path, result.error);
+          if(result.error) {
+            acc.valid = false;
+            _.set(acc.errors, path, result.error);
+          } else {
+            _.set(acc.data, path, result.value);
+          }
         }
       }
       return acc;
@@ -330,12 +352,18 @@ class ColumnSet
           const validate = async v => {
             if(_.isString(v)) {
               if(`${value}` !== v) {
+                if(col.nullifyInvalid && !col.notNull) {
+                  return { path, value: null };
+                }
                 return { path, error: col.validationError || 'Field is not valid' };
               }
               return null;
             }
             if(_.isRegExp(v)) {
               if(!v.test(value)) {
+                if(col.nullifyInvalid && !col.notNull) {
+                  return { path, value: null };
+                }
                 return { path, error: col.validationError || `Field did not conform to regular expression '${v.toString()}'` }
               }
               return null;
@@ -346,28 +374,36 @@ class ColumnSet
                 if(result === true) {
                   return null;
                 }
+                if(col.nullifyInvalid && !col.notNull) {
+                  return { path, value: null };
+                }
                 return { path, error: result || col.validationError || 'Field failed function validation' };
               } catch(error) {
+                if(col.nullifyInvalid && !col.notNull) {
+                  return { path, value: null };
+                }
                 return { path, error: (error instanceof Error?error.message:error) || col.validationError || 'Field failed function validation' };
               }
             }
             if(_.isArray(v)) {
-              return (await Promise.all(v, validate)).reduce((acc, result) => {
-                if(!acc.error) {
+              return (await Promise.all(v.map(v => validate(v)))).reduce((acc, result) => {
+                if(acc && result !== null) {
                   return acc;
                 }
-                if(!result.error) {
-                  delete acc.error;
-                }
-                return acc;
-              }, { path, error: col.validationError || 'Field did not match any validator' });
+              }, (col.nullifyInvalid && !col.notNull)?{
+                path,
+                value: null
+              }:{
+                path,
+                error: col.validationError || 'Field did not match any validator'
+              });
             }
             return null;
           }
           return validate(col.validate);
         });
       }
-      return { path, value };
+      return null;
     }));
   }
 

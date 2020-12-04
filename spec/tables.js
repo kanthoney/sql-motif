@@ -136,3 +136,21 @@ module.exports.company_options = new Table({
   }
 });
 
+module.exports.validation = new Table({
+  name: 'validation',
+  columns: [
+    { name: 'string', validate: 'valid', notNull: true },
+    { name: 'function', validate: ({ value, context, col }) => value === 'valid', notNull: true },
+    { name: 'regexp', validate: /^valid$/ },
+    { name: 'array', validate: ['valid1', ({ value }) => value === 'valid2', /^valid3$/], notNull: true },
+    { name: 'string_null', validate: 'valid' },
+    { name: 'function_null', validate: ({ value, context, col }) => value === 'valid' },
+    { name: 'regexp_null', validate: /^valid$/ },
+    { name: 'array_null', validate: ['valid1', ({ value }) => value === 'valid2', /^valid3$/] },
+    { name: 'string_nullify', validate: 'valid', nullifyInvalid: true },
+    { name: 'function_nullify', validate: ({ value, context, col }) => value === 'valid', nullifyInvalid: true },
+    { name: 'regexp_nullify', validate: /^valid$/, nullifyInvalid: true },
+    { name: 'array_nullify', validate: ['valid1', ({ value }) => value === 'valid2', /^valid3$/], nullifyInvalid: true }
+  ]
+});
+

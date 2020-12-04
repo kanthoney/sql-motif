@@ -232,9 +232,13 @@ class Record
           return;
         } else if(_.isArray(result)) {
           return result.forEach(process);
-        } else if(result && result.error) {
-          this.valid = false;
-          _.set(this.errors, result.path, result.error);
+        } else if(result) {
+          if(result.error) {
+            this.valid = false;
+            _.set(this.errors, result.path, result.error);
+          } else {
+            _.set(this.data, result.path, result.value);
+          }
         }
       };
       process(result);

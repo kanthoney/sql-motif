@@ -911,4 +911,107 @@ describe("validate tests", () => {
 
   });
 
+  describe('validation table tests', () => {
+
+    const t = tables.validation;
+
+    it('should validate record', () => {
+      const record = {
+        string: 'valid',
+        'function': 'valid',
+        regexp: 'valid',
+        array: 'valid2',
+        string_null: 'valid',
+        'function_null': 'valid',
+        regexp_null: 'valid',
+        array_null: 'valid1',
+        string_nullify: 'valid',
+        'function_nullify': 'valid',
+        regexp_nullify: 'valid',
+        array_nullify: 'valid2'
+      };
+      expect(JSON.stringify(t.validate(record).validationResult())).toBe(
+        '{"results":[{"record":{"string":"valid","function":"valid","regexp":"valid","array":"valid2","string_null":"valid","function_null":"valid",' +
+          '"regexp_null":"valid","array_null":"valid1","string_nullify":"valid","function_nullify":"valid","regexp_nullify":"valid","array_nullify":"valid2"},' +
+          '"valid":true,"errors":{}}],"valid":true}'
+      );
+    });
+
+    it('should validate record asynchronously', done => {
+      const record = {
+        string: 'valid',
+        'function': 'valid',
+        regexp: 'valid',
+        array: 'valid2',
+        string_null: 'valid',
+        'function_null': 'valid',
+        regexp_null: 'valid',
+        array_null: 'valid1',
+        string_nullify: 'valid',
+        'function_nullify': 'valid',
+        regexp_nullify: 'valid',
+        array_nullify: 'valid1'        
+      };
+      t.validateAsync(record).then(result => {
+        expect(JSON.stringify(result.validationResult())).toBe(
+          '{"results":[{"record":{"string":"valid","function":"valid","regexp":"valid","array":"valid2","string_null":"valid","function_null":"valid",' +
+            '"regexp_null":"valid","array_null":"valid1","string_nullify":"valid","function_nullify":"valid","regexp_nullify":"valid","array_nullify":"valid1"},' +
+            '"valid":true,"errors":{}}],"valid":true}');
+      }).catch(fail).finally(done);
+    });
+
+    it('should invalidate record', () => {
+      const record = {
+        string: 'invalid',
+        'function': 'invalid',
+        regexp: 'invalid',
+        array: 'invalid2',
+        string_null: 'invalid',
+        'function_null': 'invalid',
+        regexp_null: 'invalid',
+        array_null: 'invalid1',
+        string_nullify: 'invalid',
+        'function_nullify': 'invalid',
+        regexp_nullify: 'invalid',
+        array_nullify: 'invalid1'        
+      };
+      expect(JSON.stringify(t.validate(record).validationResult())).toBe(
+          '{"results":[{"record":{"string":"invalid","function":"invalid","regexp":"invalid","array":"invalid2","string_null":"invalid","function_null":"invalid",' +
+            '"regexp_null":"invalid","array_null":"invalid1","string_nullify":null,"function_nullify":null,"regexp_nullify":null,"array_nullify":null},' +
+            '"valid":false,"errors":{"string":"Field is not valid","function":"Field failed function validation",' +
+            '"regexp":"Field did not conform to regular expression \'/^valid$/\'","array":"Field did not match any validator","string_null":"Field is not valid",' + 
+            '"function_null":"Field failed function validation","regexp_null":"Field did not conform to regular expression \'/^valid$/\'",' +
+            '"array_null":"Field did not match any validator"}}],"valid":false}'
+      );
+    });
+
+    it('should invalidate record asynchronously', done => {
+      const record = {
+        string: 'invalid',
+        'function': 'invalid',
+        regexp: 'invalid',
+        array: 'invalid2',
+        string_null: 'invalid',
+        'function_null': 'invalid',
+        regexp_null: 'invalid',
+        array_null: 'invalid1',
+        string_nullify: 'invalid',
+        'function_nullify': 'invalid',
+        regexp_nullify: 'invalid',
+        array_nullify: 'invalid1'        
+      };
+      t.validateAsync(record).then(result => {
+        expect(JSON.stringify(result.validationResult())).toBe(
+          '{"results":[{"record":{"string":"invalid","function":"invalid","regexp":"invalid","array":"invalid2","string_null":"invalid","function_null":"invalid",' +
+            '"regexp_null":"invalid","array_null":"invalid1","string_nullify":null,"function_nullify":null,"regexp_nullify":null,"array_nullify":null},' +
+            '"valid":false,"errors":{"string":"Field is not valid","function":"Field failed function validation",' +
+            '"regexp":"Field did not conform to regular expression \'/^valid$/\'","array":"Field did not match any validator","string_null":"Field is not valid",' + 
+            '"function_null":"Field failed function validation","regexp_null":"Field did not conform to regular expression \'/^valid$/\'",' +
+            '"array_null":"Field did not match any validator"}}],"valid":false}'
+        );
+      }).catch(fail).finally(done);
+    });
+
+  });
+
 });
