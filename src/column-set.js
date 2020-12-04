@@ -236,18 +236,12 @@ class ColumnSet
         const validate = v => {
           if(_.isString(v)) {
             if(`${value}` !== v) {
-              if(col.nullifyInvalid && !col.notNull) {
-                return { path, value: null };
-              }
               return { path, error: col.validationError || 'Field is not valid' };
             }
             return null;
           }
           if(_.isRegExp(v)) {
             if(!v.test(value)) {
-              if(col.nullifyInvalid && !col.notNull) {
-                return { path, value: null };
-              }
               return { path, error: col.validationError || `Field did not conform to regular expression '${v.toString()}'` }
             }
             return null;
@@ -258,14 +252,8 @@ class ColumnSet
               if(result === true) {
                 return null;
               }
-              if(col.nullifyInvalid && !col.notNull) {
-                return { path, value: null };
-              }
               return { path, error: result || col.validationError || 'Field failed function validation' }
             } catch(error) {
-              if(col.nullifyInvalid && !col.notNull) {
-                return { path, value: null };
-              }
               return { path, error: (error instanceof Error?error.message:error) || col.validationError || 'Field failed function validation' };
             }
           }
@@ -279,22 +267,23 @@ class ColumnSet
                 return null;
               }
               return acc;
-            }, (col.nullifyInvalid && !col.notNull)?{
-              path,
-              value: null
-            }:{
-              path,
-              error: col.validationError || 'Field did not match any validator'
-            });
+            }, { path, error: col.validationError || 'Field did not match any validator' });
           }
         }
         const result = validate(col.validate);
-        if(result) {
-          if(result.error) {
+        if(result && result.error) {
+          if(col.invalidValue instanceof Function) {
+            try {
+              _.set(acc.data, path, col.invalidValue({ col, value, context, error: result.error }));
+            } catch(error) {
+              acc.valid = false;
+              _.set(acc.errors, path, error.message);
+            }
+          } else if(col.invalidValue !== undefined) {
+            _.set(acc.data, path, col.invalidValue);
+          } else {
             acc.valid = false;
             _.set(acc.errors, path, result.error);
-          } else {
-            _.set(acc.data, path, result.value);
           }
         }
       }
@@ -352,18 +341,12 @@ class ColumnSet
           const validate = async v => {
             if(_.isString(v)) {
               if(`${value}` !== v) {
-                if(col.nullifyInvalid && !col.notNull) {
-                  return { path, value: null };
-                }
                 return { path, error: col.validationError || 'Field is not valid' };
               }
               return null;
             }
             if(_.isRegExp(v)) {
               if(!v.test(value)) {
-                if(col.nullifyInvalid && !col.notNull) {
-                  return { path, value: null };
-                }
                 return { path, error: col.validationError || `Field did not conform to regular expression '${v.toString()}'` }
               }
               return null;
@@ -374,14 +357,8 @@ class ColumnSet
                 if(result === true) {
                   return null;
                 }
-                if(col.nullifyInvalid && !col.notNull) {
-                  return { path, value: null };
-                }
                 return { path, error: result || col.validationError || 'Field failed function validation' };
               } catch(error) {
-                if(col.nullifyInvalid && !col.notNull) {
-                  return { path, value: null };
-                }
                 return { path, error: (error instanceof Error?error.message:error) || col.validationError || 'Field failed function validation' };
               }
             }
@@ -390,17 +367,23 @@ class ColumnSet
                 if(acc && result !== null) {
                   return acc;
                 }
-              }, (col.nullifyInvalid && !col.notNull)?{
-                path,
-                value: null
-              }:{
-                path,
-                error: col.validationError || 'Field did not match any validator'
-              });
+              }, { path, error: col.validationError || 'Field did not match any validator' });
             }
             return null;
           }
           return validate(col.validate);
+        }).then(async result => {
+          if(result && col.invalidValue !== undefined) {
+            if(col.invalidValue instanceof Function) {
+              try {
+                return { path, value: await col.invalidValue({ value, col, context, error: result.error }) };
+              } catch(error) {
+                return { path, error: error.message }
+              }
+            }
+            return { path, value: col.invalidValue };
+          }
+          return result;
         });
       }
       return null;

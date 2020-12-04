@@ -975,13 +975,13 @@ describe("validate tests", () => {
         regexp_nullify: 'invalid',
         array_nullify: 'invalid1'        
       };
-      expect(JSON.stringify(t.validate(record).validationResult())).toBe(
-          '{"results":[{"record":{"string":"invalid","function":"invalid","regexp":"invalid","array":"invalid2","string_null":"invalid","function_null":"invalid",' +
-            '"regexp_null":"invalid","array_null":"invalid1","string_nullify":null,"function_nullify":null,"regexp_nullify":null,"array_nullify":null},' +
-            '"valid":false,"errors":{"string":"Field is not valid","function":"Field failed function validation",' +
-            '"regexp":"Field did not conform to regular expression \'/^valid$/\'","array":"Field did not match any validator","string_null":"Field is not valid",' + 
-            '"function_null":"Field failed function validation","regexp_null":"Field did not conform to regular expression \'/^valid$/\'",' +
-            '"array_null":"Field did not match any validator"}}],"valid":false}'
+      expect(JSON.stringify(t.validate(record, { context: { invalid: '_' } }).validationResult())).toBe(
+        '{"results":[{"record":{"string":"invalid","function":"invalid","regexp":"invalid","array":"invalid2","string_null":"invalid","function_null":"invalid",' +
+          '"regexp_null":"invalid","array_null":"invalid1","string_nullify":null,"function_nullify":"_invalid","regexp_nullify":"invalid_regexp_nullify",' +
+          '"array_nullify":"_"},"valid":false,"errors":{"string":"Field is not valid","function":"Field failed function validation",' +
+          '"regexp":"Field did not conform to regular expression \'/^valid$/\'","array":"Field did not match any validator","string_null":"Field is not valid",' +
+          '"function_null":"Field failed function validation","regexp_null":"Field did not conform to regular expression \'/^valid$/\'",' +
+          '"array_null":"Field did not match any validator"}}],"valid":false}'
       );
     });
 
@@ -1000,14 +1000,14 @@ describe("validate tests", () => {
         regexp_nullify: 'invalid',
         array_nullify: 'invalid1'        
       };
-      t.validateAsync(record).then(result => {
+      t.validateAsync(record, { context: { invalid: '_' } }).then(result => {
         expect(JSON.stringify(result.validationResult())).toBe(
-          '{"results":[{"record":{"string":"invalid","function":"invalid","regexp":"invalid","array":"invalid2","string_null":"invalid","function_null":"invalid",' +
-            '"regexp_null":"invalid","array_null":"invalid1","string_nullify":null,"function_nullify":null,"regexp_nullify":null,"array_nullify":null},' +
-            '"valid":false,"errors":{"string":"Field is not valid","function":"Field failed function validation",' +
-            '"regexp":"Field did not conform to regular expression \'/^valid$/\'","array":"Field did not match any validator","string_null":"Field is not valid",' + 
-            '"function_null":"Field failed function validation","regexp_null":"Field did not conform to regular expression \'/^valid$/\'",' +
-            '"array_null":"Field did not match any validator"}}],"valid":false}'
+        '{"results":[{"record":{"string":"invalid","function":"invalid","regexp":"invalid","array":"invalid2","string_null":"invalid","function_null":"invalid",' +
+          '"regexp_null":"invalid","array_null":"invalid1","string_nullify":null,"function_nullify":"_invalid","regexp_nullify":"invalid_regexp_nullify",' +
+          '"array_nullify":"_"},"valid":false,"errors":{"string":"Field is not valid","function":"Field failed function validation",' +
+          '"regexp":"Field did not conform to regular expression \'/^valid$/\'","array":"Field did not match any validator","string_null":"Field is not valid",' +
+          '"function_null":"Field failed function validation","regexp_null":"Field did not conform to regular expression \'/^valid$/\'",' +
+          '"array_null":"Field did not match any validator"}}],"valid":false}'
         );
       }).catch(fail).finally(done);
     });

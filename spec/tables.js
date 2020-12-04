@@ -147,10 +147,10 @@ module.exports.validation = new Table({
     { name: 'function_null', validate: ({ value, context, col }) => value === 'valid' },
     { name: 'regexp_null', validate: /^valid$/ },
     { name: 'array_null', validate: ['valid1', ({ value }) => value === 'valid2', /^valid3$/] },
-    { name: 'string_nullify', validate: 'valid', nullifyInvalid: true },
-    { name: 'function_nullify', validate: ({ value, context, col }) => value === 'valid', nullifyInvalid: true },
-    { name: 'regexp_nullify', validate: /^valid$/, nullifyInvalid: true },
-    { name: 'array_nullify', validate: ['valid1', ({ value }) => value === 'valid2', /^valid3$/], nullifyInvalid: true }
+    { name: 'string_nullify', validate: 'valid', invalidValue: null },
+    { name: 'function_nullify', validate: ({ value, context, col }) => value === 'valid', invalidValue: ({ value }) => `_${value}` },
+    { name: 'regexp_nullify', validate: /^valid$/, invalidValue: ({ col }) => `invalid_${col.name}` },
+    { name: 'array_nullify', validate: ['valid1', ({ value }) => value === 'valid2', /^valid3$/], invalidValue: ({ context = {} }) => context.invalid }
   ]
 });
 

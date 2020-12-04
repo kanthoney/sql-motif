@@ -28,7 +28,10 @@
 
  * `validationError`. A default error message to return if the validation fails. If not specified will use a standard error message.
 
- * `nullifyInvalid`. If set to `true`, invalid fields are set to `null` (unless `notNull` is set) instead of failing validation.
+ * `invalidValue`. If set, a validation failure sets the field to this value instead of causing a validation error. If a function is specified, it takes an object
+of the form `{ value, col, context, error }` where `value` is the current value, `col` is the column, `context` is the user-defined object passed to the `validate`
+function and `error` is the error message from the initial validation. If the function throws, the error message thrown will be used as the validation error. Otherwise,
+the field will be set to the return value.
 
  * `calc`. Specifies a calculation column. Can be a string or a function. If a function, is called with a single argument, which is an object with the following properties:
 
