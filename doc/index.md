@@ -68,3 +68,6 @@ const { dialects, DateOnly } = require('sql-motif');
 dialects.default.escape(new Date); // '2020-04-16 16:58:17'
 dialects.default.escape(DateOnly(new Date)); // '2020-04-16'
 ```
+
+* [`or`](./or). A symbol used to insert `or` subclauses into awkward places in the `where` clause.
+

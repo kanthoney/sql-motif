@@ -10,6 +10,7 @@ const Record = require('./record');
 const _ = require('lodash');
 const Selector = require('./selector');
 const TypeExpander = require('./type-expander');
+const or = require('./or');
 
 class Table
 {
@@ -541,23 +542,27 @@ class Table
   whereArray(record, options = {})
   {
     options.table = options.table || this;
-    return this.columns.whereArray(record, options).concat(this.joins.reduce((acc, join) => {
-      if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
-        return acc;
-      }
-      const subRecord = _.get(record, join.path || join.name);
-      const where = join.table.where(subRecord || {}, {
-        ...options,
-        joined: _.get(options.joined, join.path || join.name),
-        safe: options.safe && !join.readOnly,
-        brackets: _.isArray(subRecord),
+    if(record[or]) {
+      return this.whereArray({ ...record, [or]: null }).concat(`(${this.whereArray(record[or], options).join(' or ')})`);
+    }
+    return this.columns.whereArray(record, options)
+      .concat(this.joins.reduce((acc, join) => {
+        if(options.joins && options.joins !== '*' && !options.joins.includes(join.name)) {
+          return acc;
+        }
+        const subRecord = _.get(record, join.path || join.name);
+        const where = join.table.where(subRecord || {}, {
+            ...options,
+          joined: _.get(options.joined, join.path || join.name),
+          safe: options.safe && !join.readOnly,
+          brackets: _.isArray(subRecord),
         default: ''
-      });
-      if(!where) {
-        return acc;
-      }
-      return acc.concat(where);
-    }, []));
+        });
+        if(!where) {
+          return acc;
+        }
+        return acc.concat(where);
+      }, []));
   }
 
   where(record, options)

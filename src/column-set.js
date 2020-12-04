@@ -9,6 +9,7 @@ const Operator = require('./operator');
 const operators = require('./operators');
 const SafetyError = require('./safety-error');
 const Selector = require('./selector');
+const or = require('./or');
 
 class ColumnSet
 {
@@ -678,6 +679,10 @@ class ColumnSet
         if(_.isArray(value)) {
           return acc.concat(col.whereArray(value.map(value => _.set({}, col.config.path, value)), { ...options, brackets: true }));
         }
+        if(value && value[or]) {
+          let other = [].concat(value[or]);
+          return acc.concat(col.whereArray([{ ...value, [or]: null }].concat(other).map(value => _.set({}, col.config.path, value)), { ...options, brackets: true }));
+        }
         return acc.concat(col.whereArray(_.set({}, col.config.path, value), options));
       }
       if(options.safe) {
@@ -703,7 +708,7 @@ class ColumnSet
         return operators.eq(value).clause(table.dialect, col, options.table, options.context || {});
       }
       return acc.concat(clause(value));
-    }, []);
+    }, []).concat(record[or]?this.whereArray(record[or], { ...options, brackets: true }):[]);
   }
 
   SQL(as, context = {})

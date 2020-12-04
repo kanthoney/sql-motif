@@ -4,6 +4,7 @@ const tables = require('./tables')
 const joins = require('./joins');
 const op = require('../src/operators');
 const motif = require('../index');
+const or = require('../src/or');
 
 describe('where tests', () => {
 
@@ -88,6 +89,25 @@ describe('where tests', () => {
         );
       });
 
+      it('should create a where clause with several records ored together', () => {
+        expect(t.where([{ company: 'ACME01', order_id: 49 }, { company: 'WIL002', order_id: 94 }])).toBe(
+          '("s1"."orders"."company" = \'ACME01\' and "s1"."orders"."order_id" = 49) or ("s1"."orders"."company" = \'WIL002\' and "s1"."orders"."order_id" = 94)'
+        );
+      });
+
+      it('should create a where clause with delivery name fields ored together', () => {
+        expect(t.where({ company: 'ACME01', delivery: { name: [ 'Alice', 'Bob' ] } })).toBe(
+          '"s1"."orders"."company" = \'ACME01\' and ("s1"."orders"."delivery_name" = \'Alice\' or "s1"."orders"."delivery_name" = \'Bob\')'
+        );
+      });
+
+      it('it should create a where clause with a complex or subclause', () => {
+        expect(t.where({ company: 'ACME01', [or]: [ { order_id: 5 }, { delivery: { name: 'Alice', address: { street: 'Greenway st.' } } } ] })).toBe(
+          '"s1"."orders"."company" = \'ACME01\' and ("s1"."orders"."order_id" = 5 or ("s1"."orders"."delivery_name" = \'Alice\' and ' +
+            '"s1"."orders"."delivery_address_street" = \'Greenway st.\'))'
+        );
+      });
+
     });
 
     describe('order_lines tests', () => {
@@ -163,8 +183,7 @@ describe('where tests', () => {
               inventory: {
                 qty: 5
               }
-            },
-            {
+            }, {
               bin: 'A52A'
             }]
           }
@@ -173,6 +192,36 @@ describe('where tests', () => {
           '(("warehouse_bins"."bin" = \'A14J\' and "inventory"."qty" = 5) or "warehouse_bins"."bin" = \'A52A\')'
         );
       });
+
+      describe('or tests', () => {
+        
+        it('should produce a where clause with an or subclause', () => {
+          expect(j.where({
+            company: 'ACME001',
+            sku: 'AFJ010',
+            description: 'Spirit level',
+            warehouse: {
+              name: 'Mercury',
+              [or]: {
+                description: 'a bit whiffy',
+                bins: [{
+                  bin: 'A14J',
+                  inventory: {
+                    qty: 5
+                  }
+                }, {
+                  bin: 'A52A'
+                }]
+              }
+            }
+          })).toBe(
+            '"stock"."company" = \'ACME001\' and "stock"."sku" = \'AFJ010\' and "stock"."description" = \'Spirit level\' and "w1"."name" = \'Mercury\' and ' +
+              '("w1"."description" = \'a bit whiffy\' or (("warehouse_bins"."bin" = \'A14J\' and "inventory"."qty" = 5) or "warehouse_bins"."bin" = \'A52A\'))'
+          );
+        });
+
+      });
+
     });
 
   });
