@@ -9,7 +9,11 @@ const Operator = require('./operator');
 const operators = require('./operators');
 const SafetyError = require('./safety-error');
 const Selector = require('./selector');
-const or = require('./or');
+const Verbatim = require('./verbatim');
+const Identifier = require('./identifier');
+const Fn = require('./function');
+const snippet = require('./snippet');
+const and = require('./and');
 
 class ColumnSet
 {
@@ -652,7 +656,10 @@ class ColumnSet
         options.joins = [options.joins];
       }
     }
-    if(_.isArray(record)) {
+    if(record instanceof Function) {
+      return [record({ table, record, context: options.context, sql: table.dialect.template(options.context) })];
+    }
+    if(record instanceof Array) {
       if(record.length === 0) {
         return options.default;
       }
@@ -674,41 +681,50 @@ class ColumnSet
       }
       return [clauses.join(' or ')];
     }
-    return this.values(record, options).reduce((acc, { col, value }) => {
-      if(col instanceof ColumnSet) {
-        if(_.isArray(value)) {
-          return acc.concat(col.whereArray(value.map(value => _.set({}, col.config.path, value)), { ...options, brackets: true }));
-        }
-        if(value && value[or]) {
-          let other = [].concat(value[or]);
-          return acc.concat(col.whereArray([{ ...value, [or]: null }].concat(other).map(value => _.set({}, col.config.path, value)), { ...options, brackets: true }));
-        }
-        return acc.concat(col.whereArray(_.set({}, col.config.path, value), options));
-      }
-      if(options.safe) {
-        if(!_.isNil(value) || _.get(options.joined, col.path)) {
-          col.joinedTo.forEach(path => {
-            _.set(options.joined, path, value);
-          });
-        }
-      }
-      const clause = value => {
-        if(_.isArray(value)) {
-          if(value.length > 1) {
-            return `(${value.map(value => clause(value)).join(' or ')})`;
+    if(_.isPlainObject(record)) {
+      return this.values(record, options).reduce((acc, { col, value }) => {
+        if(col instanceof ColumnSet) {
+          if(_.isArray(value)) {
+            return acc.concat(col.whereArray(value.map(value => _.set({}, col.config.path, value)), { ...options, brackets: true }));
           }
-          return `${value.map(value => clause(value)).join(' or ')}`;
+          if(value && (value[and] || value[snippet])) {
+            return acc.concat(
+              col.whereArray({ ...value, [and]: null, [snippet]: null }, { ...options, brackets: true }),
+              value[and]?col.whereArray([].concat(value[and]).map(value => _.set({}, col.config.path, value)), { ...options, brackets: true }).join(' and '):[],
+              value[snippet]?col.whereArray([].concat(value[snippet]).map(value => _.set({}, col.config.path, value)), { ...options, brackets: true }).join(' or '):[]
+            );
+          }
+          return acc.concat(col.whereArray(_.set({}, col.config.path, value), options));
         }
-        if(value instanceof Operator) {
-          return value.clause(table.dialect, col, options.table, options.context || {});
-        } else if(value instanceof Function) {
-          return `${col.SQL(false, options.context || {}, options.table)} = ` +
-            `${table.escape(value({ table: options.table, col, sql: table.dialect.template(options.context), context: options.context || {} }))}`;
+        if(options.safe) {
+          if(!_.isNil(value) || _.get(options.joined, col.path)) {
+            col.joinedTo.forEach(path => {
+              _.set(options.joined, path, value);
+            });
+          }
         }
-        return operators.eq(value).clause(table.dialect, col, options.table, options.context || {});
-      }
-      return acc.concat(clause(value));
-    }, []).concat(record[or]?this.whereArray(record[or], { ...options, brackets: true }):[]);
+        const clause = value => {
+          if(_.isArray(value)) {
+            if(value.length > 1) {
+              return `(${value.map(value => clause(value)).join(' or ')})`;
+            }
+            return `${value.map(value => clause(value)).join(' or ')}`;
+          }
+          if(value instanceof Operator) {
+            return value.clause(table.dialect, col, options.table, options.context || {});
+          } else if(value instanceof Function) {
+            return `${col.SQL(false, options.context || {}, options.table)} = ` +
+              `${table.escape(value({ table: options.table, col, sql: table.dialect.template(options.context), context: options.context || {} }))}`;
+          }
+          return operators.eq(value).clause(table.dialect, col, options.table, options.context || {});
+        }
+        return acc.concat(clause(value));
+      }, []).concat(
+        record[and]?this.whereArray(record[and], { ...options, brackets: true }).join(' and '):[],
+        record[snippet]?this.whereArray(record[snippet], { ...options, brackets: true }).join(' or '):[]
+      );
+    }
+    return [table.escape(record)];
   }
 
   SQL(as, context = {})

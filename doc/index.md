@@ -69,5 +69,7 @@ dialects.default.escape(new Date); // '2020-04-16 16:58:17'
 dialects.default.escape(DateOnly(new Date)); // '2020-04-16'
 ```
 
-* [`or`](./or). A symbol used to insert `or` subclauses into awkward places in the `where` clause.
+* [`snippet`](./snippet). A symbol used to insert custom subclauses into `where` clauses.
+
+* [`and`](./snippet). Behaves similarly to `snippet`, but if passed an array separates the subclauses using `and` instead of `or`.
 

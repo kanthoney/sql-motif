@@ -5,7 +5,8 @@ const DateOnly = require('./src/dateonly');
 const Fn = require('./src/function');
 const Identifier = require('./src/identifier');
 const Table = require('./src/table');
-const or = require('./src/or');
+const snippet = require('./src/snippet');
+const and = require('./src/and');
 
 module.exports = defaults => {
   return {
@@ -24,7 +25,8 @@ module.exports = defaults => {
     operators: require('./src/operators'),
     Record: require('./src/record'),
     RecordSet: require('./src/recordset'),
-    or
+    snippet,
+    and
   };
 }
 module.exports.Table = Table;
@@ -38,5 +40,5 @@ module.exports.Operator = require('./src/operator');
 module.exports.operators = require('./src/operators');
 module.exports.Record = require('./src/record');
 module.exports.RecordSet = require('./src/recordset');
-module.exports.or = or;
-
+module.exports.snippet = snippet;
+module.exports.and = and;

@@ -10,7 +10,8 @@ const Record = require('./record');
 const _ = require('lodash');
 const Selector = require('./selector');
 const TypeExpander = require('./type-expander');
-const or = require('./or');
+const snippet = require('./snippet');
+const and = require('./and');
 
 class Table
 {
@@ -542,8 +543,23 @@ class Table
   whereArray(record, options = {})
   {
     options.table = options.table || this;
-    if(record[or]) {
-      return this.whereArray({ ...record, [or]: null }).concat(`(${this.whereArray(record[or], options).join(' or ')})`);
+    if(record[and]) {
+      let clauses = this.whereArray(record[and], { ...options, brackets: true });
+      if(clauses.length === 1) {
+        clauses = clauses[0];
+      } else if(clauses.length > 0) {
+        clauses = `(${clauses.join(' and ')})`;
+      }
+      return this.whereArray({ ...record, [and]: null }).concat(clauses);
+    }
+    if(record[snippet]) {
+      let clauses = this.whereArray(record[snippet], { ...options, brackets: true });
+      if(clauses.length === 1) {
+        clauses = clauses[0];
+      } else if(clauses.length > 0) {
+        clauses = `(${clauses.join(' or ')})`;
+      }
+      return this.whereArray({ ...record, [snippet]: null }).concat(clauses);
     }
     return this.columns.whereArray(record, options)
       .concat(this.joins.reduce((acc, join) => {

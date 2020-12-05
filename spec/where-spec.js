@@ -4,7 +4,9 @@ const tables = require('./tables')
 const joins = require('./joins');
 const op = require('../src/operators');
 const motif = require('../index');
-const or = require('../src/or');
+const snippet = require('../src/snippet');
+const and = require('../src/and');
+const Verbatim = require('../src/verbatim');
 
 describe('where tests', () => {
 
@@ -102,9 +104,22 @@ describe('where tests', () => {
       });
 
       it('it should create a where clause with a complex or subclause', () => {
-        expect(t.where({ company: 'ACME01', [or]: [ { order_id: 5 }, { delivery: { name: 'Alice', address: { street: 'Greenway st.' } } } ] })).toBe(
-          '"s1"."orders"."company" = \'ACME01\' and ("s1"."orders"."order_id" = 5 or ("s1"."orders"."delivery_name" = \'Alice\' and ' +
-            '"s1"."orders"."delivery_address_street" = \'Greenway st.\'))'
+        expect(t.where({ company: 'ACME01', [snippet]: [ { order_id: 5 }, { delivery: { name: 'Alice', address: { street: 'Greenway st.' } } } ] }))
+          .toBe(
+            '"s1"."orders"."company" = \'ACME01\' and ("s1"."orders"."order_id" = 5 or ("s1"."orders"."delivery_name" = \'Alice\' and ' +
+              '"s1"."orders"."delivery_address_street" = \'Greenway st.\'))'
+          );
+      });
+
+      it('should create a where clause with a functional and clause', () => {
+        expect(t.where({ company: 'ACME01', [and]: ({ table, sql }) => sql`ifnull(${table.column('order_id')}, 0) = 0` })).toBe(
+          '"s1"."orders"."company" = \'ACME01\' and ifnull("s1"."orders"."order_id", 0) = 0'
+        );
+      });
+
+      it('should create a where clause with an or clause with functional and verbatim components', () => {
+        expect(t.where({ company: 'ACME01', [and]: [({ table, sql }) => sql`ifnull(${table.column('order_id')}, 0) = 0`, Verbatim('now() < \'2020-12-05\'')] })).toBe(
+          '"s1"."orders"."company" = \'ACME01\' and (ifnull("s1"."orders"."order_id", 0) = 0 or now() < \'2020-12-05\')'
         );
       });
 
@@ -193,8 +208,33 @@ describe('where tests', () => {
         );
       });
 
-      describe('or tests', () => {
+      describe('and/or tests', () => {
         
+        it('should produce a where clause with an and subclause', () => {
+          expect(j.where({
+            company: 'ACME001',
+            sku: 'AFJ010',
+            description: 'Spirit level',
+            warehouse: {
+              name: 'Mercury',
+              [and]: {
+                description: 'a bit whiffy',
+                bins: [{
+                  bin: 'A14J',
+                  inventory: {
+                    qty: 5
+                  }
+                }, {
+                  bin: 'A52A'
+                }]
+              }
+            }
+          })).toBe(
+            '"stock"."company" = \'ACME001\' and "stock"."sku" = \'AFJ010\' and "stock"."description" = \'Spirit level\' and "w1"."name" = \'Mercury\' and ' +
+              '("w1"."description" = \'a bit whiffy\' and (("warehouse_bins"."bin" = \'A14J\' and "inventory"."qty" = 5) or "warehouse_bins"."bin" = \'A52A\'))'
+          );
+        });
+
         it('should produce a where clause with an or subclause', () => {
           expect(j.where({
             company: 'ACME001',
@@ -202,7 +242,7 @@ describe('where tests', () => {
             description: 'Spirit level',
             warehouse: {
               name: 'Mercury',
-              [or]: {
+              [snippet]: {
                 description: 'a bit whiffy',
                 bins: [{
                   bin: 'A14J',
