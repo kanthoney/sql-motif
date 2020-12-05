@@ -83,7 +83,7 @@ npm run test
 
 You can also run a few tests against actual databases using the following steps:
 
-* install one or more of
+* The following should be installed as dev dependencies
 
 ```
 npm install mysql
