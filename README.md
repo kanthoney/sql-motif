@@ -15,9 +15,9 @@ See the [doc](./doc/index.md) folder for documentation
 
 ## Example
 
-```
-// Specify list types to use (optional). You can create compound types such as addresses which will be expanded to a list of columns in the table.
+Specify list types to use (optional). You can create compound types such as addresses which will be expanded to a list of columns in the table.
 
+```
 const types = {
   id: { type: 'char(36)', default: () => uuid.v4() },
   addressLine: { type: 'varchar(40)', notNull: true, default: '' },
@@ -39,13 +39,17 @@ const types = {
   sku: 'char(25)',
   price: { type: 'decimal(10, 2)', notNull: true, validate: v => !Number.isNaN(parseFloat(v)) }
 };
+```
 
-// import the library, specifying defaults if required.
+import the library, specifying defaults if required.
 
+```
 const motif = require('sql-motif')({ types, dialect: 'mysql' });
+```
 
-// Set up table specifications
+Set up table specifications
 
+```
 const orders = new motif.Table({
   name: 'orders',
   columns: [
@@ -67,31 +71,42 @@ const order_lines = new motif.Table({
     { name: 'price', type: 'price' }
   ]
 });
+```
 
-// Create a join
+Create a join
 
+```
 const join = orders.join({
   table: order_lines,
   name: 'lines',
   on: 'order_id'
 });
+```
 
-// Search database for orders delivered to Terry Test from 2020-04-16.
-// SelectWhere is capitalized - sometimes keywords such as select or ignore get in the way of query building, so the lower case version of this function - selectWhere - omits the select.
+Search database for orders delivered to Terry Test from 2020-04-16.
+SelectWhere is capitalized - sometimes keywords such as select or ignore get in the way of query building, so the lower case version of this function - selectWhere -
+omits the select.
 
+```
 let result = await db.query(`${join.SelectWhere('*', { order_date: '2020-04-16', { delivery: { name: 'Terry Test' } } })} ${join.OrderBy(['order_id'])}`);
+```
 
-// Collate the SQL results and return as JSON. Delivery and invoice contact details will be collected into the
-// delivery and invoice properties, and order lines will be placed in the 'lines' property of each record.
+Collate the SQL results and return as JSON. Delivery and invoice contact details will be collected into the
+delivery and invoice properties, and order lines will be placed in the 'lines' property of each record.
 
+```
 JSON.stringify(join.collate(result));
+```
 
-// Get new set of records from somewhere
+Get new set of records from somewhere
 
+```
 let records = getRecords();
+```
 
-// Fill in missing details and validate
+Fill in missing details and validate
 
+```
 records = join.fill(records).validate();
 
 if(records.valid) {
