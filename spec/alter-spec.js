@@ -34,9 +34,26 @@ describe('alter tests', () => {
       );
     });
 
+    it('should drop all delivery columns', () => {
+      expect(table.DropColumn('delivery')).toBe(
+        'alter table "s1"."orders" drop column "delivery_name", drop column "delivery_address_company", drop column "delivery_address_street", ' +
+          'drop column "delivery_address_locality", drop column "delivery_address_city", drop column "delivery_address_region", ' +
+          'drop column "delivery_address_postalCode", drop column "delivery_address_country"'
+      );
+    });
+
     it('should add column invoice_name', () => {
       expect(table.AddColumn('invoice_name')).toBe(
         'alter table "s1"."orders" add column "billing_name" varchar(35) not null default \'\''
+      );
+    });
+
+    it('should add composite column invoice', () => {
+      expect(table.AddColumn('invoice')).toBe(
+        'alter table "s1"."orders" add column "billing_name" varchar(35) not null default \'\', add column "billing_address_company" varchar(35) not null default \'\', ' +
+          'add column "billing_address_street" varchar(35) not null default \'\', add column "billing_address_locality" varchar(35) not null default \'\', ' +
+          'add column "billing_address_city" varchar(35) not null default \'\', add column "billing_address_region" varchar(35) not null default \'\', ' +
+          'add column "billing_address_postalCode" varchar(15) not null default \'\', add column "billing_address_country" varchar(2) not null default \'GB\''
       );
     });
 

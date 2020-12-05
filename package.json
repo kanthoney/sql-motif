@@ -4,7 +4,8 @@
   "description": "sql query fragment builder",
   "main": "index.js",
   "scripts": {
-    "test": "npx jasmine"
+    "test": "npx jasmine",
+    "test-db": "npx jasmine --config=spec/support/db.json"
   },
   "keywords": [
     "sql",

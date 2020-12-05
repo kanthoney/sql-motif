@@ -73,3 +73,29 @@ dialects.default.escape(DateOnly(new Date)); // '2020-04-16'
 
 * [`and`](./snippet). Behaves similarly to `snippet`, but if passed an array separates the subclauses using `and` instead of `or`.
 
+## Testing
+
+You can run basic tests as follows:
+
+```
+npm run test
+```
+
+You can also run a few tests against actual databases using the following steps:
+
+* install one or more of
+
+```
+npm install mysql
+npm install pg
+npm install sqlite3
+```
+
+* Sqllite uses the `:memory:` database. For others, create a folder `config` in the base directory and create `mysql.json` or `pg.json` configuration files.
+
+* run
+
+```
+npm run test-db
+```
+

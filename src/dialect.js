@@ -193,12 +193,13 @@ class Dialect
 
   addColumn(table, name, options)
   {
-    const col = table.column(name);
+    let q = table.selectArray(name, { joins: [] }).map(col => `add column ${table.createColumn(col)}`).join(', ');
+    if(q) {
+      return q;
+    }
+    let col = table.column(name);
     if(col) {
-      let spec = table.createColumn(col);
-      if(spec) {
-        return `add column ${spec}`;
-      }
+      return `add column ${table.createColumn(col)}`;
     }
   }
 
@@ -212,12 +213,22 @@ class Dialect
   
   dropColumn(table, name, options = {})
   {
-    return `drop column ${this.escapeId(name)}`;
+    let q = table.selectArray(name, { joins: [] }).map(col => `drop column ${col.sql.name}`).join(', ');
+    if(q) {
+      return q;
+    }
+    let col = table.column(name);
+    if(col) {
+      return `drop column ${col.sql.name}`;
+    }
   }
 
   DropColumn(table, name, options)
   {
-    return `${this.alterTable(table, options)} ${this.dropColumn(table, name, options)}`;
+    const q = this.dropColumn(table, name, options);
+    if(q) {
+      return `${this.alterTable(table, options)} ${this.dropColumn(table, name, options)}`;
+    }
   }
 
   renameColumn(table, oldName, name, options)

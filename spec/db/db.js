@@ -1,6 +1,6 @@
 'use strict';
 
-const types = require('./types');
+const types = require('../types');
 const uuid = require('uuid');
 const moment = require('moment');
 
@@ -14,7 +14,7 @@ module.exports = (name, dialect, db) => {
     Identifier,
     Operator,
     operators
-  } = require('../index')({ dialect, types });
+  } = require('../../index')({ dialect, types });
 
   const tables = {};
   const joins = {};
