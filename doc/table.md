@@ -41,7 +41,7 @@ The constructor takes a configuration object with the following fields:
 
 * `joins`. An optional array of join specifications.
 
-* `context`. A user defined object or function to provide a `context` object for `default` or `validate` functions in the [column specifications](./columnspec.md). If a function,
+* `context`. A user defined object or function to provide a `context` object for `default` or `validate` functions in the [column specifications](./column-spec.md). If a function,
   it is called for each record in the [record set](./record-set.md) with an object of the form `{ record, context }`, where `record` is the current record and 
   `context` is the context passed to the `fill` or `validate` methods.
 
