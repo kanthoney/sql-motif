@@ -37,7 +37,7 @@ package is installed), `sqlite` and `postgres`
 
 * `Operator`. The `Operator` class for creating your own [operators](./operators.md).
 
-* `Fn`. A function for creating SQL functions. The first argument is the name of the SQL function and the rest are passed as arguments, e.g.
+* [`Fn`](./function). A function for creating SQL functions. The first argument is the name of the SQL function and the rest are passed as arguments, e.g.
 
 ```
 const { Fn, dialects } = require('sql-motif');
@@ -45,14 +45,14 @@ const { Fn, dialects } = require('sql-motif');
 dialects.default.escape(Fn('sqrt', 2)); // 'sqrt(2)'
 ```
 
-* `Verbatim`. Used to avoid escaping in queries, e.g.
+* [`Verbatim`](./verbatim). Used to avoid escaping in queries, e.g.
 
 ```
 const { Verbatim, dialects } = require('sql-motif');
 
 dialects.default.escape(verbatim('unescaped')); // unescaped
 ```
-* `Identifier`. Used to specify that the item to be escaped is an identifier, e.g.
+* [`Identifier`](./identifier). Used to specify that the item to be escaped is an identifier, e.g.
 
 ```
 const { Identifier } = require('sql-motif');

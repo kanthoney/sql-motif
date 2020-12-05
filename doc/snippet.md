@@ -3,7 +3,7 @@
 Suppose you want to insert a custom subclause into a `where` clause. Something like:
 
 ```
-`company` = 'ACME01' and ifnull(`order_date`, now()) < ifnull(`invoice_date`, now())
+`company` = 'ACME01' and ifnull("order_date", now()) < ifnull("invoice_date", now())
 ```
 
 You can insert such specially formatted snippets using the `snippet` symbol. When `sql-motif` finds this symbol as a key in a record, it inserts the corresponding
@@ -12,10 +12,10 @@ value directly into the `where` clause. For example, to produce the above query,
 ```
 const { snippet, Verbatim } = require('sql-motif');
 
-orders.where({ company: 'ACME01', [snippet]: Verbatim(ifnull(`order_date`, now()) < ifnull(`invoice_date`, now())) });
+orders.where({ company: 'ACME01', [snippet]: Verbatim(ifnull("order_date", now()) < ifnull("invoice_date", now())) });
 ```
 
-Here, we've used `Verbatim` to put hand-coded SQL directly in place. A more sophisticated technique is to use a function. This takes an object of the form
+Here, we've used [`Verbatim`](./verbatim) to put hand-coded SQL directly in place. A more sophisticated technique is to use a function. This takes an object of the form
 `{ table, record, sql, context }`, where `table` is the table, `record` is the record, `sql` is a template for escaping values and `context` is the user-defined
 object passed to the `where` method (via the `options` argument):
 
@@ -32,9 +32,9 @@ you pass an array to `where`. To use `and` instead, there is a similar `and` sym
 const { Verbatim, snippet, and } = require('sql-motif');
 
 orders.where({ company: 'ACME01', [and]: [ Verbatim('now() > \'2020-01-01\''), { order_date: '2020-12-05' } ] });
-// `company` = 'ACME01' and (now() > '2020-01-01' and `order_date` = '2020-12-05')
+// "company" = 'ACME01' and (now() > '2020-01-01' and "order_date" = '2020-12-05')
 
 orders.where({ company: 'ACME01', [snippet]: [ Verbatim('now() > \'2020-01-01\''), { order_date: '2020-12-05' } ] });
-// `company` = 'ACME01' and (now() > '2020-01-01' or `order_date` = '2020-12-05')
+// "company" = 'ACME01' and (now() > '2020-01-01' or "order_date" = '2020-12-05')
 ```
 
