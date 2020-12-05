@@ -12,17 +12,18 @@
     "query",
     "builder"
   ],
-  "author": "Kevin Anthoney",
+  "author": {
+    "name": "Kevin Anthoney",
+    "email": "kevin@kanthoney.co.uk"
+  },
   "license": "ISC",
   "dependencies": {
     "lodash": "^4.17.15",
     "moment": "^2.24.0"
   },
-  "optionalDependencies": {
-    "mysql": "^2.18.1",
-    "pg": "^8.0.3"
-  },
   "devDependencies": {
+    "mysql": "^2.18.1",
+    "pg": "^8.0.3",
     "jasmine": "^3.5.0",
     "sqlite3": "^4.1.1",
     "uuid": "^7.0.3"
