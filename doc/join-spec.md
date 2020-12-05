@@ -62,12 +62,10 @@ const stock_with_attributes = stock.join({
   table: stock_attributes,
   on: 'sku',
   reducer: (acc, record) => {
-    if(acc === undefined) {
-      acc = {};
-    }
     acc[record.get('key_id')] = record.get('value');
     return acc;
-  }
+  },
+  reduceInit: {}
 });
 
 const result = await db.query(stock_with_attributes.SelectWhere());
