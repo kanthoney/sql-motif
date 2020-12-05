@@ -286,12 +286,14 @@ This defaults to the schema specified in the schema table. If you need to specif
 ### Group, order and limit
 
 * `groupBy([fields])`. Creates a group by clause without the `group by` keywords. `fields` is an array of column names or aliases. If empty, defaults to the primary
-key of the main table.
+key of the main table. You can also pass a [`selector`](./selector) object.
 
 * `GroupBy([fields])`. Creates a group by clause including the `group by` keywords.
 
-* `orderBy([fields])`. Creates an order by clause excluding the `order by` keywords. `fields` is a list of fields in the form `<field_name> [<dir>]`, where `<dir>`
-  is either `asc` or `desc`, or can be omitted to use the default of `asc`.
+* `orderBy([fields])`. Creates an order by clause excluding the `order by` keywords. `fields` is an array of fields in the form `<field_name> [<dir>]`, where `<dir>`
+  is either `asc` or `desc`, or can be omitted to use the default of `asc`. You can also pass an object similar to a [`selector`](./selector.md), with the sort directions
+as the object values, e.g. `{ delivery: { name: 'desc' } }` will sort by the `delivery_name` field descending. Note that if the selector selects several fields then
+the order they appear in is undetermined - you would have to pass an array of selectors each for one field to do that.
 
 * `OrderBy([fields])`. Creates on order by clause including the `order by` keywords.
 

@@ -1036,7 +1036,7 @@ class Table
       fields = this.config.primaryKey;
     }
     return fields.reduce((acc, key) => {
-      return acc.concat(this.columns.fieldFromName(key) || this.column(key) || []);
+      return acc.concat(this.columns.fieldFromName(key) || this.column(key) || this.selectArray(key));
     }, []).map(col => col.sql.fullName).join(', ');
   }
 
@@ -1059,20 +1059,28 @@ class Table
     }
     return fields.reduce((acc, field) => {
       let dir = 'asc';
-      const m = /^(.+)\s+(asc|desc)$/i.exec(field);
-      if(m) {
-        field = m[1];
-        dir = m[2];
+      if(typeof field === 'string') {
+        const m = /^(.+)\s+(asc|desc)$/i.exec(field);
+        if(m) {
+          field = m[1];
+          dir = m[2];
+        }
+        let col = this.columns.fieldFromName(field);
+        if(col) {
+          return acc.concat({ col, dir });
+        }
+        col = this.column(field);
+        if(col) {
+          return acc.concat({ col, dir });
+        }
       }
-      let col = this.columns.fieldFromName(field);
-      if(col) {
-        return acc.concat({ col, dir });
-      }
-      col = this.column(field);
-      if(col) {
-        return acc.concat({ col, dir });
-      }
-      return acc;
+      return acc.concat(this.selectArray(field).reduce((acc, col) => {
+        if(_.get(field, col.fullPath) === 'desc') {
+          return acc.concat({ col, dir: 'desc' });
+        } else {
+          return acc.concat({ col, dir: 'asc' });
+        }
+      }, []));
     }, []).map(({ col, dir }) => `${col.sql.fullName} ${dir}`).join(', ');
   }
 
