@@ -29,7 +29,7 @@ The constructor takes a configuration object with the following fields:
 
 * `schema`. An optional string for the database schema the table belongs to.
 
-* `columns`. An array of [column specifications](./columns-spec.md).
+* `columns`. An array of [column specifications](./column-spec.md).
 
 * `primaryKey`. An array of column names that constitute the primary key. As an alternative, you can use the `primaryKey` flag in each of the columns if those are in the right order.
 
