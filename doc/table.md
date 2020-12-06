@@ -157,6 +157,10 @@ or any joined tables that are not read only is missing. Does not currently check
 * `WhereKeySafe(record, [options])` (*experimental*). Produces a `where` clause for the key fields of the record, including the `where` keyword. Throws error if part of
  primary key is missing.
 
+* `having`. Produces a `having` clause for the record, without the `having` ketword
+
+* `Having`. Produces a `having` clause for the record including the `having` keyword
+
 ### Insert methods
 
 * `insertColumns()` Produces a list of columns for an insert clause for the top level table not including joins.
@@ -169,6 +173,10 @@ If `record` is an array produces a comma separated list of records.
 * `Insert(record)`. Produces a full insert statement for the record(s), including the `insert into` phrase.
 
 * `InsertIgnore(record)`. Produces a full insert statement for `insert ignore`. The default dialect produces `insert ignore into...`.
+
+* `replace(record)`. Keywordless version of the `Replace` function. Does exactly the same as `insert`, included for completeness.
+
+* `Replace(record)`. Convenience function for `mysql` users - creates a `replace` statement including the `replace` keyword.
 
 ### Update methods
 

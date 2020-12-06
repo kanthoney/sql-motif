@@ -540,6 +540,16 @@ class Table
     return this.dialect.insertIgnore(this, record);
   }
 
+  replace(record)
+  {
+    return this.insert(record);
+  }
+
+  Replace(record)
+  {
+    return `replace into ${this.replace(record)}`;
+  }
+
   whereArray(record, options = {})
   {
     options.table = options.table || this;
@@ -627,6 +637,16 @@ class Table
   WhereSafe(record, options)
   {
     return `where ${this.whereSafe(record, options)}`;
+  }
+
+  having(record, options)
+  {
+    return this.where(record, options);
+  }
+
+  Having(record, options)
+  {
+    return `having ${this.where(record, options)}`;
   }
 
   update(record, old, options)
