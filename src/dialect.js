@@ -421,6 +421,17 @@ class Dialect
     }
   }
 
+  limit(...args)
+  {
+    if(args[1] === undefined) {
+      if(args[0] === undefined) {
+        return '';
+      }
+      return this.escape(parseInt(args[0]));
+    }
+    return `${this.escape(parseInt(args[0]))}, ${this.escape(parseInt(args[1]))}`;
+  }
+
   template(context = {})
   {
     return (strings, ...args) => {

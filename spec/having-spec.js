@@ -7,6 +7,7 @@ const motif = require('../index');
 const snippet = require('../src/snippet');
 const and = require('../src/and');
 const Verbatim = require('../src/verbatim');
+const operators = require('../src/operators');
 
 describe('having tests', () => {
 
@@ -128,6 +129,10 @@ describe('having tests', () => {
         expect(t.Having({ order_id: 123, sku: 'ADF1001' })).toBe(
           'having "ol1"."order_id" = 123 and "ol1"."sku" = \'ADF1001\''
         );
+      });
+
+      it('should select order lines with tax price greater then 4', () => {
+        expect(t.having({ tax_price: operators.gt(4) })).toBe('"tax_price" > 4');
       });
 
     });

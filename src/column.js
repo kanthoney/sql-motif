@@ -19,7 +19,8 @@ class Column
       name,
       fullName,
       fullNameAs: fullName + (this.fullAlias !== this.name?` as ${this.table.dialect.escapeId(this.fullAlias)}`:''),
-      as: this.fullAlias?this.table.dialect.escapeId(this.fullAlias):fullName
+      as: this.fullAlias?this.table.dialect.escapeId(this.fullAlias):fullName,
+      fullAlias: this.table.dialect.escapeId(this.fullAlias)
     }
     this.joinedTo = (this.subTableJoinedTo || []).map(path => this.table.config.path.concat(path));
   }
@@ -37,10 +38,11 @@ class Column
     if(_.isString(this.calc)) {
       return as?`${this.calc} as ${this.table.dialect.escapeId(this.fullAlias)}`:this.calc;
     } else if(_.isFunction(this.calc)) {
-      return as?`${this.calc({ table: this.table, sql: this.table.dialect.template(context), context })} as ${this.table.dialect.escapeId(this.fullAlias)}`:
+      return context.having?this.sql.fullName:
+        as?`${this.calc({ table: this.table, sql: this.table.dialect.template(context), context })} as ${this.sql.fullAlias}`:
       this.calc({ table: table || this.table, sql: this.table.dialect.template(context), context });
     }
-    return as?this.sql.fullNameAs:this.sql.fullName;
+    return context.having?this.sql.fullName:as?this.sql.fullNameAs:this.sql.fullName;
   }
 
 }

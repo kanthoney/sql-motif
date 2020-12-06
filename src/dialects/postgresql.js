@@ -212,5 +212,16 @@ module.exports = class PostgreSQLDialect extends Dialect
   {
     return 'drop constraint ' + (options.ignore?'if exists ':'') + this.escapeId(name);
   }
+
+  limit(...args)
+  {
+    if(args[1] === undefined) {
+      if(args[0] === undefined) {
+        return '';
+      }
+      return this.escape(parseInt(args[0]));
+    }
+    return `${this.escape(parseInt(args[1]))} offset ${this.escape(parseInt(args[0]))}`;
+  }
   
 }

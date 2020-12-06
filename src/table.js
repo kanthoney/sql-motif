@@ -38,7 +38,7 @@ class Table
     const typeExpander = new TypeExpander(this.config.types);
     this.columns = config.columns instanceof ColumnSet?config.columns.reTable(this):new ColumnSet({
       table: this,
-      columns: config.columns.map(col => typeExpander.expand({ ...col, table: this })),
+      columns: (config.columns || []).map(col => typeExpander.expand({ ...col, table: this })),
       path: []
     });
     const keyColumns = this.columns.fields(col => col.table === this && col.primaryKey);
@@ -641,12 +641,12 @@ class Table
 
   having(record, options)
   {
-    return this.where(record, options);
+    return this.where(record, { having: true, ...options });
   }
 
   Having(record, options)
   {
-    return `having ${this.where(record, options)}`;
+    return `having ${this.having(record, options)}`;
   }
 
   update(record, old, options)
@@ -1115,13 +1115,7 @@ class Table
 
   limit(start, count)
   {
-    if(count === undefined) {
-      if(start === undefined) {
-        return '';
-      }
-      return this.escape(parseInt(start));
-    }
-    return `${this.escape(parseInt(start))}, ${this.escape(parseInt(count))}`;
+    return this.dialect.limit(start, count);
   }
 
   Limit(start, count)

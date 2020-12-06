@@ -26,7 +26,9 @@ module.exports.order_lines = new Table({
     { name: 'sku', type: 'sku' },
     { name: 'description', type: 'text' },
     { name: 'qty', type: 'qty', notNull: true },
-    { name: 'price', type: 'price', notNull: true }
+    { name: 'price', type: 'price', notNull: true },
+    { name: 'tax_price', hidden: true, calc: ({ table, sql }) => sql`${table.column('price')} * 0.2` },
+    { name: 'line_count', hidden: true, calc: 'count(*)' }
   ],
   indexes: [
     {

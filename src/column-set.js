@@ -711,12 +711,12 @@ class ColumnSet
             return `${value.map(value => clause(value)).join(' or ')}`;
           }
           if(value instanceof Operator) {
-            return value.clause(table.dialect, col, options.table, options.context || {});
+            return value.clause(table.dialect, col, options.table, { ...options.context, having: options.having });
           } else if(value instanceof Function) {
-            return `${col.SQL(false, options.context || {}, options.table)} = ` +
+            return `${col.SQL(false, { ...options.context, having: options.having }, options.table)} = ` +
               `${table.escape(value({ table: options.table, col, sql: table.dialect.template(options.context), context: options.context || {} }))}`;
           }
-          return operators.eq(value).clause(table.dialect, col, options.table, options.context || {});
+          return operators.eq(value).clause(table.dialect, col, options.table, { ...options.context, having: options.having });
         }
         return acc.concat(clause(value));
       }, []).concat(

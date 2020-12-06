@@ -7,6 +7,7 @@ const motif = require('../index');
 const snippet = require('../src/snippet');
 const and = require('../src/and');
 const Verbatim = require('../src/verbatim');
+const operators = require('../src/operators');
 
 describe('where tests', () => {
 
@@ -133,6 +134,10 @@ describe('where tests', () => {
         expect(t.where({ order_id: 123, sku: 'ADF1001' })).toBe(
           '"ol1"."order_id" = 123 and "ol1"."sku" = \'ADF1001\''
         );
+      });
+
+      it('should select order lines with tax price greater then 4', () => {
+        expect(t.where({ tax_price: operators.gt(4) })).toBe('"ol1"."price" * 0.2 > 4');
       });
 
     });
