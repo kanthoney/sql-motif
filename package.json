@@ -10,7 +10,8 @@
   "keywords": [
     "sql",
     "query",
-    "builder"
+    "builder",
+    "orm"
   ],
   "author": {
     "name": "Kevin Anthoney",
