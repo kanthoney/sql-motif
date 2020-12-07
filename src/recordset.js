@@ -353,9 +353,8 @@ class RecordSet
     return next(acc);
   }
 
-  Insert(options)
+  Insert(options = {})
   {
-    options = options || {};
     return [].concat(this.table.Insert(this, options) || []).concat(this.reduce((acc, record) => {
       return record.reduceSubtables((acc, recordSet) => {
         if(recordSet.options.readOnly) {
@@ -373,9 +372,8 @@ class RecordSet
     }, []));
   }
 
-  insert(options)
+  insert(options = {})
   {
-    options = options || {};
     return [].concat(this.table.insert(this, options) || []).concat(this.reduce((acc, record) => {
       return record.reduceSubtables((acc, recordSet) => {
         if(recordSet.options.readOnly) {
@@ -389,6 +387,44 @@ class RecordSet
           }
         }
         return acc.concat(recordSet.insert({ ...options, selector }));
+      }, acc);
+    }, []));
+  }
+
+  Replace(options = {})
+  {
+    return [].concat(this.table.Replace(this, options) || []).concat(this.reduce((acc, record) => {
+      return record.reduceSubtables((acc, recordSet) => {
+        if(recordSet.options.readOnly) {
+          return acc;
+        }
+        let selector;
+        if(options.selector && recordSet.options.join) {
+          selector = (new Selector(options.selector)).passesJoin(recordSet.options.join);
+          if(!selector) {
+            return acc;
+          }
+        }
+        return acc.concat(recordSet.Replace({ ...options, selector }));
+      }, acc);
+    }, []));
+  }
+
+  replace(options = {})
+  {
+    return [].concat(this.table.replace(this, options) || []).concat(this.reduce((acc, record) => {
+      return record.reduceSubtables((acc, recordSet) => {
+        if(recordSet.options.readOnly) {
+          return acc;
+        }
+        let selector;
+        if(options.selector && recordSet.options.join) {
+          selector = (new Selector(options.selector)).passesJoin(recordSet.options.join);
+          if(!selector) {
+            return acc;
+          }
+        }
+        return acc.concat(recordSet.replace({ ...options, selector }));
       }, acc);
     }, []));
   }

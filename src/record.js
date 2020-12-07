@@ -397,6 +397,16 @@ class Record
     return this.table.insert(this, options);
   }
 
+  Replace(options)
+  {
+    return this.table.Replace(this, options);
+  }
+
+  replace(options)
+  {
+    return this.table.replace(this, options);
+  }
+
   insertColumns(options)
   {
     return this.table.insertColumns(this, options);

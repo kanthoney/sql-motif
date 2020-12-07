@@ -547,7 +547,11 @@ class Table
 
   Replace(record)
   {
-    return `replace into ${this.replace(record)}`;
+    const replace = this.replace(record);
+    if(replace) {
+      return `replace into ${replace}`;
+    }
+    return '';
   }
 
   whereArray(record, options = {})
