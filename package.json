@@ -17,6 +17,7 @@
     "name": "Kevin Anthoney",
     "email": "kevin@kanthoney.co.uk"
   },
+  "repository": "github:kanthoney/sql-motif",
   "license": "ISC",
   "dependencies": {
     "lodash": "^4.17.15",
