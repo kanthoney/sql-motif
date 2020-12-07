@@ -32,6 +32,12 @@ will ensure the record's `company` field is set to that account. If specified, `
 * `insert(options)`. Produces an `insert` statement for this record, excluding the `insert` keyword. `options` is a set of [options](./table-options.md) to pass to the table's `insert` method.
 Does not include subrecords.
 
+* `Replace(options)`. Convenience function for `mysql`. Produces a `replace` statement for this record. `options` is a set of [options](./table-options.md) to
+pass to the table's `replace` method. Does not include subrecords.
+
+* `replace(options)`. Convenience function for `mysql`. Produces a `replace` statement for this record, excluding the `replace` keyword. `options` is a
+set of [options](./table-options.md) to pass to the table's `replace` method. Does not include subrecords.
+
 * `insertValues(options)`. Produces a `values` clause, excluding the `values` keyword, for this record.
 
 * `insertColumns(options)`. Produces a list of columns for inclusion in an `insert` statement.
@@ -60,9 +66,9 @@ Does not include subrecords.
 
 * `deleteWhere(options)`. Produces a `delete` statement for this record using the fields supplied in the record, excluding the `delete` keyword.
 
-* `reduceSubtables(f, acc)`. Performs a reduction of each of the subtables connected to this record. `f` is called with the parameters `(acc, join, recordSet)` where `acc` is the result
-of the last call, `join` is the [join specification](./join-spec.md) associated with this subtable and `recordSet` is the [`RecordSet`](./record-set) containing the subrecords.
-Returns the result of the last call.
+* `reduceSubtables(f, acc)`. Performs a reduction of each of the subtables connected to this record. `f` is called with the parameters `(acc, join, recordSet)` where
+`acc` is the result of the last call, `join` is the [join specification](./join-spec.md) associated with this subtable and `recordSet` is the [`RecordSet`](./record-set)
+containing the subrecords. Returns the result of the last call.
 
 * `reduceSubtablesAsync(f, acc)`. Preforms a reduction as above where `f` is a function that can return a promise.
 

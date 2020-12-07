@@ -604,7 +604,10 @@ class RecordSet
             return acc;
           }
         }
-        return acc.concat(recordSet.Delete({ ...options, selector }));
+        if(selector) {
+          options.selector = selector;
+        }
+        return acc.concat(recordSet.Delete(options));
       }, []));
     }, []);
   };
@@ -624,7 +627,10 @@ class RecordSet
             return acc;
           }
         }
-        return acc.concat(recordSet.delete({ ...options, selector }));
+        if(selector) {
+          options.selector = selector;
+        }
+        return acc.concat(recordSet.delete(options));
       }, []));
     }, []);
   };

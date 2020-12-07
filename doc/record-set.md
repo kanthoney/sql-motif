@@ -64,6 +64,13 @@ parameter of the `reduce` call for the first record. Returns the result of the f
 * `insert(options)`. Creates a set of `insert` statements to insert the records, excluding the `insert` keyword, including (by default) any subrecords where the corresponding
 [join](./join-spec.md) is not set as read-only. `options` is a set of [options](./table-options.md) to pass to the table's `insert` methods.
 
+* `Replace(options)`. Convenience function for `mysql`. Creates a set of `replace` statements to replace the records, including (by default) any subrecords where the
+corresponding [join](./join-spec.md) is not set as read-only. `options` is a set of [options](./table-options.md) to pass to the table's `replace` methods.
+
+* `replace(options)`. Convenience function for `mysql`. Creates a set of `replace` statements to replace the records, excluding the `replace` keyword, including
+(by default) any subrecords where the corresponding [join](./join-spec.md) is not set as read-only. `options` is a set of [options](./table-options.md) to pass to
+the table's `replace` methods.
+
 * `InsertIgnore(options)`. Creates a set of `insert ignore` statements.
 
 * `Update(options)`. Creates a set of `update` statements to update any non-read-only records and subrecords.
