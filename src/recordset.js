@@ -681,6 +681,12 @@ class RecordSet
     if(path.lenth === 0) {
       return this;
     }
+    if(this.options.single && this.records.length === 1) {
+      const record = this.records[0];
+      if(record instanceof Record) {
+        return record.get(path);
+      }
+    }
     const record = _.get(this.records, path[0]);
     if(record instanceof Record) {
       return record.get(path.slice(1));

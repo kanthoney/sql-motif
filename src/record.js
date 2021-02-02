@@ -554,7 +554,7 @@ class Record
             _.set(acc, join.path || join.name, recordSet.reduce(join.reducer, reduceInit));
           } else if(join.single) {
             if(recordSet.length === 1) {
-              _.set(acc, join.path || join.name, recordSet.get('[0]').toObject(options));
+              _.set(acc, join.path || join.name, recordSet.records[0].toObject(options));
             } else if(recordSet.length > 0) {
               _.set(acc, join.path || join.name, recordSet.toObject(options));
             }
