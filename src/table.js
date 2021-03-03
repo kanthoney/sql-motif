@@ -287,7 +287,7 @@ class Table
       const ons = table => {
         return this.onFields.reduce((acc, on) => {
           if(on.left.table === table && (!options.joins || options.joins === '*' || options.joins.includes(on.join.name))) {
-            acc.push(`${on.left.sql.fullName} = ${on.right.sql.fullName}`);
+            acc.push(`${on.left.SQL()} = ${on.right.SQL()}`);
           }
           return acc;
         }, []).concat(table.joins.reduce((acc, join) => {
