@@ -1061,7 +1061,7 @@ class Table
     }
     return fields.reduce((acc, key) => {
       return acc.concat(this.columns.fieldFromName(key) || this.column(key) || this.selectArray(key));
-    }, []).map(col => col.sql.fullName).join(', ');
+    }, []).map(col => col.SQL()).join(', ');
   }
 
   GroupBy(fields)
