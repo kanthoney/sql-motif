@@ -1105,7 +1105,7 @@ class Table
           return acc.concat({ col, dir: 'asc' });
         }
       }, []));
-    }, []).map(({ col, dir }) => `${col.sql.fullName} ${dir}`).join(', ');
+    }, []).map(({ col, dir }) => `${col.SQL()} ${dir}`).join(', ');
   }
 
   OrderBy(fields)
