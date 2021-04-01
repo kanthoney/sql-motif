@@ -33,14 +33,14 @@ class Column
     return selector.passes(this);
   }
 
-  SQL(as, context = {}, table)
+  SQL(as, context = {})
   {
     if(_.isString(this.calc)) {
       return as?`${this.calc} as ${this.table.dialect.escapeId(this.fullAlias)}`:this.calc;
     } else if(_.isFunction(this.calc)) {
       return context.having?this.sql.fullName:
         as?`${this.calc({ table: this.table, sql: this.table.dialect.template(context), context })} as ${this.sql.fullAlias}`:
-      this.calc({ table: table || this.table, sql: this.table.dialect.template(context), context });
+      this.calc({ table: this.table, sql: this.table.dialect.template(context), context });
     }
     return context.having?this.sql.fullName:as?this.sql.fullNameAs:this.sql.fullName;
   }

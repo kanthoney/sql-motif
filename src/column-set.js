@@ -708,7 +708,7 @@ class ColumnSet
           if(value instanceof Operator) {
             return value.clause(table.dialect, col, options.table, { ...options.context, having: options.having });
           } else if(value instanceof Function) {
-            return `${col.SQL(false, { ...options.context, having: options.having }, options.table)} = ` +
+            return `${col.SQL(false, { ...options.context, having: options.having })} = ` +
               `${table.escape(value({ table: options.table, col, sql: table.dialect.template(options.context), context: options.context || {} }))}`;
           }
           return operators.eq(value).clause(table.dialect, col, options.table, { ...options.context, having: options.having });
@@ -724,7 +724,7 @@ class ColumnSet
 
   SQL(as, context = {})
   {
-    return this.config.columns.map(col => col.SQL(as, context, this.config.table)).join(', ');
+    return this.config.columns.map(col => col.SQL(as, context)).join(', ');
   }
 
   toJSON()
