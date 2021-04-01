@@ -612,10 +612,10 @@ class ColumnSet
   {
     const table = this.config.table;
     if(record instanceof RecordSet) {
-      return this.setArray(record.toObject({ includeJoined: true, noReducer: true }), options, table);
+      return this.setArray(record.toObject({ includeJoined: true, noReducer: true }), options);
     }
     if(record instanceof Record) {
-      return this.setArray(record.toObject({ includeJoined: true, noReducer: true }), options, table);
+      return this.setArray(record.toObject({ includeJoined: true, noReducer: true }), options);
     }
     options = options || {};
     if(options.joins && options.joins !== '*') {
@@ -626,16 +626,16 @@ class ColumnSet
     const dialect = table.dialect;
     return this.values(record, options).reduce((acc, { col, value }) => {
       if(col instanceof ColumnSet) {
-        return acc.concat(col.setArray(_.set({}, col.config.path, value), options, table));
+        return acc.concat(col.setArray(_.set({}, col.config.path, value), options));
       }
       if(col.calc) {
         return acc;
       }
       const fullName = dialect.options.singleTableUpdate?col.sql.name:col.sql.fullName;
       if(value instanceof Operator) {
-        return acc.concat(`${value.clause(dialect, col, table, options.context || {})}`);
+        return acc.concat(`${value.clause(dialect, col, options.table || table, options.context || {})}`);
       } else if(value instanceof Function) {
-        return acc.concat(`${fullName} = ${dialect.escape(value({ table, col, sql: dialect.template(options.context), context: options.context || {} }))}`);
+        return acc.concat(`${fullName} = ${dialect.escape(value({ table: options.table || table, col, sql: dialect.template(options.context), context: options.context || {} }))}`);
       }
       return acc.concat(`${fullName} = ${dialect.escape(value, options.context)}`);
     }, []);
@@ -650,14 +650,9 @@ class ColumnSet
     if(record instanceof Record) {
       return this.whereArray(record.toObject({ includeJoined: true, noReducer: true }), options);
     }
-    options = _.defaults(options || {}, { default: '', joined: {} });
-    if(options.joins && options.joins !== '*') {
-      if(!_.isArray(options.joins)) {
-        options.joins = [options.joins];
-      }
-    }
+    options = _.defaults(options || {}, { default: '', joined: {}, table });
     if(record instanceof Function) {
-      return [record({ table, record, context: options.context, sql: table.dialect.template(options.context) })];
+      return [record({ table: options.table, record, context: options.context, sql: table.dialect.template(options.context) })];
     }
     if(record instanceof Array) {
       if(record.length === 0) {

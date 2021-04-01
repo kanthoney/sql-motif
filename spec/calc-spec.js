@@ -73,7 +73,7 @@ describe("calc column tests", () => {
   });
 
   it('should set col2a with calculated value', () => {
-    expect(join.Set({ calc2: { col2a: ({ table, col, context, sql }) => sql`${table.column('col2b')} + ifnull(${col}, ${context.col2a})` } },
+    expect(join.Set({ calc2: { col2a: ({ table, col, context, sql }) => sql`${table.column('calc2_col2b')} + ifnull(${col}, ${context.col2a})` } },
                     { context: { col2a: 10 } }))
     .toBe(
       'set "c2"."col2a" = "c2"."col2b" + ifnull("c2"."col2a", 10)'
