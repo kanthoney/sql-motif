@@ -98,4 +98,39 @@ describe('join tests', () => {
 
   });
 
+  describe('function on tests', () => {
+    
+    const { Table } = require('../index');
+
+    const t = new Table({
+      name: 'a',
+      columns: [
+        { name: 'a1', type: 'char(10)', primaryKey: true },
+        { name: 'a2', type: 'char(10)' },
+        { name: 'a3', type: 'char(10)' }
+      ]
+    }).join({
+      name: 'b',
+      table: new Table({
+        name: 'b',
+        columns: [
+          { name: 'b1', type: 'char(10)', primaryKey: true },
+          { name: 'b2', type: 'char(10)' },
+          { name: 'b3', type: 'char(10)' }
+        ]
+      }),
+      on: [
+        'b1:a1',
+        [ ({ table, sql }) => sql`${table.column('b1')}`, ({ table, context, sql }) => sql`coalesce(${table.column('a2')}, ${table.column('a3')}, ${context})` ]
+      ]
+    });
+
+    it('should produce on clause', () => {
+      expect(t.from({ context: 'context' })).toBe(
+        '"a" inner join "b" on "b"."b1" = "a"."a1" and "b"."b1" = coalesce("a"."a2", "a"."a3", \'context\')'
+      );
+    });
+
+  });
+
 });

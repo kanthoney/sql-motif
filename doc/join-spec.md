@@ -17,7 +17,15 @@ The join specification object can take the following parameters:
   `'join_column'`. The column names are created by concatenating the column path together with underscores, e.g. the `street` field in the `address` object of the
   `warehouse` subtable will have a column name of `warehouse_address_street`.
 
-  * An array of arrays of the form `['join_column', 'main_column']`, or simply `['join_column']` if the two columns have the same name.
+  * An array of arrays of the form `[left, right]`, where `left` is the name of the subtable column and `right` is the name on the main table column it's joined to.
+    If the columns have the same name then the array `[left]` can be used. `left` and `right` can also be functions, which are passed an object `{ table, context, sql }`.
+    `table` will be either the subtable (for `left`) or the main table (for `right`), `context` will be the context passed in the `options` object passed to `table.from()`,
+    and `sql` is a template tag function for escaping sql. For example:
+
+```
+on: [ [ 'a', ({ table, sql }) => sql`ifnull(${table.column('b1')}, ${table.column('b2')})` ] ]
+// "subtable"."a" = ifnull("table"."b1", "table"."b2")
+```
 
   * An object. This is used to specify values (instead of other fields) in the on clause, e.g. { sku: 'AF657' } will include the condition `"sku" = 'AF657'` in the on clause.
 

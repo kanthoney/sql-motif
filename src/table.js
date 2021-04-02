@@ -114,11 +114,13 @@ class Table
           left = on[0];
           right = on[1];
         }
-        const leftCol = join.table.column(left);
-        const rightCol = this.column(right);
+        const leftCol = left instanceof Function?left:join.table.column(left);
+        const rightCol = right instanceof Function?right:this.column(right);
         if(leftCol && rightCol) {
-          leftCol.joinCol = rightCol;
-          rightCol.joinedTo.push(leftCol.table.config.path.concat(leftCol.subTableColPath || leftCol.path));
+          if(!(leftCol instanceof Function) && !(rightCol instanceof Function)) {
+            leftCol.joinCol = rightCol;
+            rightCol.joinedTo.push(leftCol.table.config.path.concat(leftCol.subTableColPath || leftCol.path));
+          }
           acc.on = acc.on.concat({ left: leftCol, right: rightCol, join });
         } else {
           console.warn(
@@ -286,8 +288,10 @@ class Table
       }
       const ons = table => {
         return this.onFields.reduce((acc, on) => {
-          if(on.left.table === table && (!options.joins || options.joins === '*' || options.joins.includes(on.join.name))) {
-            acc.push(`${on.left.SQL()} = ${on.right.SQL()}`);
+          if(on.left instanceof Function || (on.left.table === table && (!options.joins || options.joins === '*' || options.joins.includes(on.join.name)))) {
+            acc.push(`${on.left instanceof Function?on.left({ table, context: options.context, sql: table.dialect.template(options.context) }):on.left.SQL()}` +
+                     ' = ' +
+                     `${on.right instanceof Function?on.right({ table: this, context: options.context, sql: table.dialect.template(options.context) }):on.right.SQL()}`);
           }
           return acc;
         }, []).concat(table.joins.reduce((acc, join) => {
