@@ -497,7 +497,7 @@ class Table
     return this.columns.fields().reduce((acc, col) => col.calc?acc:acc.concat(col.sql.name), []).join(', ');
   }
 
-  insertValues(record)
+  insertValues(record, options = {})
   {
     if(record instanceof RecordSet) {
       return this.insertValues(record.toObject({ noSubrecords: true, mapJoined: true, includeJoined: true, noReducer: true }));
@@ -516,42 +516,45 @@ class Table
       if(value === undefined) {
         return acc.concat(this.dialect.options.insertDefault || 'default');
       }
+      if(value instanceof Function) {
+        return acc.concat(value({ sql: this.dialect.template(options.context), table: this, col }));
+      }
       return acc.concat(this.dialect.escape(value));
     }, []);
     return `(${values.join(', ')})`;
   }
 
-  insert(record)
+  insert(record, options)
   {
-    const values = this.insertValues(record);
+    const values = this.insertValues(record, options);
     if(values) {
       return `${this.fullName()} (${this.insertColumns()}) values ${values}`;
     }
     return '';
   }
 
-  Insert(record)
+  Insert(record, options)
   {
-    const insert = this.insert(record);
+    const insert = this.insert(record, options);
     if(insert) {
       return `insert into ${insert}`;
     }
     return '';
   }
 
-  InsertIgnore(record)
+  InsertIgnore(record, options)
   {
-    return this.dialect.insertIgnore(this, record);
+    return this.dialect.insertIgnore(this, record, options);
   }
 
-  replace(record)
+  replace(record, options)
   {
-    return this.insert(record);
+    return this.insert(record, options);
   }
 
-  Replace(record)
+  Replace(record, options)
   {
-    const replace = this.replace(record);
+    const replace = this.replace(record, options);
     if(replace) {
       return `replace into ${replace}`;
     }

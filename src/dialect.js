@@ -153,9 +153,9 @@ class Dialect
     return `${s}`.replace(this.like_escape_re, c => `\\${c}`);
   }
 
-  insertIgnore(table, record)
+  insertIgnore(table, record, options)
   {
-    const insert = table.insert(record);
+    const insert = table.insert(record, options);
     if(insert) {
       return `insert ignore into ${insert}`;
     }

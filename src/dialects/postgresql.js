@@ -20,9 +20,9 @@ module.exports = class PostgreSQLDialect extends Dialect
     return `${this.options.quotes[0]}\\x${s.toString('hex')}${this.options.quotes[1]}`;
   }
 
-  insertIgnore(table, record)
+  insertIgnore(table, record, options)
   {
-    const insert = table.insert(record);
+    const insert = table.insert(record, options);
     if(insert) {
       return `insert into ${insert} on conflict do nothing`;
     }

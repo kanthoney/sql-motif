@@ -14,9 +14,9 @@ module.exports = class SQLiteDialect extends Dialect
     });
   }
 
-  insertIgnore(table, record)
+  insertIgnore(table, record, options)
   {
-    const insert = table.insert(record);
+    const insert = table.insert(record, options);
     if(insert) {
       return `insert or ignore into ${insert}`;
     }
