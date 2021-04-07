@@ -517,7 +517,7 @@ class Table
         return acc.concat(this.dialect.options.insertDefault || 'default');
       }
       if(value instanceof Function) {
-        return acc.concat(value({ sql: this.dialect.template(options.context), table: this, col }));
+        return acc.concat(value({ sql: this.dialect.template(options.context), table: this, col, context: options.context }));
       }
       return acc.concat(this.dialect.escape(value));
     }, []);

@@ -206,6 +206,48 @@ describe("validate tests", () => {
         );
       });
 
+      it("should validate correct record with function field", () => {
+        const record = {
+          company: 'ACE010',
+          order_id: '23283525-8093-11ea-943b-06980bf53d08',
+          customer: 'NEF202',
+          order_date: ({ sql }) => sql`curdate()`,
+          delivery: {
+            name: 'Terry Test',
+            address: {
+              company: '',
+              street: '18 Mansfield Drive',
+              locality: '',
+              city: 'Huddersfield',
+              region: '',
+              postalCode: 'HD18 9TT',
+              country: 'GB'
+            }
+          },
+          invoice: {
+            name: 'Belinda Berger',
+            address: {
+              company: '',
+              street: '40 Netfield Close',
+              locality: '',
+              city: 'Manchester',
+              region: '',
+              postalCode: 'M1 4JF',
+              country: 'GB'
+            }
+          }
+        };
+        const validated = t.validate(record);
+        expect(validated.valid).toBe(true);
+        expect(validated.records[0].data.order_date instanceof Function).toBe(true);
+        expect(JSON.stringify(validated.validationResult())).toBe(
+          '{"results":[{"record":{"company":"ACE010","order_id":"23283525-8093-11ea-943b-06980bf53d08","customer":"NEF202",' +
+          '"delivery":{"name":"Terry Test","address":{"company":"","street":"18 Mansfield Drive","locality":"","city":"Huddersfield","region":"","postalCode":"HD18 9TT","country":"GB"}},' +
+          '"invoice":{"name":"Belinda Berger","address":{"company":"","street":"40 Netfield Close","locality":"","city":"Manchester","region":"","postalCode":"M1 4JF","country":"GB"}}},' +
+          '"valid":true,"errors":{}}],"valid":true}'
+        );
+      });
+
     });
 
     describe("Order lines tests", () => {
