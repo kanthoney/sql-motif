@@ -288,10 +288,11 @@ class Table
       }
       const ons = table => {
         return this.onFields.reduce((acc, on) => {
+          const sql = table.dialect.template(options.context);
           if(on.left instanceof Function || (on.left.table === table && (!options.joins || options.joins === '*' || options.joins.includes(on.join.name)))) {
-            acc.push(`${on.left instanceof Function?on.left({ table, context: options.context, sql: table.dialect.template(options.context) }):on.left.SQL()}` +
+            acc.push(`${on.left instanceof Function?on.left({ table, context: options.context, sql }):on.left.SQL(false, options.context)}` +
                      ' = ' +
-                     `${on.right instanceof Function?on.right({ table: this, context: options.context, sql: table.dialect.template(options.context) }):on.right.SQL()}`);
+                     `${on.right instanceof Function?on.right({ table: this, context: options.context, sql }):on.right.SQL(false, options.context)}`);
           }
           return acc;
         }, []).concat(table.joins.reduce((acc, join) => {
