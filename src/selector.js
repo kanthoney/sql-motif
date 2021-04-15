@@ -56,6 +56,7 @@ module.exports = class Selector
         return _.get(this.selector, col.partName || col.name);
       }
     } else if(col instanceof ColumnSet) {
+      const path = col.config.partName || col.config.name || col.config.path[0];
       if(!col.config.hidden && (this.selector === undefined || this.selector === '*' || this.selector === true)) {
         return new Selector('*');
       } else if(_.isArray(this.selector)) {
@@ -79,18 +80,18 @@ module.exports = class Selector
           }
           if(!col.config.hidden && m[1] === '!') {
             const cols = m[2].split(',').map(col => col.trim());
-            if(!cols.includes(col.config.partName || col.config.name)) {
+            if(!cols.includes(path)) {
               return new Selector('*');
             } else {
               return false;
             }
           }
         }
-        if(this.selector === (col.config.partName || col.config.name)) {
+        if(this.selector === (path)) {
           return '*';
         }
       } else if(_.isPlainObject(this.selector)) {
-        const newSelector = _.get(this.selector, col.config.partName || col.config.name);
+        const newSelector = _.get(this.selector, path);
         if(newSelector !== undefined) {
           return new Selector(newSelector);
         }

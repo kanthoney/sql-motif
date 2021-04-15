@@ -2,6 +2,7 @@
 
 const tables = require('./tables');
 const joins = require('./joins');
+const { Table } = require('../index');
 
 describe('subquery tests', () => {
 
@@ -893,6 +894,35 @@ describe('subquery tests', () => {
           '"city":"Bristol","region":"","postalCode":"BS1 8QT","country":"GB"}},"lines":[{"order_id":"8de141ae-9093-4772-8160-3ff9c176d3c7","line_no":1,"sku":"EDF902","qty":1}],' +
           '"inventory":[{"sku":"EDF902","bin":"ST506","qty":48}]}]'
       );
+    });
+
+  });
+
+  describe('subquery object selector tests', () => {
+    const t = new Table({
+      name: 'a',
+      columns: [
+        { name: 'a1', type: 'int', primaryKey: true },
+        { name: 'a1_total', hidden: true, tags: 'totals', calc: ({ sql, table }) => sql`sum(${table.column('a1')})` }
+      ]
+    }).join({
+      name: 'b',
+      table: new Table({
+        name: 'b',
+        columns: [
+          { name: 'b1', type: 'int', primaryKey: true },
+          { name: 'b2', type: 'int' },
+          { name: 'b2_total', hidden: true, tags: 'totals', calc: ({ sql, table }) => sql`sum(${table.column('b2')})` }
+        ]
+      }),
+      on: 'b1:a1'
+    }).subquery({
+      selector: ['*', '.totals'],
+      query: ({ table, selector }) => `${table.SelectWhere(selector)} ${table.GroupBy(['a1', 'b_b1'])}`
+    });
+
+    it('should select b2_total field', () => {
+      expect(t.select({ b: '.totals' })).toBe('"a_subquery"."b_b2_total"');
     });
 
   });

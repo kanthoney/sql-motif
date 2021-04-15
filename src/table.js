@@ -1061,7 +1061,7 @@ class Table
     return this.dialect.DropReference(this, name, options);
   }
 
-  groupBy(fields)
+  groupBy(fields, options = {})
   {
     fields = [].concat(_.isNil(fields)?[]:fields);
     if(fields.length === 0) {
@@ -1069,19 +1069,19 @@ class Table
     }
     return fields.reduce((acc, key) => {
       return acc.concat(this.columns.fieldFromName(key) || this.column(key) || this.selectArray(key));
-    }, []).map(col => col.SQL()).join(', ');
+    }, []).map(col => col.SQL(false, options.context)).join(', ');
   }
 
-  GroupBy(fields)
+  GroupBy(fields, options = {})
   {
-    const clause = this.groupBy(fields);
+    const clause = this.groupBy(fields, options);
     if(clause) {
       return `group by ${clause}`;
     }
     return '';
   }
 
-  orderBy(fields)
+  orderBy(fields, options = {})
   {
     if(!fields) {
       fields = this.config.primaryKey;
@@ -1113,12 +1113,12 @@ class Table
           return acc.concat({ col, dir: 'asc' });
         }
       }, []));
-    }, []).map(({ col, dir }) => `${col.SQL()} ${dir}`).join(', ');
+    }, []).map(({ col, dir }) => `${col.SQL(false, options.context)} ${dir}`).join(', ');
   }
 
-  OrderBy(fields)
+  OrderBy(fields, options = {})
   {
-    const clause = this.orderBy(fields);
+    const clause = this.orderBy(fields, options);
     if(clause) {
       return `order by ${clause}`;
     }

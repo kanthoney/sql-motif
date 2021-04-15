@@ -92,7 +92,7 @@ class ColumnSet
         return acc;
       }, []));
     }
-    return new ColumnSet({
+     return new ColumnSet({
       ...this.config,
       table,
       columns,
