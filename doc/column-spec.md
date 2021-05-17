@@ -12,19 +12,20 @@
 
  * `primaryKey`. `true` if the column is part of the primary key. Can be omitted if the `primaryKey` field is included in the table specification
 
- * `default`. The default value if none is given. If a plain value, this is included in `create` statements. Can also be a function for use with the `table.fill(context)` method. The
- function is called with an object `{ col, context }`, where `col` is the column and `context` is the user-defined object passed to the table's `fill` method.
+ * `default`. The default value if none is given. If a plain value, this is included in `create` statements. Can also be a function for use with the
+`table.fill(context)` method. The  function is called with an object `{ col, context, sql }`, where `col` is the column, `context` is the user-defined object
+passed to the table's `fill` method and `sql` is a template tag for escaping.
 
- * `context`. An object or function to create or modify the context passed to the `validate` or `fill` table methods. If an object will be used as defaults in case the context is not
- supplied. If a function will be called with an object `{ value, context }` where `value` is the current value and `context` is the current context. The function should return
- the new context.
+ * `context`. An object or function to create or modify the context passed to the `validate` or `fill` table methods. If an object will be used as defaults in case
+the context is not supplied. If a function will be called with an object `{ value, context }` where `value` is the current value and `context` is the current context.
+The function should return the new context.
 
  * `tags`. A space separated list of tags. Used by the table's select methods to select groups of fields without having to specify all of them.
 
  * `validate`. This is used to validate the field when `table.validate(context)` is called. It can be a string, a regular expression, a function or an array of validators.
- The function takes the an object `{ value, col, context }`, where `value` is the value to be validated, `col` is the column and `context` is the user-defined object passed to the
- table's `validate` function. If the value is valid the function must return `true`. If the validation fails, the function can return `false` to use the default error message,
- or throw an error or return a string to provide a custom error.
+ The function takes the an object `{ value, col, context }`, where `value` is the value to be validated, `col` is the column and `context` is the user-defined object
+passed to the table's `validate` function. If the value is valid the function must return `true`. If the validation fails, the function can return `false` to use the
+default error message, or throw an error or return a string to provide a custom error.
 
  * `validationError`. A default error message to return if the validation fails. If not specified will use a standard error message.
 

@@ -158,4 +158,22 @@ describe('fill tests', () => {
 
   });
 
+  describe('default functions', () => {
+
+    const { Table } = require('../index');
+
+    const t = new Table({
+      name: 'a',
+      columns: [
+        { name: 'a', type: 'datetime', default: ({ sql }) => sql`now()` }
+      ]
+    });
+
+    it('should insert a record', done => {
+      expect(t.fill({}).Insert()).toEqual(['insert into "a" ("a") values (now())']);
+      t.fillAsync({}).then(records => expect(records.Insert()).toEqual(['insert into "a" ("a") values (now())'])).catch(fail).finally(done);
+    });
+
+  });
+
 });

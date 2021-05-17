@@ -427,7 +427,7 @@ class ColumnSet
           context = { ...col.context, ...context };
         }
         if(_.isFunction(col.default)) {
-          value = col.default({ context, col });
+          value = col.default({ context, col, sql: this.config.table.dialect.template(context) });
         } else {
           value = col.default;
         }
@@ -468,7 +468,7 @@ class ColumnSet
           return Promise.resolve(context).then(context => {
             if(_.isFunction(col.default)) {
               return new Promise(resolve => {
-                resolve(col.default({ context, col }));
+                resolve(col.default({ context, col, sql: this.config.table.dialect.template(context) }));
               }).then(value => {
                 record.set(col, value);
               });
