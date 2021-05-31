@@ -1897,6 +1897,73 @@ describe("record set tests", () => {
         );
       });
 
+      it('should update first 5 records', () => {
+        const r = j.toRecordSet({
+          company: 'ANA191',
+          description: ''
+        });
+        expect(r.Update({ orderBy: 'sku', limit: 5, safe: false })).toEqual(
+          ['update "stock" set "stock"."description" = \'\' where "stock"."company" = \'ANA191\' order by "stock"."sku" asc limit 5']
+        );
+      });
+
+      it('should update records 10-15', () => {
+        const r = j.toRecordSet({
+          company: 'ANA191',
+          description: ''
+        });
+        expect(r.Update({ orderBy: 'sku', limit: 5, start: 10, safe: false })).toEqual(
+          ['update "stock" set "stock"."description" = \'\' where "stock"."company" = \'ANA191\' order by "stock"."sku" asc limit 10, 5']
+        );
+      });
+
+      it('should update first 5 records', () => {
+        const r = j.toRecordSet({
+          company: 'ANA191'
+        });
+        expect(r.UpdateWhere({ company: 'ANA85' }, { orderBy: 'sku', limit: 5, safe: false })).toEqual([
+          `update "stock" set "stock"."company" = 'ANA191' where "stock"."company" = 'ANA85' order by "stock"."sku" asc limit 5`
+        ]);
+      });
+
+      it('should update first 5 records', () => {
+        const r = j.toRecordSet({
+          company: 'ANA191'
+        });
+        expect(r.UpdateKey({ company: 'ANA85' }, { orderBy: 'sku', limit: 5, safe: false })).toEqual([
+          `update "stock" set "stock"."company" = 'ANA191' where "stock"."company" = 'ANA85' order by "stock"."sku" asc limit 5`
+        ]);
+      });
+
+      it('should delete first 5 records', () => {
+        const r = j.toRecordSet({
+          company: 'ANA191',
+        });
+        expect(r.Delete({ orderBy: 'sku', limit: 5, safe: false })).toEqual([
+          `delete "stock" from "stock" where "stock"."company" = 'ANA191' order by "stock"."sku" asc limit 5`
+        ]);
+      });
+
+      it('should delete records 10-15', () => {
+        const r = j.toRecordSet({
+          company: 'ANA191',
+          description: ''
+        });
+        expect(r.Delete({ orderBy: 'sku', limit: 5, start: 10, safe: false })).toEqual([
+          `delete "stock" from "stock" where "stock"."company" = 'ANA191' order by "stock"."sku" asc limit 10, 5`
+        ]);
+      });
+
+      it('should delete records 10-15', () => {
+        const r = j.toRecordSet({
+          company: 'ANA191',
+          description: ''
+        });
+        expect(r.DeleteWhere({ orderBy: 'sku', limit: 5, start: 10, safe: false })).toEqual([
+          `delete "stock" from "stock" where "stock"."company" = 'ANA191' and "stock"."description" = '' order by "stock"."sku" asc limit 10, 5`
+        ]);
+      });
+
       it('should create insert statements', () => {
         const r = j.toRecordSet(data);
         expect(JSON.stringify(r.Insert())).toBe(

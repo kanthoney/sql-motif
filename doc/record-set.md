@@ -73,7 +73,7 @@ the table's `replace` methods.
 
 * `InsertIgnore(options)`. Creates a set of `insert ignore` statements.
 
-* `Update(options)`. Creates a set of `update` statements to update any non-read-only records and subrecords.
+* `Update(options)`. Creates a set of `update` statements to update any non-read-only records and subrecords. `options` is a set of [table options](./table-options.md).
 
 * `update(options)`. Creates a set of `update` statements, excluding the `update` keyword, to update any non-read-only records and subrecords.
 

@@ -419,7 +419,7 @@ class Table
     if(where) {
       return `${this.select(selector, options)} ${this.From(options)} ${this.Where(where, options)}`;
     }
-    return `${this.select(selector, options)} ${this.From(options)}`;
+    return this.addOptions(`${this.select(selector, options)} ${this.From(options)}`, options);
   }
 
   SelectWhere(selector, where, options)
@@ -430,9 +430,9 @@ class Table
   selectWhereKey(selector, where, options = {})
   {
     if(where) {
-      return `${this.select(selector, options)} ${this.From(options)} ${this.WhereKey(where, options)}`;
+      return this.addOptions(`${this.select(selector, options)} ${this.From(options)} ${this.WhereKey(where, options)}`, options);
     }
-    return `${this.select(selector, options)} ${this.From(options)}`;
+    return this.addOptions(`${this.select(selector, options)} ${this.From(options)}`, options);
   }
 
   SelectWhereKey(selector, where, options)
@@ -443,9 +443,9 @@ class Table
   selectWhereMainKey(selector, where, options = {})
   {
     if(where) {
-      return `${this.select(selector, options)} ${this.From(options)} ${this.WhereKey(where, { ...options, joins: [] })}`;
+      return this.addOptions(`${this.select(selector, options)} ${this.From(options)} ${this.WhereKey(where, { ...options, joins: [] })}`, options);
     }
-    return `${this.select(selector, options)} ${this.From(options)}`;
+    return this.addOptions(`${this.select(selector, options)} ${this.From(options)}`, options);
   }
 
   SelectWhereMainKey(selector, where, options)
@@ -628,7 +628,7 @@ class Table
 
   WhereKey(record, options)
   {
-    return `where ${this.whereKey(record, options)}`;
+    return `where ${this.whereKey(record, { default: '1 = 1', ...options })}`;
   }
 
   whereKeySafe(record, options)
@@ -669,14 +669,16 @@ class Table
     }
     if(old) {
       const setClause = this.Set(record, { ...options, safe: false });
-      if(setClause) {
-        return `${this.from(options)} ${setClause} ${this.WhereKey(old, options)}`;
+      if(!setClause) {
+        return '';
       }
-      return '';
-    }
-    const setClause = this.SetNonKey(record, { ...options, safe: false });
-    if(setClause) {
-      return `${this.from(options)} ${setClause} ${this.WhereKey(record, options)}`;
+      return this.addOptions(`${this.from(options)} ${setClause} ${this.WhereKey(old, options)}`, options);
+    } else {
+      const setClause = this.SetNonKey(record, { ...options, safe: false });
+      if(!setClause) {
+        return '';
+      }
+      return this.addOptions(`${this.from(options)} ${setClause} ${this.WhereKey(record, options)}`, options);
     }
     return '';
   }
@@ -692,11 +694,12 @@ class Table
     if(this.dialect.options.singleTableUpdate) {
       options.joins = [];
     }
+    let q;
     const setClause = this.Set(record, options);
-    if(setClause) {
-      return `${this.from(options)} ${setClause} ${this.Where(where, options)}`;
+    if(!setClause) {
+      return '';
     }
-    return '';
+    return this.addOptions(`${this.from(options)} ${setClause} ${this.Where(where, options)}`, options);
   }
 
   UpdateWhere(record, where, options)
@@ -732,7 +735,7 @@ class Table
       return `${this.From(options)} ${this.Where(record, options)}`;
     }
     const tables = this.tables({ ...options, writeable: true }).map(table => table.as()).join(', ');
-    return `${tables} ${this.From(options)} ${this.Where(record, options)}`;
+    return this.addOptions(`${tables} ${this.From(options)} ${this.Where(record, options)}`, options);
   }
 
   Delete(record, options)
@@ -747,7 +750,7 @@ class Table
       return `${this.From(options)} ${this.Where(record, options)}`;
     }
     const tables = this.tables({ ...options, writeable: true }).map(table => table.as()).join(', ');
-    return `${tables} ${this.From(options)} ${this.Where(record, options)}`;
+    return this.addOptions(`${tables} ${this.From(options)} ${this.Where(record, options)}`, options);
   }
 
   DeleteWhere(record, options)
@@ -763,6 +766,24 @@ class Table
   DeleteSafe(record, options)
   {
     return `delete ${this.deleteSafe(record, options)}`;
+  }
+
+  addOptions(q, options)
+  {
+    if(options.groupBy) {
+      q = `${q} ${this.GroupBy(options.groupBy)}`;
+    }
+    if(options.orderBy) {
+      q = `${q} ${this.OrderBy(options.orderBy)}`;
+    }
+    if(options.limit) {
+      if(options.start) {
+        q = `${q} ${this.Limit(options.start, options.limit)}`;
+      } else {
+        q = `${q} ${this.Limit(options.limit)}`;
+      }
+    }
+    return q;
   }
 
   columnDataType(col)

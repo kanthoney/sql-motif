@@ -308,4 +308,30 @@ describe('delete tests', () => {
 
   });
 
+  describe('order and limit tests', () => {
+
+    const { Table } = require('../index');
+
+    const t = new Table({
+      name: 'a',
+      columns: [
+        { name: 'a', type: 'int', primaryKey: true },
+        { name: 'b', type: 'char(20)' }
+      ]
+    });
+
+    it('should delete last 5 records', () => {
+      expect(t.Delete({ b: '' }, { orderBy: 'a desc', limit: 5 })).toBe(
+        `delete "a" from "a" where 1 = 1 order by "a"."a" desc limit 5`
+      );
+    });
+
+    it('should delete records 10-15', () => {
+      expect(t.DeleteWhere({ b: '' }, { orderBy: 'a', limit: 5, start: 10 })).toBe(
+        `delete "a" from "a" where "a"."b" = '' order by "a"."a" asc limit 10, 5`
+      );
+    });
+
+  });
+
 });

@@ -14,4 +14,11 @@ joined tables is missing. Marked as experimental as it does not currently detect
 
 * `context`. A user supplied object passed to functions such as those specified in `calc` [columns](column-spec.md), `where` clauses and subqueries.
 
- 
+* `orderBy`. For `select`, `update` and `delete` queries, add an `order by` clause.
+
+* `limit`. For `select`, `update` and `delete` queries, add a `limit` clause
+
+* `start`. If `limit` is specified, use this to specify a start record.
+
+* `groupBy`. For `select` queries, add a `group by` clause.
+
