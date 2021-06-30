@@ -493,9 +493,9 @@ class Table
     return '';
   }
 
-  insertColumns()
+  insertColumns(options = {})
   {
-    return this.columns.fields().reduce((acc, col) => col.calc?acc:acc.concat(col.sql.name), []).join(', ');
+    return this.columns.fields(options.selector).reduce((acc, col) => col.calc?acc:acc.concat(col.sql.name), []).join(', ');
   }
 
   insertValues(record, options = {})
@@ -509,7 +509,7 @@ class Table
     if(_.isArray(record)) {
       return record.map(record => this.insertValues(record)).join(', ');
     }
-    const values = this.columns.fields().reduce((acc, col) => {
+    const values = this.columns.fields(options.selector).reduce((acc, col) => {
       if(col.calc) {
         return acc;
       }
@@ -529,7 +529,7 @@ class Table
   {
     const values = this.insertValues(record, options);
     if(values) {
-      return `${this.fullName()} (${this.insertColumns()}) values ${values}`;
+      return `${this.fullName()} (${this.insertColumns(options)}) values ${values}`;
     }
     return '';
   }
