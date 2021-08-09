@@ -110,6 +110,20 @@ describe('select tests', () => {
 
     });
 
+    describe('inventory tests', () => {
+      
+      const t = tables.inventory;
+
+      it("should select fields with tag 'number'", () => {
+        expect(t.select('.number')).toBe('"inventory"."qty", "inventory"."cost"');
+      });
+
+      it("should select fields without tag 'number'", () => {
+        expect(t.select('!.number')).toBe('"inventory"."company", "inventory"."sku", "inventory"."warehouse_name", "inventory"."bin", "inventory"."time"');
+      });
+
+    });
+
   });
 
   describe('join tests', () => {
@@ -137,6 +151,17 @@ describe('select tests', () => {
           '"ol1"."company" as "lines_company", "ol1"."order_id" as "lines_order_id", "ol1"."line_no" as "lines_line_no", ' +
           '"ol1"."sku" as "lines_sku", "ol1"."description" as "lines_description", "ol1"."qty" as "lines_qty", "ol1"."price" as "lines_price"'
         );
+      });
+
+      it('should create a list of fields not in order_lines', () => {
+        expect(j.select('!@order_lines')).toBe(
+          '"s1"."orders"."company", "s1"."orders"."order_id", "s1"."orders"."order_date", "s1"."orders"."customer", "s1"."orders"."delivery_name", ' +
+            '"s1"."orders"."delivery_address_company", "s1"."orders"."delivery_address_street", "s1"."orders"."delivery_address_locality", ' +
+            '"s1"."orders"."delivery_address_city", "s1"."orders"."delivery_address_region", "s1"."orders"."delivery_address_postalCode", ' +
+            '"s1"."orders"."delivery_address_country", "s1"."orders"."billing_name" as "invoice_name", "s1"."orders"."billing_address_company" as "invoice_address_company", ' +
+            '"s1"."orders"."billing_address_street" as "invoice_address_street", "s1"."orders"."billing_address_locality" as "invoice_address_locality", ' +
+            '"s1"."orders"."billing_address_city" as "invoice_address_city", "s1"."orders"."billing_address_region" as "invoice_address_region", ' +
+            '"s1"."orders"."billing_address_postalCode" as "invoice_address_postalCode", "s1"."orders"."billing_address_country" as "invoice_address_country"');
       });
 
       it('should create a list of address fields and order_line fields', () => {

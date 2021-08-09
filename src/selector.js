@@ -33,13 +33,21 @@ module.exports = class Selector
         if(this.selector === (col.partName || col.name)) {
           return true;
         }
-        let m = /^([\.@!])(.*)/.exec(this.selector);
+        let m = /^(![\.@]|[\.@!])(.*)/.exec(this.selector);
         if(m) {
           if(m[1] === '@' && (m[2] === col.table.config.alias || m[2] === col.table.config.name) && !col.hidden) {
             return true;
           }
+          if(m[1] === '!@' && m[2] !== col.table.config.alias && m[2] !== col.table.config.name && !col.hidden) {
+            return true;
+          }
           if(m[1] === '.') {
             if(col.tags && col.tags.split(/\s+/g).includes(m[2])) {
+              return true;
+            }
+          }
+          if(m[1] === '!.' && !col.hidden) {
+            if(!col.tags || !col.tags.split(/\s+/g).includes(m[2])) {
               return true;
             }
           }
@@ -62,7 +70,7 @@ module.exports = class Selector
       } else if(_.isArray(this.selector)) {
         return this.selector.map(s => s.passes(col));
       } else if(_.isString(this.selector)) {
-        const m = /^([\.@!])(.+)/.exec(this.selector);
+        const m = /^(![\.@]|[\.@!])(.+)/.exec(this.selector);
         if(m) {
           if(!col.config.hidden && m[1] === '@') {
             if(col.config.table.config.alias === m[2] || col.config.table.config.name === m[2]) {
@@ -71,9 +79,23 @@ module.exports = class Selector
               return this;
             }
           }
+          if(!col.config.hidden && m[1] === '!@') {
+            if(col.config.table.config.alias === m[2] || col.config.table.config.name === m[2]) {
+              return new Selector(false);
+            } else {
+              return this;
+            }
+          }
           if(m[1] === '.') {
             if(col.config.tags && col.config.tags.split(/\s+/g).includes(m[2])) {
               return new Selector('*');
+            } else {
+              return this;
+            }
+          }
+          if(m[1] === '!.') {
+            if(col.config.tags && col.config.tags.split(/\s+/g).includes(m[2])) {
+              return new Selector(false);
             } else {
               return this;
             }
@@ -110,6 +132,9 @@ module.exports = class Selector
           if(s.selector === `@${join.alias}` || s.selector === `@${join.name}`) {
             return new Selector('*');
           }
+          if(s.selector === `!@${join.alias}` || s.selector === `!@${join.name}`) {
+            return acc;
+          }
           const newSelector = s.passesJoin(join);
           if(newSelector) {
             return acc.concat(newSelector.selector);
@@ -131,19 +156,26 @@ module.exports = class Selector
       if(this.selector === '*') {
         return new Selector(true);
       }
-      let m = /^([@!])(.*)/.exec(this.selector);
+      let m = /^(!@|[@!])(.*)/.exec(this.selector);
       if(m) {
         if(m[1] === '@') {
-          if(m[2] === join.table.alias || m[2] === join.table.name) {
+          if(m[2] === join.table.config.alias || m[2] === join.table.config.name) {
             return new Selector(true);
           } else {
             return this;
           }
         }
+        if(m[1] === '!@') {
+          const joins = m[2].split(',').map(join => join.trim());
+          if(!joins.includes(join.table.config.alias) && !joins.includes(join.table.config.name)) {
+            return this;
+          }
+          return false;
+        }
         if(m[1] === '!') {
           const joins = m[2].split(',').map(join => join.trim());
-          if(!joins.includes(join.name)) {
-            return new Selector(true);
+          if(!joins.includes(join.name) && !joins.includes(join.alias)) {
+            return this;
           }
           return false;
         }

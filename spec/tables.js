@@ -81,8 +81,8 @@ module.exports.inventory = new Table({
     { name: 'warehouse_name', type: 'addressLine', notNull: true },
     { name: 'bin', type: 'bin', notNull: true },
     { name: 'time', type: 'datetime', notNull: true },
-    { name: 'qty', type: 'int', notNull: true },
-    { name: 'cost', type: 'price', notNull: true }
+    { name: 'qty', type: 'int', notNull: true, tags: 'number' },
+    { name: 'cost', type: 'price', notNull: true, tags: 'number' }
   ],
   primaryKey: ['company', 'sku', 'warehouse_name', 'time', 'bin'],
   indexes: [

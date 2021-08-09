@@ -112,15 +112,36 @@ describe('where tests', () => {
           );
       });
 
+      it('it should create a where clause with a complex or subclause', () => {
+        expect(t.where({ company: 'ACME01', delivery: { [snippet]: [ { name: 'Alice' },  { address: { street: 'Greenway st.' } } ] } }))
+          .toBe(
+            '"s1"."orders"."company" = \'ACME01\' and ("s1"."orders"."delivery_name" = \'Alice\' or "s1"."orders"."delivery_address_street" = \'Greenway st.\')'
+          );
+      });
+
       it('should create a where clause with a functional and clause', () => {
-        expect(t.where({ company: 'ACME01', [and]: ({ table, sql }) => sql`ifnull(${table.column('order_id')}, 0) = 0` })).toBe(
-          '"s1"."orders"."company" = \'ACME01\' and ifnull("s1"."orders"."order_id", 0) = 0'
+        expect(t.where({ company: 'ACME01', [and]: [ ({ table, sql }) => sql`ifnull(${table.column('order_id')}, 0) = 0`,
+                                                     ({ table, sql }) => sql`ifnull(${table.column('order_date')}, now()) > '2020'` ] })).toBe(
+          '"s1"."orders"."company" = \'ACME01\' and (ifnull("s1"."orders"."order_id", 0) = 0 and ifnull("s1"."orders"."order_date", now()) > \'2020\')'
         );
       });
 
+      it('it should create a where clause with a complex and subclause', () => {
+        expect(t.where({ company: 'ACME01', delivery: { [and]: [ { name: 'Alice' },  { address: { street: 'Greenway st.' } } ] } }))
+          .toBe(
+            '"s1"."orders"."company" = \'ACME01\' and ("s1"."orders"."delivery_name" = \'Alice\' and "s1"."orders"."delivery_address_street" = \'Greenway st.\')'
+          );
+      });
+
       it('should create a where clause with an or clause with functional and verbatim components', () => {
-        expect(t.where({ company: 'ACME01', [and]: [({ table, sql }) => sql`ifnull(${table.column('order_id')}, 0) = 0`, Verbatim('now() < \'2020-12-05\'')] })).toBe(
+        expect(t.where({ company: 'ACME01', [snippet]: [({ table, sql }) => sql`ifnull(${table.column('order_id')}, 0) = 0`, Verbatim('now() < \'2020-12-05\'')] })).toBe(
           '"s1"."orders"."company" = \'ACME01\' and (ifnull("s1"."orders"."order_id", 0) = 0 or now() < \'2020-12-05\')'
+        );
+      });
+
+      it('should create a where clause with an and clause with functional and verbatim components', () => {
+        expect(t.where({ company: 'ACME01', [and]: [({ table, sql }) => sql`ifnull(${table.column('order_id')}, 0) = 0`, Verbatim('now() < \'2020-12-05\'')] })).toBe(
+          '"s1"."orders"."company" = \'ACME01\' and (ifnull("s1"."orders"."order_id", 0) = 0 and now() < \'2020-12-05\')'
         );
       });
 

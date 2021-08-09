@@ -662,23 +662,25 @@ class ColumnSet
         return options.default;
       }
       const clauses = record.reduce((acc, record) => {
-        const w = table.whereArray(record, options);
+        const w = table.whereArray(record, { ...options, op: null });
         if(w.length > 1) {
           return acc.concat(`(${w.join(' and ')})`);
         }
         return acc.concat(w);
-      }, [])
+      }, []);
       if(clauses.length === 0) {
         return [];
       }
       if(clauses.length === 1) {
         return clauses;
       }
+      let op = ` ${options.op || 'or'} `;
       if(options.brackets) {
-        return [`(${clauses.join(' or ')})`];
+        return [`(${clauses.join(op)})`];
       }
-      return [clauses.join(' or ')];
+      return [clauses.join(op)];
     }
+    delete options.op;
     if(_.isPlainObject(record)) {
       return this.values(record, options).reduce((acc, { col, value }) => {
         if(col instanceof ColumnSet) {
@@ -688,8 +690,8 @@ class ColumnSet
           if(value && (value[and] || value[snippet])) {
             return acc.concat(
               col.whereArray({ ...value, [and]: null, [snippet]: null }, { ...options, brackets: true }),
-              value[and]?col.whereArray([].concat(value[and]).map(value => _.set({}, col.config.path, value)), { ...options, brackets: true }).join(' and '):[],
-              value[snippet]?col.whereArray([].concat(value[snippet]).map(value => _.set({}, col.config.path, value)), { ...options, brackets: true }).join(' or '):[]
+              value[and]?col.whereArray([].concat(value[and]).map(value => _.set({}, col.config.path, value)), { ...options, brackets: true, op: 'and' }):[],
+              value[snippet]?col.whereArray([].concat(value[snippet]).map(value => _.set({}, col.config.path, value)), { ...options, brackets: true }):[]
             );
           }
           return acc.concat(col.whereArray(_.set({}, col.config.path, value), options));
@@ -718,8 +720,8 @@ class ColumnSet
         }
         return acc.concat(clause(value));
       }, []).concat(
-        record[and]?this.whereArray(record[and], { ...options, brackets: true }).join(' and '):[],
-        record[snippet]?this.whereArray(record[snippet], { ...options, brackets: true }).join(' or '):[]
+        record[and]?this.whereArray(record[and], { ...options, brackets: true, op: 'and' }):[],
+        record[snippet]?this.whereArray(record[snippet], { ...options, brackets: true }):[]
       );
     }
     return [table.escape(record)];

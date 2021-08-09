@@ -29,16 +29,16 @@ class InOperator extends Operator
     }
   }
 
-  clause(dialect, rhs, context = {})
+  clause(dialect, lhs, context = {})
   {
     let value;
     if(this.value instanceof Function) {
-      value = this.value({ col: rhs, sql: dialect.template(context), context });
+      value = this.value({ col: lhs, sql: dialect.template(context), context });
     } else {
       value = this.value;
     }
-    if(rhs) {
-      return `${dialect.escape(rhs)} ${this.name} (${this.value.map(value => dialect.escape(value)).join(', ')})`;
+    if(lhs) {
+      return `${dialect.escape(lhs)} ${this.name} (${this.value.map(value => dialect.escape(value)).join(', ')})`;
     }
     return `${this.name} (${this.value.map(value => dialect.escape(value)).join(', ')})`;
   }
@@ -51,16 +51,16 @@ class BetweenOperator extends Operator
     super(name, [value1, value2])
   }
 
-  clause(dialect, rhs, context = {})
+  clause(dialect, lhs, context = {})
   {
     let value;
     if(this.value instanceof Function) {
-      value = this.value({ col: rhs, sql: dialect.template(context), context });
+      value = this.value({ col: lhs, sql: dialect.template(context), context });
     } else {
       value = this.value;
     }
-    if(rhs) {
-      return `${dialect.escape(rhs)} ${this.name} ${dialect.escape(this.value[0])} and ${dialect.escape(this.value[1])}`;
+    if(lhs) {
+      return `${dialect.escape(lhs)} ${this.name} ${dialect.escape(this.value[0])} and ${dialect.escape(this.value[1])}`;
     }
     return `${this.name} ${dialect.escape(this.value[0])} and ${dialect.escape(this.value[1])}`;
   }

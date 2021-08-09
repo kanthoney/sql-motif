@@ -114,8 +114,14 @@ describe('having tests', () => {
       });
 
       it('should create a having clause with an or clause with functional and verbatim components', () => {
-        expect(t.Having({ company: 'ACME01', [and]: [({ table, sql }) => sql`ifnull(${table.column('order_id')}, 0) = 0`, Verbatim('now() < \'2020-12-05\'')] })).toBe(
+        expect(t.Having({ company: 'ACME01', [snippet]: [({ table, sql }) => sql`ifnull(${table.column('order_id')}, 0) = 0`, Verbatim('now() < \'2020-12-05\'')] })).toBe(
           'having "s1"."orders"."company" = \'ACME01\' and (ifnull("s1"."orders"."order_id", 0) = 0 or now() < \'2020-12-05\')'
+        );
+      });
+
+      it('should create a having clause with an and clause with functional and verbatim components', () => {
+        expect(t.Having({ company: 'ACME01', [and]: [({ table, sql }) => sql`ifnull(${table.column('order_id')}, 0) = 0`, Verbatim('now() < \'2020-12-05\'')] })).toBe(
+          'having "s1"."orders"."company" = \'ACME01\' and (ifnull("s1"."orders"."order_id", 0) = 0 and now() < \'2020-12-05\')'
         );
       });
 

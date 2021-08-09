@@ -566,13 +566,13 @@ class Table
   {
     options.table = options.table || this;
     if(record[and]) {
-      let clauses = this.whereArray(record[and], { ...options, brackets: true });
+      let clauses = this.whereArray(record[and], { ...options, brackets: true, op: 'and' });
       if(clauses.length === 1) {
         clauses = clauses[0];
       } else if(clauses.length > 0) {
         clauses = `(${clauses.join(' and ')})`;
       }
-      return this.whereArray({ ...record, [and]: null }).concat(clauses);
+      return this.whereArray({ ...record, [and]: null }, options).concat(clauses);
     }
     if(record[snippet]) {
       let clauses = this.whereArray(record[snippet], { ...options, brackets: true });
