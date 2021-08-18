@@ -186,6 +186,10 @@ module.exports = class Selector
       if(this.selector === join.name) {
         return new Selector(true);
       }
+      m = new RegExp(`${_.escapeRegExp(join.name)}_(.+)`).exec(this.selector);
+      if(m) {
+        return new Selector(m[1]);
+      }
       return false;
     }
     return this;

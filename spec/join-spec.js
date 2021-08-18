@@ -133,4 +133,51 @@ describe('join tests', () => {
 
   });
 
+  describe('subquery join tests', () => {
+    const { Table } = require('../index');
+
+    const t1 = new Table({
+      name: 't1',
+      columns: [
+        { name: 'a', type: 'int' },
+        { name: 'b', type: 'int' }
+      ]
+    });
+    const t2 = new Table({
+      name: 't2',
+      columns: [
+        { name: 'a', type: 'int' },
+        { name: 'b', type: 'int' },
+        { name: 'c', type: 'int' }
+      ]
+    });
+    const t3 = new Table({
+      name: 't3',
+      columns: [
+        { name: 'a', type: 'int' },
+        { name: 'b', type: 'int' },
+        { name: 'c', type: 'int' }
+      ]
+    });
+
+    it('should create a join', () => {
+      const s1 = t1.join({
+        name: 't2',
+        table: t2,
+        on: 'a'
+      }).subquery({
+        selector: ['a', 't2_c'],
+      });
+      const j = t3.join({
+        name: 't1',
+        table: s1,
+        on: ['a', 't2_c:c']
+      });
+      expect(j.selectWhere()).toBe(
+        '"t3"."a", "t3"."b", "t3"."c", "t1_subquery"."a" as "t1_a", "t1_subquery"."t2_c" as "t1_t2_c" from "t3" inner join ( select "t1"."a", "t2"."c" as "t2_c" ' +
+          'from "t1" inner join "t2" on "t2"."a" = "t1"."a" ) as "t1_subquery" on "t1_subquery"."a" = "t3"."a" and "t1_subquery"."t2_c" = "t3"."c"'
+      );
+    });
+  });
+
 });
