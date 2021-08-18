@@ -133,7 +133,7 @@ module.exports = class Selector
             return new Selector('*');
           }
           if(s.selector === `!@${join.alias}` || s.selector === `!@${join.name}`) {
-            return acc;
+            return false;
           }
           const newSelector = s.passesJoin(join);
           if(newSelector) {
@@ -142,7 +142,7 @@ module.exports = class Selector
         }
         return acc;
       }, []);
-      if(newSelector.length === 0) {
+      if(!newSelector || newSelector.length === 0) {
         return false;
       }
       return new Selector(newSelector);
@@ -156,7 +156,7 @@ module.exports = class Selector
       if(this.selector === '*') {
         return new Selector(true);
       }
-      let m = /^(!@|[@!])(.*)/.exec(this.selector);
+      let m = /^(!@|[\.@!])(.*)/.exec(this.selector);
       if(m) {
         if(m[1] === '@') {
           if(m[2] === join.table.config.alias || m[2] === join.table.config.name) {
@@ -178,6 +178,9 @@ module.exports = class Selector
             return this;
           }
           return false;
+        }
+        if(m[1] === '.' || m[1] === '!.') {
+          return this;
         }
       }
       if(/^\./.test(this.selector)) {
