@@ -1056,4 +1056,37 @@ describe("validate tests", () => {
 
   });
 
+  describe('validate join tests', () => {
+
+    const { Table } = require('../index');
+
+    const t1 = new Table({
+      name: 't1',
+      columns: [
+        { name: 'a', primaryKey: true, validate: /./, validationError: 'Empty' }
+      ]
+    });
+
+    const t2 = new Table({
+      name: 't2',
+      columns: [
+        { name: 'a', primaryKey: true, validate: /./, validationError: 'Empty' },
+        { name: 'b', primaryKey: true, validate: /./, validationError: 'Empty' }
+      ]
+    });
+
+    const j = t1.join({
+      name: 't2',
+      table: t2,
+      on: 'a'
+    });
+
+    it('should validate all subrecords', () => {
+      expect(JSON.stringify(j.validate({ a: 'a', t2: [{ b: '' }, { b: '' }] }).validationResult())).toBe(
+        '{"results":[{"record":{"a":"a","t2":[{"a":"a","b":""},{"a":"a","b":""}]},"valid":false,"errors":{"t2":[{"b":"Empty"},{"b":"Empty"}]}}],"valid":false}'
+      );
+    });
+
+  });
+
 });

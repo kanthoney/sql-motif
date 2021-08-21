@@ -1171,7 +1171,7 @@ class Table
 
   validate(record, options)
   {
-    return this.toRecordSet(record).validate(options);
+    return this.toRecordSet(record, { noMerge: true }).validate(options);
   }
 
   validateKey(record, options)
@@ -1181,22 +1181,22 @@ class Table
 
   validateAsync(record, options)
   {
-    return this.toRecordSet(record).validateAsync(options);
+    return this.toRecordSet(record, { noMerge: true }).validateAsync(options);
   }
 
-  validateKeyAsync(record, context)
+  validateKeyAsync(record, options)
   {
     return this.validateAsync(record, { ...options, selector: col => col.primaryKey });
   }
 
   fill(record, options)
   {
-    return this.toRecordSet(record).fill(options);
+    return this.toRecordSet(record, { noMerge: true }).fill(options);
   }
 
   fillAsync(record, options)
   {
-    return this.toRecordSet(record).fillAsync(options);
+    return this.toRecordSet(record, { noMerge: true }).fillAsync(options);
   }
 
   collate(lines, options = {})
@@ -1225,3 +1225,4 @@ class Table
 };
 
 module.exports = Table;
+

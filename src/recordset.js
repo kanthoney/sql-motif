@@ -87,7 +87,8 @@ class RecordSet
         join,
         parent: record,
         readOnly: join.readOnly,
-        single: join.single
+        single: join.single,
+        noMerge: this.options.noMerge
       });
       const subRecord = _.get(record.data, join.path || join.name);
       if(subRecord) {
@@ -153,7 +154,8 @@ class RecordSet
           path: join.path || join.name,
           parent: record,
           readOnly: join.readOnly,
-          single: join.single
+          single: join.single,
+          noMerge: this.options.noMerge
         });
         const subjoined = _.merge({}, _.get(record.joined, join.path || join.name), _.get(newJoined, join.table.config.path));
         if(_.isArray(subRecord)) {
@@ -182,7 +184,11 @@ class RecordSet
       const hash = record.hashKey(this.options.collate);
       if(hash && record.fullKey) {
         if(this.recordMap[hash]) {
-          this.recordMap[hash].merge(record);
+          if(this.options.noMerge) {
+            this.records.push(record);
+          } else {
+            this.recordMap[hash].merge(record);
+          }
         } else {
           this.records.push(record);
           this.recordMap[hash] = record;

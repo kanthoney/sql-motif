@@ -330,6 +330,10 @@ is an object with the following keys:
 
 * `fillAsync(record, [options])`. Fills in a record or array of records returning a promise. Used if any `default` functions return a promise.
 
+### Record Set
+
+* `toRecordSet(record, [options])`. Converts a record or array of records into a [record set](./record-set.md). `options` is a set of [collation options](./collation-options.md).
+
 ### SQL result collation
 
 * <a name="collate"></a>`collate(lines, [options])`. Takes a set of lines resulting from an SQL query and collates them, packing subrecords into the appropriate locations

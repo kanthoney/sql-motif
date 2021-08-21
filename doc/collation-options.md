@@ -14,3 +14,5 @@ The `options` argument in [table.collate](./table.md#collate) method is an objec
 
 * `noReducer`. If set to `true` does not call any reducers and instead return arrays.
 
+* `noMerge`. By default, if records are found with the same primary key they are merged into the same record. Set `noMerge` to `true` to keep them separate.
+
