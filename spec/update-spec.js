@@ -337,5 +337,24 @@ describe('update tests', () => {
     
   });
 
+  describe('Update where tests', () => {
+
+    const { Table, operators } = require('../index');
+
+    const t = new Table({
+      name: 'a',
+      columns: [
+        { name: 'a1', type: 'date' }
+      ]
+    });
+
+    it('should update with an operator', () => {
+      expect(t.updateWhere({ a1: ({ sql }) => sql`now()` }, { a1: ({ sql }) => operators.lt(sql`now() - interval 5 day`) })).toBe(
+        '"a" set "a"."a1" = now() where "a"."a1" < now() - interval 5 day'
+      );
+    });
+
+  });
+
 });
 
