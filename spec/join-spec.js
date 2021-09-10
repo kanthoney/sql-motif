@@ -182,4 +182,33 @@ describe('join tests', () => {
     });
   });
 
+  describe('Join with no columns joined tests', () => {
+    const { Table } = require('../index');
+
+    const t1 = new Table({
+      name: 'a1',
+      columns: [
+        { name: 'a' }
+      ]
+    });
+
+    const t2 = new Table({
+      name: 'a2',
+      columns: [
+        { name: 'b' }
+      ]
+    });
+
+    const j = t1.join({
+      table: t2,
+      type: 'left'
+    });
+
+    it('should produce query with on clause with no fields', () => {
+      expect(j.SelectWhere('*')).toBe(
+        'select "a1"."a", "a2"."b" as "a2_b" from "a1" left join "a2" on 1 = 1'
+      );
+    })
+  });
+
 });

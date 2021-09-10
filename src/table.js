@@ -302,6 +302,8 @@ class Table
       onArray = onArray.concat(ons(join.table));
       if(onArray.length > 0) {
         acc.clause += ` on ${onArray.join(' and ')}`;
+      } else {
+        acc.clause += ` on 1 = 1`;
       }
       return acc;
     }, { clause: '', on: [] });
@@ -332,7 +334,7 @@ class Table
     if(where) {
       on = on.concat(this.columns.whereArray(where));
     }
-    return on.join(' and ');
+    return on.join(' and ') || '1 = 1';
   }
 
   On(where)
