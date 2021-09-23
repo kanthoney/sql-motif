@@ -452,6 +452,9 @@ class ColumnSet
         }
         return null;
       }
+      if(!col.passesSelection(selector)) {
+        return;
+      }
       const path = col.path;
       let value = _.get(record.data, path);
       const joinedValue = record.getJoined(path);
