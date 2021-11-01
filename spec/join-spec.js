@@ -182,6 +182,42 @@ describe('join tests', () => {
     });
   });
 
+  describe('join using operators tests', () => {
+
+    const { Table, operators } = require('../index');
+
+    const t1 = new Table({
+      name: 'a',
+      columns: [ { name: 'a' } ]
+    });
+
+    const t2 = new Table({
+      name: 'b',
+      columns: [ { name: 'a' } ]
+    });
+
+    it('should create a join with an in clause', () => {
+      const j = t1.join({
+        name: 't2',
+        table: t2,
+        on: [['a', ({ table }) => operators.in([table.column('a'), ''])]]
+      });
+      expect(j.from()).toBe('"a" inner join "b" on "b"."a" in ("a"."a", \'\')');
+      expect(j.on()).toBe('"b"."a" in ("a"."a", \'\')');
+    });
+
+    it('should create a join with a greater than clause', () => {
+      const j = t1.join({
+        name: 't2',
+        table: t2,
+        on: [['a', ({ table }) => operators.gt(table.column('a'))]]
+      });
+      expect(j.from()).toBe('"a" inner join "b" on "b"."a" > "a"."a"');
+      expect(j.on()).toBe('"b"."a" > "a"."a"');
+    });
+
+  });
+
   describe('Join with no columns joined tests', () => {
     const { Table } = require('../index');
 

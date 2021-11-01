@@ -290,9 +290,13 @@ class Table
         return this.onFields.reduce((acc, on) => {
           const sql = table.dialect.template(options.context);
           if(on.left instanceof Function || (on.left.table === table && (!options.joins || options.joins === '*' || options.joins.includes(on.join.name)))) {
-            acc.push(`${on.left instanceof Function?on.left({ table, context: options.context, sql }):on.left.SQL(false, options.context)}` +
-                     ' = ' +
-                     `${on.right instanceof Function?on.right({ table: this, context: options.context, sql }):on.right.SQL(false, options.context)}`);
+            let left = on.left instanceof Function?on.left({ table, context: options.context, sql }):on.left.SQL(false, options.context),
+            right = on.right instanceof Function?on.right({ table: this, context: options.context, sql }):on.right.SQL(false, options.context);
+            if(right instanceof Operator) {
+              acc.push(`${left} ${this.dialect.escape(right)}`);
+            } else {
+              acc.push(`${left} = ${right}`);
+            }
           }
           return acc;
         }, []).concat(table.joins.reduce((acc, join) => {
@@ -328,18 +332,36 @@ class Table
     return `from ${this.from(options)}`;
   }
 
-  on(where)
+  on(where, options = {})
   {
-    let on = this.onFields.map(field => `${field.left.sql.fullName} = ${field.right.sql.fullName}`);
+    const { context } = options;
+    const sql = this.dialect.template(context);
+    let on = this.onFields.map(field => {
+      let left, right;
+      if(field.left instanceof Function) {
+        left = field.left({ sql, context, table: field.join.table });
+      } else {
+        left = field.left.sql.fullName;
+      }
+      if(field.right instanceof Function) {
+        right = field.right({ sql, context, table: this });
+      } else {
+        right = field.right.sql.fullName;
+      }
+      if(right instanceof Operator) {
+        return `${left} ${this.dialect.escape(right)}`;
+      }
+      return `${left} = ${right}`
+    });
     if(where) {
       on = on.concat(this.columns.whereArray(where));
     }
     return on.join(' and ') || '1 = 1';
   }
 
-  On(where)
+  On(where, options)
   {
-    let clause = this.on(where);
+    let clause = this.on(where, options);
     if(clause) {
       return `on ${clause}`;
     }

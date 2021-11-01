@@ -181,7 +181,7 @@ describe('fill tests', () => {
       ]
     });
 
-    fit('should fill in primary key', done => {
+    it('should fill in primary key', done => {
       const selector = col => col.primaryKey;
       expect(JSON.stringify(t.fill({ c: 'c1' }, { selector }))).toBe(
         '[{"a":"a","c":"c1"}]'
