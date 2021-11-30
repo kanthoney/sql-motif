@@ -21,7 +21,8 @@
   "license": "ISC",
   "dependencies": {
     "lodash": "^4.17.15",
-    "moment": "^2.24.0"
+    "moment": "^2.24.0",
+    "sql-motif": "file:../../tmp/packages/sql-motif-0.3.11.tgz"
   },
   "devDependencies": {
     "jasmine": "^3.5.0",

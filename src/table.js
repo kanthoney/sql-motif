@@ -692,7 +692,7 @@ class Table
       options.joins = [];
     }
     if(old) {
-      const setClause = this.Set(record, { ...options, safe: false });
+      const setClause = this.Set(record, { ...options, selector: '*', safe: false });
       if(!setClause) {
         return '';
       }
@@ -719,7 +719,7 @@ class Table
       options.joins = [];
     }
     let q;
-    const setClause = this.Set(record, options);
+    const setClause = this.Set(record, { ...options, selector: '*' });
     if(!setClause) {
       return '';
     }
