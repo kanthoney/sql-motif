@@ -1,6 +1,6 @@
 {
   "name": "sql-motif",
-  "version": "0.3.13",
+  "version": "0.3.14",
   "description": "sql query fragment builder",
   "main": "index.js",
   "scripts": {
