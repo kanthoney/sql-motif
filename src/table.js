@@ -599,7 +599,7 @@ class Table
       return this.whereArray({ ...record, [and]: null }, options).concat(clauses);
     }
     if(record[snippet]) {
-      let clauses = this.whereArray(record[snippet], { ...options, brackets: true });
+      let clauses = this.whereArray(record[snippet], { ...options, op: 'or', brackets: true });
       if(clauses.length === 1) {
         clauses = clauses[0];
       } else if(clauses.length > 0) {

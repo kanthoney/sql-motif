@@ -112,6 +112,12 @@ describe('where tests', () => {
           );
       });
 
+      it('should create a where clause with an and clause and two or subclauses', () => {
+        expect(t.where({ [and]: [{ [snippet]: [{ company: 'ACME01' }, { order_id: 5 }] }, { [snippet]: [{ company: 'ACME02' }, { order_id: 16 }] }] })).toBe(
+          '(("s1"."orders"."company" = \'ACME01\' or "s1"."orders"."order_id" = 5) and ("s1"."orders"."company" = \'ACME02\' or "s1"."orders"."order_id" = 16))'
+        );
+      });
+
       it('it should create a where clause with a complex or subclause', () => {
         expect(t.where({ company: 'ACME01', delivery: { [snippet]: [ { name: 'Alice' },  { address: { street: 'Greenway st.' } } ] } }))
           .toBe(
