@@ -149,4 +149,29 @@ describe('insert tests', () => {
 
   });
 
+  describe('computed field tests', () => {
+
+    const { Table } = require('../index');
+
+    const t = new Table({
+      name: 'a',
+      columns: [
+        { name: 'a1', type: 'varchar(255)', notNull: true, primaryKey: true },
+        { name: 'a2', type: 'datetime' },
+        { name: 'a3', type: 'varchar(255)' }
+      ]
+    });
+
+    it('should insert record with computed fields', () => {
+      expect(t.Insert({
+        a1: ({ sql }) => 'a',
+        a2: ({ sql }) => sql`now()`,
+        a3: ({ sql }) => null
+      })).toBe(
+        'insert into "a" ("a1", "a2", "a3") values (\'a\', now(), null)'
+      );
+    });
+
+  });
+
 });
