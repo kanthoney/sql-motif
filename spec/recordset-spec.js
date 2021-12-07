@@ -2362,4 +2362,31 @@ describe("record set tests", () => {
 
   });
 
+  describe('Computed value tests', () => {
+
+    const { Table } = require('../index');
+
+    const t = new Table({
+      name: 'a',
+      columns: [
+        { name: 'a1', type: 'varchar(255)', notNull: true, primaryKey: true },
+        { name: 'a2', type: 'datetime' },
+        { name: 'a3', type: 'varchar(255)' }
+      ]
+    });
+
+    it('should insert record with computed fields', () => {
+      const records = t.toRecordSet({
+        a1: ({ sql }) => 'a',
+        a2: ({ sql }) => sql`now()`,
+        a3: ({ sql }) => null
+      });
+      expect(records.Insert()).toEqual(
+        ['insert into "a" ("a1", "a2", "a3") values (\'a\', now(), null)']
+      );
+    });
+
+
+  });
+
 });

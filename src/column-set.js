@@ -608,7 +608,7 @@ class ColumnSet
         return acc.concat(dialect.options.insertDefault || 'default');
       }
       if(value instanceof Function) {
-        return acc.concat(value({ sql: dialect.template(options.context), table: this.table, col, context: options.context }));
+        return acc.concat(this.dialect.escape(value({ sql: dialect.template(options.context), table: this.table, col, context: options.context })));
       }
       return acc.concat(dialect.escape(value));
     }, []);
