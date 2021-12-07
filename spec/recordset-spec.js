@@ -2381,6 +2381,9 @@ describe("record set tests", () => {
         a2: ({ sql }) => sql`now()`,
         a3: ({ sql }) => null
       });
+      expect(records.insertValues()).toEqual(
+        ['(\'a\', now(), null)']
+      );
       expect(records.Insert()).toEqual(
         ['insert into "a" ("a1", "a2", "a3") values (\'a\', now(), null)']
       );
