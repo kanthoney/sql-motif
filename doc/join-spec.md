@@ -34,6 +34,8 @@ on: [ [ 'a', ({ table, sql }) => sql`ifnull(${table.column('b1')}, ${table.colum
 * `single`. Set to `true` if the join is expected to yield a single subrecord. If there is indeed a single subrecord it is attached as an object instead of an array.
  If there is no subrecord it is omitted entirely from the record, and if there is more than one subrecord they are attached as an array as normal.
 
+* `hidden`. Set to `true` to omit this table from the record set.
+
 * `context`. A user defined object or function to provide a context for `default` and `validate` functions in [column specifications](./column-spec.md). If a function,
  this is called for each parent record and takes an object of the form `{ record, recordSet, context }` where `record` is the parent record, `recordSet` is the
  [record set](./record-set.md) containing the set of subrecords for this join, and `context` is the context object passed to the `fill` or `validate` [table](./table.md)

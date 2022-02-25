@@ -542,6 +542,9 @@ class Record
     }, {});
     if(!options.noSubRecords) {
       acc = this.recordSet.joins.reduce((acc, join) => {
+        if(join.hidden) {
+          return acc;
+        }
         const recordSet = _.get(this.data, join.path || join.name);
         if(recordSet instanceof RecordSet) {
           if(join.reducer && !options.noReducer) {

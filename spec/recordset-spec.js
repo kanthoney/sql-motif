@@ -2392,4 +2392,52 @@ describe("record set tests", () => {
 
   });
 
+  describe('hidden join tests', () => {
+
+    const { Table } = require('../index');
+    const t = new Table({
+      name: 'a',
+      columns: [
+        { name: 'a_a', notNull: true, primaryKey: true },
+        { name: 'a_b', notNull: true }
+      ]
+    }).join({
+      name: 'b_record',
+      table: new Table({
+        name: 'b',
+        columns: [
+          { name: 'b_a', notNull: true, primaryKey: true },
+          { name: 'b_b', notNull: true }
+        ]
+      }),
+      on: ['b_a:a_a']
+    }).join({
+      name: 'c_record',
+      table: new Table({
+        name: 'c',
+        columns: [
+          { name: 'c_a', notNull: true, primaryKey: true },
+          { name: 'c_b', notNull: true }
+        ]
+      }),
+      on: ['c_a:a_a'],
+      hidden: true
+    });
+
+    const lines = [ 
+      { a_a: 'a1', a_b: 'a_b1', b_record_b_a: 'a1', b_record_b_b: 'b_b1', c_record_c_a: 'a1', c_record_c_b: 'c_b1' },
+      { a_a: 'a2', a_b: 'a_b2', b_record_b_a: 'a2', b_record_b_b: 'b_b2', c_record_c_a: 'a2', c_record_c_b: 'c_b2' },
+      { a_a: 'a3', a_b: 'a_b3', b_record_b_a: 'a3', b_record_b_b: 'b_b3', c_record_c_a: 'a3', c_record_c_b: 'c_b3' }
+    ];
+
+    it('should collate records leaving out table c', () => {
+      const recordSet = t.collate(lines);
+      expect(JSON.stringify(recordSet)).toBe(
+        '[{"a_a":"a1","a_b":"a_b1","b_record":[{"b_a":"a1","b_b":"b_b1"}]},{"a_a":"a2","a_b":"a_b2","b_record":[{"b_a":"a2","b_b":"b_b2"}]},' +
+          '{"a_a":"a3","a_b":"a_b3","b_record":[{"b_a":"a3","b_b":"b_b3"}]}]'
+      );
+    });
+
+  });
+
 });
