@@ -12,6 +12,7 @@ const Selector = require('./selector');
 const TypeExpander = require('./type-expander');
 const snippet = require('./snippet');
 const and = require('./and');
+const Verbatim = require('./verbatim');
 
 class Table
 {
@@ -292,11 +293,13 @@ class Table
           if(on.left instanceof Function || (on.left.table === table && (!options.joins || options.joins === '*' || options.joins.includes(on.join.name)))) {
             let left = on.left instanceof Function?on.left({ table, context: options.context, sql }):on.left.SQL(false, options.context),
             right = on.right instanceof Function?on.right({ table: this, context: options.context, sql }):on.right.SQL(false, options.context);
-            if(right instanceof Operator) {
-              acc.push(`${left} ${this.dialect.escape(right)}`);
-            } else {
-              acc.push(`${left} = ${right}`);
+            if(right instanceof Array) {
+              right = operator.or(right);
             }
+            if(!(right instanceof Operator)) {
+              right = operators.eq(Verbatim(right));
+            }
+            acc.push(right.clause(this.dialect, Verbatim(left), this, options.context));
           }
           return acc;
         }, []).concat(table.joins.reduce((acc, join) => {
@@ -348,10 +351,13 @@ class Table
       } else {
         right = field.right.sql.fullName;
       }
-      if(right instanceof Operator) {
-        return `${left} ${this.dialect.escape(right)}`;
+      if(right instanceof Array) {
+        right = operators.or(right);
       }
-      return `${left} = ${right}`
+      if(!(right instanceof Operator)) {
+        right = operators.eq(Verbatim(right));
+      }
+      return right.clause(this.dialect, Verbatim(left), this, context);
     });
     if(where) {
       on = on.concat(this.columns.whereArray(where));

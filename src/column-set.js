@@ -708,10 +708,7 @@ class ColumnSet
         }
         const clause = value => {
           if(_.isArray(value)) {
-            if(value.length > 1) {
-              return `(${value.map(value => clause(value)).join(' or ')})`;
-            }
-            return `${value.map(value => clause(value)).join(' or ')}`;
+            value = operators.or(value);
           }
           if(value instanceof Operator) {
             return value.clause(table.dialect, col, options.table, { ...options.context, having: options.having });

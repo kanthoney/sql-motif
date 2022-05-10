@@ -29,7 +29,7 @@ class InOperator extends Operator
     }
   }
 
-  clause(dialect, lhs, context = {})
+  clause(dialect, lhs, table, context = {})
   {
     let value;
     if(this.value instanceof Function) {
@@ -51,7 +51,7 @@ class BetweenOperator extends Operator
     super(name, [value1, value2])
   }
 
-  clause(dialect, lhs, context = {})
+  clause(dialect, lhs, table, context = {})
   {
     let value;
     if(this.value instanceof Function) {
@@ -65,6 +65,39 @@ class BetweenOperator extends Operator
     return `${this.name} ${dialect.escape(this.value[0])} and ${dialect.escape(this.value[1])}`;
   }
 }
+
+class OrOperator extends Operator
+{
+  constructor(name, values)
+  {
+    if(values instanceof Array) {
+      super(name, values);
+    } else {
+      super(name, [values]);
+    }
+  }
+
+  clause(dialect, lhs, table, context = {})
+  {
+    const sql = dialect.template(context);
+    let clauses = this.value.reduce((acc, value) => {
+      if(value instanceof Function) {
+        value = value({ col: lhs, sql, table, context });
+      }
+      if(lhs) {
+        if(!(value instanceof Operator)) {
+          value = new EqualsOperator(value);
+        }
+        acc.push(value.clause(dialect, lhs, table, context));
+      }
+      return acc;
+    }, []);
+    if(clauses.length > 1) {
+      return `(${clauses.join(' ' + this.name + ' ')})`;
+    }
+    return clauses[0];
+  }
+};
 
 module.exports.eq = value => new EqualsOperator(value);
 module.exports.ne = value => new NotEqualsOperator(value);
@@ -86,3 +119,4 @@ module.exports.contains = value => new Operator('regexp', `${_.escapeRegExp(valu
 module.exports.notStartsWith = value => new Operator('not regexp', `^${_.escapeRegExp(value)}`);
 module.exports.notEndsWith = value => new Operator('not regexp', `${_.escapeRegExp(value)}$`);
 module.exports.notContains = value => new Operator('not regexp', `${_.escapeRegExp(value)}`);
+module.exports.or = value => new OrOperator('or', value);

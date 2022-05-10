@@ -216,6 +216,24 @@ describe('join tests', () => {
       expect(j.on()).toBe('"b"."a" > "a"."a"');
     });
 
+    it('should create a join with a null value', () => {
+      const j = t1.join({
+        name: 't2',
+        table: t2,
+        on: [['a', () => null]]
+      });
+      expect(j.on()).toBe('"b"."a" is null');
+    });
+
+    it('should create a join with an array of values', () => {
+      const j = t1.join({
+        name: 't2',
+        table: t2,
+        on: [['a', () => ['a', 'b', null]]]
+      });
+      expect(j.on()).toBe('("b"."a" = \'a\' or "b"."a" = \'b\' or "b"."a" is null)');
+    });
+
   });
 
   describe('Join with no columns joined tests', () => {
