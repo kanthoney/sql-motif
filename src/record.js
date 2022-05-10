@@ -260,9 +260,17 @@ class Record
         const result = subRecords.validationResult();
         if(!result.valid) {
           acc.valid = false;
-          _.set(acc.errors, join.path || join.name, result.results.map(result => result.errors));
+          if(join.single && result.results.length === 1) {
+            _.set(acc.errors, join.path || join.name, result.results[0].errors);
+          } else {
+            _.set(acc.errors, join.path || join.name, result.results.map(result => result.errors));
+          }
         }
-        _.set(acc.record, join.path || join.name, result.results.map(result => result.record));
+        if(join.single && result.results.length === 1) {
+          _.set(acc.record, join.path || join.name, result.results[0].errors);
+        } else {
+          _.set(acc.record, join.path || join.name, result.results.map(result => result.record));
+        }
       }
       return acc;
     }, { record: this.toObject({ includeJoined: true, noSubRecords: true }), valid: this.valid, errors: this.errors });
