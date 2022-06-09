@@ -610,6 +610,9 @@ class ColumnSet
       if(value instanceof Function) {
         return acc.concat(dialect.escape(value({ sql: dialect.template(options.context), table: this.table, col, context: options.context })));
       }
+      if(col.storeAs instanceof Function) {
+        value = col.storeAs(value);
+      }
       return acc.concat(dialect.escape(value));
     }, []);
   }
@@ -642,6 +645,9 @@ class ColumnSet
         return acc.concat(`${value.clause(dialect, col, options.table || table, options.context || {})}`);
       } else if(value instanceof Function) {
         return acc.concat(`${fullName} = ${dialect.escape(value({ table: options.table || table, col, sql: dialect.template(options.context), context: options.context || {} }))}`);
+      }
+      if(col.storeAs instanceof Function) {
+        value = col.storeAs(value);
       }
       return acc.concat(`${fullName} = ${dialect.escape(value, options.context)}`);
     }, []);

@@ -34,6 +34,10 @@ of the form `{ value, col, context, error }` where `value` is the current value,
 function and `error` is the error message from the initial validation. If the function throws, the error message thrown will be used as the validation error. Otherwise,
 the field will be set to the return value.
 
+ * `format`. If a function, this will be used to format the output when producing a [record set](./record-set.md). The function takes a single value as an argument
+
+ * `storeAs`. If a function, this will be used to convert the value to a format suitable for storage. The function takes a single value as an argument
+
  * `calc`. Specifies a calculation column. Can be a string or a function. If a function, is called with a single argument, which is an object with the following properties:
 
    * `table`. The table the column belongs to

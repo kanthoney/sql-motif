@@ -550,6 +550,9 @@ class Table
       if(value instanceof Function) {
         return acc.concat(this.dialect.escape(value({ sql: this.dialect.template(options.context), table: this, col, context: options.context })));
       }
+      if(col.storeAs instanceof Function) {
+        return acc.concat(this.dialect.escape(col.storeAs(value)));
+      }
       return acc.concat(this.dialect.escape(value));
     }, []);
     return `(${values.join(', ')})`;

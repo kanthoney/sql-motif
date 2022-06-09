@@ -174,4 +174,26 @@ describe('insert tests', () => {
 
   });
 
+  describe('storeAs tests', () => {
+
+    const { Table } = require('../index');
+
+    const t = new Table({
+      name: 'a',
+      columns: [
+        { name: 'a', type: 'int', storeAs: v => (v ?? '') === ''?null:v },
+        { name: 'b', type: 'text', storeAs: v => JSON.stringify(v), format: v => JSON.parse(v) }
+      ]
+    });
+
+    it('should create set record', () => {
+      expect(t.Insert({ a: 2, b: { a: 1 } })).toBe('insert into "a" ("a", "b") values (2, \'{"a":1}\')');
+    });
+
+    it('should create set record with empty a', () => {
+      expect(t.Insert({ a: '', b: { a: 1 } })).toBe('insert into "a" ("a", "b") values (null, \'{"a":1}\')');
+    });
+
+  });
+
 });

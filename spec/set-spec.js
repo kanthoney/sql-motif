@@ -66,4 +66,26 @@ describe('set tests', () => {
 
   });
 
+  describe('storeAs tests', () => {
+
+    const { Table } = require('../index');
+
+    const t = new Table({
+      name: 'a',
+      columns: [
+        { name: 'a', type: 'int', storeAs: v => (v ?? '') === ''?null:v },
+        { name: 'b', type: 'text', storeAs: v => JSON.stringify(v), format: v => JSON.parse(v) }
+      ]
+    });
+
+    it('should create set record', () => {
+      expect(t.Set({ a: 2, b: { a: 1 } })).toBe('set "a"."a" = 2, "a"."b" = \'{"a":1}\'');
+    });
+
+    it('should create set record with empty a', () => {
+      expect(t.Set({ a: '', b: { a: 1 } })).toBe('set "a"."a" = null, "a"."b" = \'{"a":1}\'');
+    });
+
+  });
+
 });
