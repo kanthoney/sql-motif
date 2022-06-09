@@ -2440,4 +2440,39 @@ describe("record set tests", () => {
 
   });
 
+  describe('storeAs tests', () => {
+
+    const { Table } = require('../index');
+
+    const t = new Table({
+      name: 'a',
+      columns: [
+        { name: 'id', type: 'int', primaryKey: true },
+        { name: 'a', type: 'int', storeAs: v => (v ?? '') === ''?null:v },
+        { name: 'b', type: 'text', storeAs: v => JSON.stringify(v), format: v => JSON.parse(v) }
+      ]
+    });
+
+    const lines = [
+      { id: 1, a: 2, b: '{"a":1}' },
+      { id: 2, a: '', b: '{"a":17}' },
+    ];
+
+    it('should insert recordset', () => {
+      const recordSet = t.collate(lines);
+      expect(recordSet.Insert()).toEqual([`insert into "a" ("id", "a", "b") values (1, 2, '{"a":1}'), (2, null, '{"a":17}')`]);
+    });
+
+    it('should update recordset', () => {
+      const recordSet = t.collate(lines);
+      expect(recordSet.Update()).toEqual([
+        `update "a" set "a"."a" = 2, "a"."b" = '{"a":1}' where "a"."id" = 1`,
+        `update "a" set "a"."a" = null, "a"."b" = '{"a":17}' where "a"."id" = 2`
+      ]);
+    });
+
+  });
+
+
+
 });
