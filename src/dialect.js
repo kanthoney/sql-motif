@@ -135,6 +135,9 @@ class Dialect
     if(s instanceof Operator) {
       return s.clause(this);
     }
+    if(typeof s === 'object') {
+      return this.libraryEscape(JSON.stringify(s));
+    }
     return this.libraryEscape(s);
   }
 
