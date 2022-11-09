@@ -2,6 +2,7 @@
 
 const joins = require('./joins');
 const tables = require('./tables');
+const { Table } = require('../index');
 
 describe('join tests', () => {
 
@@ -237,7 +238,6 @@ describe('join tests', () => {
   });
 
   describe('Join with no columns joined tests', () => {
-    const { Table } = require('../index');
 
     const t1 = new Table({
       name: 'a1',
@@ -263,6 +263,31 @@ describe('join tests', () => {
         'select "a1"."a", "a2"."b" as "a2_b" from "a1" left join "a2" on 1 = 1'
       );
     })
+  });
+
+  describe('Join with null value tests', () => {
+    const t = new Table({
+      name: 't1',
+      columns: [
+        { name: 'a' }
+      ]
+    }).join({
+      table: new Table({
+        name: 't2',
+        columns: [
+          { name: 'a' },
+          { name: 'b' }
+        ]
+      }),
+      on: ['a', ['b', () => null]],
+    });
+
+    it('should produce join with null value', () => {
+      expect(t.SelectWhere()).toBe(
+        'select "t1"."a", "t2"."a" as "t2_a", "t2"."b" as "t2_b" from "t1" inner join "t2" on "t2"."a" = "t1"."a" and "t2"."b" is null'
+      );
+    });
+      
   });
 
 });

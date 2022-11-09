@@ -115,8 +115,8 @@ class Table
           left = on[0];
           right = on[1];
         }
-        const leftCol = left instanceof Function?left:join.table.column(left);
-        const rightCol = right instanceof Function?right:this.column(right);
+        const leftCol = left instanceof Verbatim?left:left instanceof Function?left:join.table.column(left);
+        const rightCol = right === null?operators.eq(null):right instanceof Verbatim?right:right instanceof Function?right:this.column(right);
         if(leftCol && rightCol) {
           if(!(leftCol instanceof Function) && !(rightCol instanceof Function)) {
             leftCol.joinCol = rightCol;
