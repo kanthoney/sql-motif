@@ -3,6 +3,7 @@
 const tables = require('./tables');
 const joins = require('./joins');
 const RecordSet = require('../src/recordset');
+const Record = require('../src/record');
 
 describe("record set tests", () => {
 
@@ -145,6 +146,18 @@ describe("record set tests", () => {
             '"city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}},"invoice":{"name":"Terry Test","address":{"company":"","street":"12 Whitfield Road",' +
             '"locality":"","city":"Birmingham","region":"","postalCode":"B15 8JX","country":"GB"}}}]'
         );
+      });
+
+      it('should iterate through order data', () => {
+        const r = new RecordSet(t);
+        r.addRecord(data);
+        try {
+          for(let record of r) {
+            expect(record instanceof Record).toBe(true);
+          }
+        } catch(error) {
+          fail(error);
+        }
       });
 
     });

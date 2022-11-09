@@ -729,6 +729,13 @@ class RecordSet
     return this.records.length;
   }
 
+  *[Symbol.iterator]()
+  {
+    for(let i = 0; i < this.length; i++) {
+      yield this.records[i];
+    }
+  }
+
 };
 
 module.exports = RecordSet;
