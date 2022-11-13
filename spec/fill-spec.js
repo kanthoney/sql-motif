@@ -191,7 +191,6 @@ describe('fill tests', () => {
           '[{"a":"a","c":"c1"}]'
         );
       }).catch(fail).finally(done);
-      done();
     });
 
   });
