@@ -323,13 +323,13 @@ describe('update tests', () => {
       );
     });
     
-    it('should update records 10-15', () => {
+    it('should update records 10-15 (1)', () => {
       expect(t.UpdateWhere({ b: 'default' }, { b: '' }, { orderBy: 'a', limit: 5, start: 10 })).toBe(
         `update "a" set "a"."b" = 'default' where "a"."b" = '' order by "a"."a" asc limit 10, 5`
       );
     });
     
-    it('should update records 10-15', () => {
+    it('should update records 10-15 (2)', () => {
       expect(t.Update({ a: 2, b: 'default' }, { a: 3 }, { orderBy: 'a', limit: 5, start: 10 })).toBe(
         `update "a" set "a"."a" = 2, "a"."b" = 'default' where "a"."a" = 3 order by "a"."a" asc limit 10, 5`
       );

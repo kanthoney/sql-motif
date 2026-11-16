@@ -40,13 +40,13 @@ describe("calc column tests", () => {
     );
   });
 
-  it('should create a where clause', () => {
+  it('should create a where clause (1)', () => {
     expect(table.Where({ col1: ({ col, sql, context }) => sql`${col} + ${context.col1}` }, { context: { col1: 1 } })).toBe(
       'where "calc"."col1" = "calc"."col1" + 1'
     );
   });
 
-  it('should create a where clause', () => {
+  it('should create a where clause (2)', () => {
     expect(table.Where({ col1: [ ({ col, sql, context }) => sql`${col} + ${context.col1}`,
                                  ({ table, col, sql, context }) => sql`${table.column('calc1')} - ${col} + ${context.col1}` ] }, { context: { col1: 1 } }))
       .toBe(
@@ -54,13 +54,13 @@ describe("calc column tests", () => {
       );
   });
 
-  it('should select calc2 column', () => {
+  it('should select calc2 column (1)', () => {
     expect(join.Select({ calc2: 'calc2' })).toBe(
       'select coalesce("c2"."col2a", "c2"."col2b", 0) as "calc2_calc2"'
     );
   });
 
-  it('should select calc2 column', () => {
+  it('should select calc2 column (2)', () => {
     expect(join.Select({ calc2: 'calc2' }, { context: { default: 'a' } } )).toBe(
       'select coalesce("c2"."col2a", "c2"."col2b", \'a\') as "calc2_calc2"'
     );

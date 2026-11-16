@@ -10,7 +10,7 @@ describe('alter tests', () => {
 
     const table = tables.orders;
 
-    it('should rename column from created_date to order_date', () => {
+    it('should rename column from created_date to order_date (1)', () => {
       expect(table.RenameColumn('created_date', 'order_date')).toBe(
         'alter table "s1"."orders" rename column "created_date" to "order_date"'
       );
@@ -65,25 +65,25 @@ describe('alter tests', () => {
       expect(table.Rename('sales_orders', { schema: 's2' })).toBe('alter table "s2"."sales_orders" rename to "orders"');
     });
 
-    it('should add an index', () => {
+    it('should add an index (1)', () => {
       expect(table.AddIndex({ columns: ['company', 'delivery_name'], name: 'delivery_name_idx' })).toBe(
         'alter table "s1"."orders" add index "delivery_name_idx"("company", "delivery_name")'
       );
     });
     
-    it('should drop an index', () => {
+    it('should drop an index (1)', () => {
       expect(table.DropIndex('company_idx')).toBe(
         'alter table "s1"."orders" drop index "company_idx"'
       );
     });
 
-    it('should add a foreign key', () => {
+    it('should add a foreign key (1)', () => {
       expect(table.AddReference({ table: 'customers', columns: ['company', 'customer:account'], name: 'customer_ref', onDelete: 'cascade', onUpdate: 'restrict' })).toBe(
         'alter table "s1"."orders" add foreign key "customer_ref" ("company", "customer") references "customers" ("company", "account") on update restrict on delete cascade'
       );
     });
 
-    it('should drop a foreign key', () => {
+    it('should drop a foreign key (1)', () => {
       expect(table.DropReference('customer_ref')).toBe(
         'alter table "s1"."orders" drop foreign key "customer_ref"'
       );
@@ -110,7 +110,7 @@ describe('alter tests', () => {
         ]
       });
 
-      it('should rename column from created_date to order_date', () => {
+      it('should rename column from created_date to order_date (2)', () => {
         expect(table.RenameColumn('created_date', 'order_date')).toBe(
           'alter table `s1`.`orders` change column `created_date` `order_date` date'
         );
@@ -148,31 +148,31 @@ describe('alter tests', () => {
         expect(table.Rename('sales_orders', { schema: 's2' })).toBe('alter table `s2`.`sales_orders` rename to `s1`.`orders`');
       });
       
-      it('should add an index', () => {
+      it('should add an index (2)', () => {
         expect(table.AddIndex({ columns: ['company', 'delivery_name'], name: 'delivery_name_idx' })).toBe(
           'alter table `s1`.`orders` add index `delivery_name_idx`(`company`, `delivery_name`)'
         );
       });
 
-      it('should add an index', () => {
+      it('should add an index (3)', () => {
         expect(table.AddIndex({ columns: ['company', 'delivery_name'], name: 'delivery_name_idx' }, { ignore: true })).toBe(
           'alter ignore table `s1`.`orders` add index `delivery_name_idx`(`company`, `delivery_name`)'
         );
       });
       
-      it('should drop an index', () => {
+      it('should drop an index (2)', () => {
         expect(table.DropIndex('company_idx')).toBe(
           'alter table `s1`.`orders` drop index `company_idx`'
         );
       });
 
-      it('should add a foreign key', () => {
+      it('should add a foreign key (2)', () => {
         expect(table.AddReference({ table: 'customers', columns: ['company', 'customer:account'], name: 'customer_ref', onDelete: 'cascade', onUpdate: 'restrict' })).toBe(
           'alter table `s1`.`orders` add foreign key `customer_ref` (`company`, `customer`) references `customers` (`company`, `account`) on update restrict on delete cascade'
         );
       });
       
-      it('should drop a foreign key', () => {
+      it('should drop a foreign key (2)', () => {
         expect(table.DropReference('customer_ref')).toBe(
           'alter table `s1`.`orders` drop foreign key `customer_ref`'
         );
@@ -180,7 +180,7 @@ describe('alter tests', () => {
 
       describe('ignore tests', () => {
 
-        it('should rename column from created_date to order_date', () => {
+        it('should rename column from created_date to order_date (3)', () => {
           expect(table.RenameColumn('created_date', 'order_date', { ignore: true })).toBe(
             'alter ignore table `s1`.`orders` change column `created_date` `order_date` date'
           );
@@ -212,19 +212,19 @@ describe('alter tests', () => {
           expect(table.Rename('sales_orders', { schema: 's2', ignore: true })).toBe('alter ignore table `s2`.`sales_orders` rename to `s1`.`orders`');
         });
         
-        it('should add an index', () => {
+        it('should add an index (4)', () => {
           expect(table.AddIndex({ columns: ['company', 'delivery_name'], name: 'delivery_name_idx' }, { ignore: true })).toBe(
             'alter ignore table `s1`.`orders` add index `delivery_name_idx`(`company`, `delivery_name`)'
           );
         });
         
-        it('should drop an index', () => {
+        it('should drop an index (3)', () => {
           expect(table.DropIndex('company_idx', { ignore: true })).toBe(
             'alter ignore table `s1`.`orders` drop index `company_idx`'
           );
         });
 
-        it('should add a foreign key', () => {
+        it('should add a foreign key (3)', () => {
           expect(table.AddReference({
             table: 'customers',
             columns: ['company', 'customer:account'],
@@ -236,7 +236,7 @@ describe('alter tests', () => {
           );
         });
         
-        it('should drop a foreign key', () => {
+        it('should drop a foreign key (3)', () => {
           expect(table.DropReference('customer_ref', { ignore: true })).toBe(
             'alter ignore table `s1`.`orders` drop foreign key `customer_ref`'
           );
@@ -263,13 +263,13 @@ describe('alter tests', () => {
         ]
       });
 
-      it('should rename column from created_date to order_date', () => {
+      it('should rename column from created_date to order_date (4)', () => {
         expect(table.RenameColumn('created_date', 'order_date')).toBe(
           'alter table "s1"."orders" rename column "created_date" to "order_date"'
         );
       });
       
-      it('should rename column from created_date to order_date', () => {
+      it('should rename column from created_date to order_date (5)', () => {
         expect(table.AddPrimaryKey()).toBe(
           'alter table "s1"."orders" add primary key("company", "order_id")'
         );
@@ -303,31 +303,31 @@ describe('alter tests', () => {
         );
       });
       
-      it('should add an index', () => {
+      it('should add an index (5)', () => {
         expect(table.AddIndex({ columns: ['company', 'delivery_name'], name: 'delivery_name_idx' })).toBe(
           'create index "delivery_name_idx" on "s1"."orders"("company", "delivery_name")'
         );
       });
 
-      it('should drop an index', () => {
+      it('should drop an index (4)', () => {
         expect(table.DropIndex('company_idx')).toBe(
           'drop index "company_idx"'
         );
       });
 
-      it('should add an index', () => {
+      it('should add an index (6)', () => {
         expect(table.AddIndex({ columns: ['company', 'delivery_name'], name: 'delivery_name_idx' }, { ignore: true })).toBe(
           'create index if not exists "delivery_name_idx" on "s1"."orders"("company", "delivery_name")'
         );
       });
 
-      it('should add a foreign key', () => {
+      it('should add a foreign key (4)', () => {
         expect(table.AddReference({ table: 'customers', columns: ['company', 'customer:account'], name: 'customer_ref', onDelete: 'cascade', onUpdate: 'restrict' })).toBe(
           'alter table "s1"."orders" add constraint "customer_ref" foreign key ("company", "customer") references "customers" ("company", "account") on update restrict on delete cascade'
         );
       });
       
-      it('should drop a foreign key', () => {
+      it('should drop a foreign key (4)', () => {
         expect(table.DropReference('customer_ref')).toBe(
           'alter table "s1"."orders" drop constraint "customer_ref"'
         );
@@ -335,7 +335,7 @@ describe('alter tests', () => {
 
       describe('ignore tests', () => {
 
-        it('should rename column from created_date to order_date', () => {
+        it('should rename column from created_date to order_date (6)', () => {
           expect(table.RenameColumn('created_date', 'order_date', { ignore: true })).toBe(
             'alter table if exists "s1"."orders" rename column "created_date" to "order_date"'
           );
@@ -369,19 +369,19 @@ describe('alter tests', () => {
           );
         });
         
-        it('should add an index', () => {
+        it('should add an index (7)', () => {
           expect(table.AddIndex({ columns: ['company', 'delivery_name'], name: 'delivery_name_idx' }, { ignore: true })).toBe(
             'create index if not exists "delivery_name_idx" on "s1"."orders"("company", "delivery_name")'
           );
         });
         
-        it('should drop an index', () => {
+        it('should drop an index (5)', () => {
           expect(table.DropIndex('company_idx', { ignore: true })).toBe(
             'drop index if exists "company_idx"'
           );
         });
 
-        it('should add a foreign key', () => {
+        it('should add a foreign key (5)', () => {
           expect(table.AddReference({
             table: 'customers',
             columns: ['company', 'customer:account'],
@@ -395,7 +395,7 @@ describe('alter tests', () => {
           );
         });
         
-        it('should drop a foreign key', () => {
+        it('should drop a foreign key (5)', () => {
           expect(table.DropReference('customer_ref', { ignore: true })).toBe(
             'alter table if exists "s1"."orders" drop constraint if exists "customer_ref"'
           );

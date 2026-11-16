@@ -72,7 +72,7 @@ describe('fill tests', () => {
       
       const j = joins.orders;
       
-      it('should fill empty record', () => {
+      it('should fill empty record (1)', () => {
         const result = j.fill({});
         const order_id = result.toJSON()[0].order_id;
         expect(JSON.stringify(result)).toBe(
@@ -81,7 +81,7 @@ describe('fill tests', () => {
         );
       });
         
-      it('should fill empty record', () => {
+      it('should fill empty record (2)', () => {
         const record = {
           lines: [
             {

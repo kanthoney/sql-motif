@@ -30,7 +30,7 @@ describe('operator tests', () => {
 
     Object.keys(ops).forEach(op => {
       values.forEach(value => {
-        it(`Should create clause for ${ops[op]} operator`, () => {
+        it(`Should create clause for ${ops[op]} operator for value '${value}'`, () => {
           let opName = ops[op];
           if(_.isNil(value)) {
             if(op === 'eq') {

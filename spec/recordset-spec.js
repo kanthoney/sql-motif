@@ -122,7 +122,7 @@ describe("record set tests", () => {
         }
       ];
 
-      it('should import order records', () => {
+      it('should import order records (1)', () => {
         const r = new RecordSet(t);
         r.addSQLResult(lines);
         expect(JSON.stringify(r)).toBe(
@@ -306,7 +306,7 @@ describe("record set tests", () => {
         );
       });
 
-      it('should collate order lines with collater', () => {
+      it('should collate order lines with collater (1)', () => {
         const lines = [
           {
             company: 'ABE081',
@@ -441,7 +441,7 @@ describe("record set tests", () => {
         );
       });
 
-      it('should collate order lines with collater', () => {
+      it('should collate order lines with collater (2)', () => {
         const lines = [
           {
             company: 'ABE081',
@@ -575,7 +575,7 @@ describe("record set tests", () => {
         );
       });
 
-      it('should import order records', () => {
+      it('should import order records (2)', () => {
 
         const data = [
           {
@@ -755,7 +755,7 @@ describe("record set tests", () => {
 
       });
 
-      it('should import order records', () => {
+      it('should import order records (3)', () => {
 
         const data = [
           {
@@ -1853,7 +1853,7 @@ describe("record set tests", () => {
         expect(JSON.stringify(r)).toBe('[{"company":"ANA191","sku":"DX676","description":"Hammer","warehouse":[]}]');
       });
 
-      it('should create update statements', () => {
+      it('should create update statements (1)', () => {
         const r = new RecordSet(j);
         r.addSQLResult(lines);
         expect(JSON.stringify(r.UpdateKey({ company: 'ACE002' }))).toBe(
@@ -1900,7 +1900,7 @@ describe("record set tests", () => {
         );
       });
 
-      it('should create update statements', () => {
+      it('should create update statements (2)', () => {
         const r = new RecordSet(j);
         r.addSQLResult(lines);
         expect(JSON.stringify(r.UpdateWhere({ company: 'ACE002' }, { safe: false }))).toBe(
@@ -1910,7 +1910,7 @@ describe("record set tests", () => {
         );
       });
 
-      it('should update first 5 records', () => {
+      it('should update first 5 records (1)', () => {
         const r = j.toRecordSet({
           company: 'ANA191',
           description: ''
@@ -1930,7 +1930,7 @@ describe("record set tests", () => {
         );
       });
 
-      it('should update first 5 records', () => {
+      it('should update first 5 records (2)', () => {
         const r = j.toRecordSet({
           company: 'ANA191'
         });
@@ -1939,7 +1939,7 @@ describe("record set tests", () => {
         ]);
       });
 
-      it('should update first 5 records', () => {
+      it('should update first 5 records (3)', () => {
         const r = j.toRecordSet({
           company: 'ANA191'
         });
@@ -1957,7 +1957,7 @@ describe("record set tests", () => {
         ]);
       });
 
-      it('should delete records 10-15', () => {
+      it('should delete records 10-15 (1)', () => {
         const r = j.toRecordSet({
           company: 'ANA191',
           description: ''
@@ -1967,7 +1967,7 @@ describe("record set tests", () => {
         ]);
       });
 
-      it('should delete records 10-15', () => {
+      it('should delete records 10-15 (2)', () => {
         const r = j.toRecordSet({
           company: 'ANA191',
           description: ''

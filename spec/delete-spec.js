@@ -12,7 +12,7 @@ describe('delete tests', () => {
 
       const t = tables.orders;
 
-      it('should delete order record', () => {
+      it('should delete order record 1', () => {
         const record = {
           company: 'HAD010',
           order_id: 'cfc6b632-cf18-4e98-a8f1-acbec9da6581'
@@ -22,7 +22,7 @@ describe('delete tests', () => {
         );
       });
 
-      it('should delete order record', () => {
+      it('should delete order record 2', () => {
         const record = {
           company: 'HAD010',
           order_id: 'cfc6b632-cf18-4e98-a8f1-acbec9da6581',
@@ -58,7 +58,7 @@ describe('delete tests', () => {
         );
       });
 
-      it('should delete order record', () => {
+      it('should delete order record 3', () => {
         const record = {
           company: 'HAD010',
           order_id: 'cfc6b632-cf18-4e98-a8f1-acbec9da6581',
@@ -102,7 +102,7 @@ describe('delete tests', () => {
         );
       });
 
-      it('should delete order record', () => {
+      it('should delete order record 4', () => {
         const record = {
           company: 'HAD010',
           customer: 'PRJ001',

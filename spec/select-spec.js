@@ -56,14 +56,14 @@ describe('select tests', () => {
         );
       });
 
-      it('should create a list of fields from company and some of delivery address via object selector', () => {
+      it('should create a list of fields from company and some of delivery address via object selector (1)', () => {
         expect(t.select(['company', { delivery: { address: '!street,locality' } }])).toBe(
           '"s1"."orders"."company", "s1"."orders"."delivery_address_company", "s1"."orders"."delivery_address_city", "s1"."orders"."delivery_address_region", ' +
             '"s1"."orders"."delivery_address_postalCode", "s1"."orders"."delivery_address_country"'
         );
       });
 
-      it('should create a list of fields from company and some of delivery address via object selector', () => {
+      it('should create a list of fields from company and some of delivery address via object selector (2)', () => {
         expect(t.select(['company', { delivery: { address: '!street, locality' } }])).toBe(
           '"s1"."orders"."company", "s1"."orders"."delivery_address_company", "s1"."orders"."delivery_address_city", "s1"."orders"."delivery_address_region", ' +
             '"s1"."orders"."delivery_address_postalCode", "s1"."orders"."delivery_address_country"'

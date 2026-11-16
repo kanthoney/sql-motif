@@ -261,7 +261,7 @@ describe("validate tests", () => {
         );
       });
 
-      it("should validate list of valid order lines", () => {
+      it("should validate list of valid order lines (1)", () => {
         const records = [
           {
             company: 'AA5496',
@@ -289,7 +289,7 @@ describe("validate tests", () => {
         );
       });
 
-      it("should validate list of valid order lines", () => {
+      it("should validate list of valid order lines (2)", () => {
         const records = [
           {
             company: 'AA5496',

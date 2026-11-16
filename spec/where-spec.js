@@ -118,7 +118,7 @@ describe('where tests', () => {
         );
       });
 
-      it('it should create a where clause with a complex or subclause', () => {
+      it('it should create a where clause with a complex or subclause 2', () => {
         expect(t.where({ company: 'ACME01', delivery: { [snippet]: [ { name: 'Alice' },  { address: { street: 'Greenway st.' } } ] } }))
           .toBe(
             '"s1"."orders"."company" = \'ACME01\' and ("s1"."orders"."delivery_name" = \'Alice\' or "s1"."orders"."delivery_address_street" = \'Greenway st.\')'
