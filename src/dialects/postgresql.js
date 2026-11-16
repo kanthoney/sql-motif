@@ -140,6 +140,16 @@ module.exports = class PostgreSQLDialect extends Dialect
     return `drop ${this.dropIndex(table, index, options)}`;
   }
 
+  dropIndexIfExists(table, index, options = {})
+  {
+    return `index if exists ${this.escapeId(index)}`;
+  }
+
+  DropIndexIfExists(table, index, options)
+  {
+    return `drop ${this.dropIndexIfExists(table, index, options)}`;
+  }
+
   createForeignKey(table, ref)
   {
     const Table = require('../table');

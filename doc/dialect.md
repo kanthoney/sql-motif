@@ -16,5 +16,5 @@ The constructor takes an options argument, which is an object with the following
 
 ## Overridable methods
 
-* `libraryEscape(s)` Provides a default escape function. Can be replaced with one that uses the escape function from a library. The default function escapes the dialect's escape characters
-with a backslash, unless the backslash is followed by a `like` special character.
+* `libraryEscape(s)` Provides a default escape function. Can be replaced with one that uses the escape function from a library. The default function escapes the
+dialect's escape characters with a backslash, unless the backslash is followed by a `like` special character.

@@ -258,9 +258,20 @@ column in the config.
 
 * `AddColumn(column, options)`. Creates an `alter table` statement to add `column`, where `column` is the name of a column in the config.
 
+* `addColumnIfNotExists(column, options)`. Creates an `alter table` statement to add `column` if it doesn't exist, without the `alter table` keywords and table name,
+where `column` is the name of a column in the config.
+
+* `AddColumnIfNotExists(column, options)`. Creates an `alter table` statement to add `column` if it doesn't alreadt exist, where `column` is the name of a column in the
+config.
+
 * `dropColumn(column, options)`. Creates an `alter table` statement to drop `column`, without the `alter table` keywords and table name, where `column` is the name of a column.
 
 * `DropColumn(column, options)`. Creates an `alter table` statement to drop `column`, where `column` is the name of a column.
+
+* `dropColumnIfExists(column, options)`. Creates an `alter table` statement to drop `column` if it exists, without the `alter table` keywords and table name,
+where `column` is the name of a column.
+
+* `DropColumnIfExists(column, options)`. Creates an `alter table` statement to drop `column` if it exists, where `column` is the name of a column.
 
 * `changeColumn(column, options)`. Creates an `alter table` statement, without the `alter table` keywords and table name, to update the spec of an existing column. `options`
 contains a set of options, of which `ignore` is a flag to add clauses to ignore errors, and `oldName` is the old name of the column. May return an array of statements.
@@ -278,6 +289,10 @@ This defaults to the schema specified in the schema table. If you need to specif
 
 * `DropIndex(name, options)`. Creates a `drop index` statement for the index `name`.
 
+* `dropIndexIfExists(name, options)`. Creates a `drop index if exists` statement, without the `drop` (for PostgreSQL) or `alter table` keywords, for the index `name`.
+
+* `DropIndexIfExists(name, options)`. Creates a `drop index if exists` statement for the index `name`.
+
 * `addIndex(spec, options)`. Creates a statement to add an index defined by [`spec`](./index-spec.md), without the `create` or `alter table` keywords or table name.
 
 * `AddIndex(spec, options)`. Creates a statement to add an index defined by [`spec`](./index-spec.md).
@@ -290,6 +305,10 @@ This defaults to the schema specified in the schema table. If you need to specif
 * `dropReference(name, options)`. Creates a statement to drop a reference (foreign key), without the `alter table` keywords or table name.
 
 * `DropReference(name, options)`. Creates a statement to drop a reference (foreign key), including the `alter table` keywords.
+
+* `dropReferenceIfExists(name, options)`. Creates a statement to drop a reference (foreign key) if the reference exists, without the `alter table` keywords or table name.
+
+* `DropReferenceIfExists(name, options)`. Creates a statement to drop a reference (foreign key) if the reference exists, including the `alter table` keywords.
 
 ### Group, order and limit
 

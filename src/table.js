@@ -1027,9 +1027,19 @@ class Table
     return this.dialect.addColumn(this, name, options);
   }
 
+  addColumnIfNotExists(name, options)
+  {
+    return this.dialect.addColumnIfNotExists(this, name, options);
+  }
+
   AddColumn(name, options)
   {
     return this.dialect.AddColumn(this, name, options);
+  }
+
+  AddColumnIfNotExists(name, options)
+  {
+    return this.dialect.AddColumnIfNotExists(this, name, options);
   }
 
   dropColumn(name, options)
@@ -1037,9 +1047,19 @@ class Table
     return this.dialect.dropColumn(this, name, options);
   }
 
+  dropColumnIfExists(name, options)
+  {
+    return this.dialect.dropColumnIfExists(this, name, options);
+  }
+
   DropColumn(name, options)
   {
     return this.dialect.DropColumn(this, name, options);
+  }
+
+  DropColumnIfExists(name, options)
+  {
+    return this.dialect.DropColumnIfExists(this, name, options);
   }
 
   renameColumn(oldName, name, options)
@@ -1085,6 +1105,16 @@ class Table
     return this.dialect.DropIndex(this, name, options);
   }
 
+  dropIndexIfExists(name)
+  {
+    return this.dialect.dropIndexIfExists(this, name, options);
+  }
+
+  DropIndexIfExists(name, options)
+  {
+    return this.dialect.DropIndexIfExists(this, name, options);
+  }
+
   addIndex(spec, options)
   {
     return this.dialect.addIndex(this, spec, options);
@@ -1113,6 +1143,16 @@ class Table
   DropReference(name, options)
   {
     return this.dialect.DropReference(this, name, options);
+  }
+
+  dropReferenceIfExists(name, options)
+  {
+    return this.dialect.dropReferenceIfExists(this, name, options);
+  }
+
+  DropReferenceIfExists(name, options)
+  {
+    return this.dialect.DropReferenceIfExists(this, name, options);
   }
 
   groupBy(fields, options = {})

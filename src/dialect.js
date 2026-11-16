@@ -214,6 +214,26 @@ class Dialect
     }
   }
   
+  addColumnIfNotExists(table, name, options)
+  {
+    let q = table.selectArray(name, { joins: [] }).map(col => `add column if not exists ${table.createColumn(col)}`).join(', ');
+    if(q) {
+      return q;
+    }
+    let col = table.column(name);
+    if(col) {
+      return `add column if not exists ${table.createColumn(col)}`;
+    }
+  }
+
+  AddColumnIfNotExists(table, name, options)
+  {
+    let s = this.addColumnIfNotExists(table, name, options);
+    if(s) {
+      return `${this.alterTable(table, options)} ${s}`;
+    }
+  }
+  
   dropColumn(table, name, options = {})
   {
     let q = table.selectArray(name, { joins: [] }).map(col => `drop column ${col.sql.name}`).join(', ');
@@ -230,7 +250,27 @@ class Dialect
   {
     const q = this.dropColumn(table, name, options);
     if(q) {
-      return `${this.alterTable(table, options)} ${this.dropColumn(table, name, options)}`;
+      return `${this.alterTable(table, options)} ${q}`;
+    }
+  }
+
+  dropColumnIfExists(table, name, options = {})
+  {
+    let q = table.selectArray(name, { joins: [] }).map(col => `drop column if exists ${col.sql.name}`).join(', ');
+    if(q) {
+      return q;
+    }
+    let col = table.column(name);
+    if(col) {
+      return `drop column if exists ${col.sql.name}`;
+    }
+  }
+
+  DropColumnIfExists(table, name, options)
+  {
+    const q = this.dropColumnIfExists(table, name, options);
+    if(q) {
+      return `${this.alterTable(table, options)} ${q}`;
     }
   }
 
@@ -327,6 +367,16 @@ class Dialect
     return `${this.alterTable(table, options)} drop ${this.dropIndex(table, name, options)}`;
   }
 
+  dropIndexIfExists(table, name, options)
+  {
+    return `index if exists ${this.escapeId(name)}`;
+  }
+
+  DropIndexIfExists(table, name, options)
+  {
+    return `${this.alterTable(table, options)} drop ${this.dropIndexIfExists(table, name, options)}`;
+  }
+
   addReference(table, spec, options)
   {
     const s = this.createForeignKey(table, spec);
@@ -419,6 +469,19 @@ class Dialect
   DropReference(table, name, options)
   {
     let s = this.dropReference(table, name, options);
+    if(s) {
+      return `${this.alterTable(table, options)} ${s}`;
+    }
+  }
+
+  dropReferenceIfExists(table, name, options)
+  {
+    return `drop foreign key if exists ${this.escapeId(name)}`;
+  }
+
+  DropReferenceIfExists(table, name, options)
+  {
+    let s = this.dropReferenceIfExists(table, name, options);
     if(s) {
       return `${this.alterTable(table, options)} ${s}`;
     }

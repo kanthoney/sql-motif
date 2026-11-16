@@ -34,11 +34,25 @@ describe('alter tests', () => {
       );
     });
 
+    it('should drop column delivery_name if it exists', () => {
+      expect(table.DropColumnIfExists('delivery_name')).toBe(
+        'alter table "s1"."orders" drop column if exists "delivery_name"'
+      );
+    });
+
     it('should drop all delivery columns', () => {
       expect(table.DropColumn('delivery')).toBe(
         'alter table "s1"."orders" drop column "delivery_name", drop column "delivery_address_company", drop column "delivery_address_street", ' +
           'drop column "delivery_address_locality", drop column "delivery_address_city", drop column "delivery_address_region", ' +
           'drop column "delivery_address_postalCode", drop column "delivery_address_country"'
+      );
+    });
+
+    it('should drop all delivery columns that exist', () => {
+      expect(table.DropColumnIfExists('delivery')).toBe(
+        'alter table "s1"."orders" drop column if exists "delivery_name", drop column if exists "delivery_address_company", drop column if exists "delivery_address_street", ' +
+          'drop column if exists "delivery_address_locality", drop column if exists "delivery_address_city", drop column if exists "delivery_address_region", ' +
+          'drop column if exists "delivery_address_postalCode", drop column if exists "delivery_address_country"'
       );
     });
 
@@ -48,12 +62,22 @@ describe('alter tests', () => {
       );
     });
 
-    it('should add composite column invoice', () => {
-      expect(table.AddColumn('invoice')).toBe(
-        'alter table "s1"."orders" add column "billing_name" varchar(35) not null default \'\', add column "billing_address_company" varchar(35) not null default \'\', ' +
-          'add column "billing_address_street" varchar(35) not null default \'\', add column "billing_address_locality" varchar(35) not null default \'\', ' +
-          'add column "billing_address_city" varchar(35) not null default \'\', add column "billing_address_region" varchar(35) not null default \'\', ' +
-          'add column "billing_address_postalCode" varchar(15) not null default \'\', add column "billing_address_country" varchar(2) not null default \'GB\''
+    it("should add column invoice_name if it doesn't exist", () => {
+      expect(table.AddColumnIfNotExists('invoice_name')).toBe(
+        'alter table "s1"."orders" add column if not exists "billing_name" varchar(35) not null default \'\''
+      );
+    });
+
+    it("should add composite column invoice if columns don't exist", () => {
+      expect(table.AddColumnIfNotExists('invoice')).toBe(
+        'alter table "s1"."orders" add column if not exists "billing_name" varchar(35) not null default \'\', ' +
+          'add column if not exists "billing_address_company" varchar(35) not null default \'\', ' +
+          'add column if not exists "billing_address_street" varchar(35) not null default \'\', ' +
+          'add column if not exists "billing_address_locality" varchar(35) not null default \'\', ' +
+          'add column if not exists "billing_address_city" varchar(35) not null default \'\', ' +
+          'add column if not exists "billing_address_region" varchar(35) not null default \'\', ' +
+          'add column if not exists "billing_address_postalCode" varchar(15) not null default \'\', ' +
+          'add column if not exists "billing_address_country" varchar(2) not null default \'GB\''
       );
     });
 
@@ -77,6 +101,12 @@ describe('alter tests', () => {
       );
     });
 
+    it('should drop an index if it exists', () => {
+      expect(table.DropIndexIfExists('company_idx')).toBe(
+        'alter table "s1"."orders" drop index if exists "company_idx"'
+      );
+    });
+
     it('should add a foreign key (1)', () => {
       expect(table.AddReference({ table: 'customers', columns: ['company', 'customer:account'], name: 'customer_ref', onDelete: 'cascade', onUpdate: 'restrict' })).toBe(
         'alter table "s1"."orders" add foreign key "customer_ref" ("company", "customer") references "customers" ("company", "account") on update restrict on delete cascade'
@@ -86,6 +116,12 @@ describe('alter tests', () => {
     it('should drop a foreign key (1)', () => {
       expect(table.DropReference('customer_ref')).toBe(
         'alter table "s1"."orders" drop foreign key "customer_ref"'
+      );
+    });
+
+    it('should drop a foreign key if it exists', () => {
+      expect(table.DropReferenceIfExists('customer_ref')).toBe(
+        'alter table "s1"."orders" drop foreign key if exists "customer_ref"'
       );
     });
 
