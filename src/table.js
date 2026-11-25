@@ -801,6 +801,16 @@ class Table
     return `delete ${this.deleteSafe(record, options)}`;
   }
 
+  deleteWhereSafe(record, options)
+  {
+    return this.deleteWhere(record, { ...options, safe: true });
+  }
+
+  DeleteWhereSafe(record, options)
+  {
+    return `delete ${this.deleteWhereSafe(record, options)}`;
+  }
+
   addOptions(q, options)
   {
     if(options.groupBy) {

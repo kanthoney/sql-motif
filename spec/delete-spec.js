@@ -137,7 +137,43 @@ describe('delete tests', () => {
         );
       });
 
-      it('should throw when deleting order record', () => {
+      it('should delete order record 3', () => {
+        const record = {
+          company: 'HAD010',
+          order_id: 'cfc6b632-cf18-4e98-a8f1-acbec9da6581',
+          customer: 'PRJ001',
+          order_date: '2020-04-15 15:56:04',
+          delivery: {
+            name: 'Terry Test',
+            address: {
+              company: '',
+              street: '17 Acacia Ave.',
+              locality: 'Stormford',
+              city: 'Manchester',
+              region: '',
+              postalCode: 'M9 5DF',
+              country: 'GB'
+            }
+          },
+          invoice: {
+            name: 'Bill Smith',
+            address: {
+              company: 'Brimstone Ltd',
+              street: '17 Halford Court',
+              locality: 'Zenith Business Park',
+              city: 'Huddersfield',
+              region: 'West Yorkshire',
+              postalCode: 'HD12 6HF',
+              country: 'GB'
+            }
+          }
+        };
+        expect(t.DeleteWhereSafe({ company: record.company, order_id: record.order_id } )).toBe(
+          'delete "s1"."orders" from "s1"."orders" where "s1"."orders"."company" = \'HAD010\' and "s1"."orders"."order_id" = \'cfc6b632-cf18-4e98-a8f1-acbec9da6581\''
+        );
+      });
+
+      it('should throw when deleting order record 1', () => {
         const record = {
           company: 'HAD010',
           customer: 'PRJ001',
@@ -168,6 +204,39 @@ describe('delete tests', () => {
           }
         };
         expect(() => t.DeleteSafe(record)).toThrowError(SafetyError);
+      });
+
+      it('should throw when deleting order record 2', () => {
+        const record = {
+          company: 'HAD010',
+          customer: 'PRJ001',
+          order_date: '2020-04-15 15:56:04',
+          delivery: {
+            name: 'Terry Test',
+            address: {
+              company: '',
+              street: '17 Acacia Ave.',
+              locality: 'Stormford',
+              city: 'Manchester',
+              region: '',
+              postalCode: 'M9 5DF',
+              country: 'GB'
+            }
+          },
+          invoice: {
+            name: 'Bill Smith',
+            address: {
+              company: 'Brimstone Ltd',
+              street: '17 Halford Court',
+              locality: 'Zenith Business Park',
+              city: 'Huddersfield',
+              region: 'West Yorkshire',
+              postalCode: 'HD12 6HF',
+              country: 'GB'
+            }
+          }
+        };
+        expect(() => t.DeleteWhereSafe({ company: 'HAD010' })).toThrowError(SafetyError);
       });
 
     });

@@ -214,10 +214,18 @@ can be changed using the options. `record` is a [record](./table-record.md). Tak
 * `DeleteWhere(record, [options])`. Produces a full `delete` statement, using the supplied fields of the record, including the `delete` keyword.
 
 * `deleteSafe(record, [options])` (*experimental*). Produces a `delete` statement excluding the `delete` keyword. Takes an optional [`options`](./table-options.md) argument.
-  Throws an error if part of the primary key of the main table or a joined table not marked as read only is not detected. Does not currently check subtables to see if the missing
-  key can be found there.
+  Throws an error if part of the primary key of the main table or a joined table not marked as read only is not detected. Does not currently check subtables to see if
+  the missing key can be found there.
 
 * `DeleteSafe(record, [options])` (*experimental*). Produces a full `delete` statement including the `delete` keyword. Throws an error if the primary key is not complete.
+
+* `deleteWhereSafe(record, [options])`  (*experimental*). Produces a `delete` statement using all supplied fields of the record, excluding the `delete` keyword.
+`record` is a [record](./table-record.md). Takes an optional [`options`](./table-options.md) argument. Throws an error if part of the primary key of the main table
+or a joined table not marked as read only is not detected. Does not currently check subtables to see if the missing key can be found there.
+
+* `DeleteWhereSafe(record, [options])` (*experimental*). Produces a full `delete` statement, using the supplied fields of the record, including the `delete` keyword.
+Throws an error if part of the primary key of the main table or a joined table not marked as read only is not detected. Does not currently check subtables to see if
+the missing key can be found there.
 
 ### Create methods
 
