@@ -626,7 +626,7 @@ class ColumnSet
     if(record instanceof Record) {
       return this.setArray(record.toObject({ includeJoined: true, noReducer: true }), options);
     }
-    options = options || {};
+    options = { ...options || {}, safe: false };
     if(options.joins && options.joins !== '*') {
       if(!_.isArray(options.joins)) {
         options.joins = [options.joins];
